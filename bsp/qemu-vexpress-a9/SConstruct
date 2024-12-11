@@ -25,8 +25,6 @@ env['ASCOM'] = env['ASPPCOM']
 Export('RTT_ROOT')
 Export('rtconfig')
 
-group_netio = SConscript('netio/SConscript')
-
 # prepare building environment
 objs = PrepareBuilding(env, RTT_ROOT)
 

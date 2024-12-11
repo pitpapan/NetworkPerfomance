@@ -418,7 +418,6 @@
 #define PKG_USING_FILESYSTEM_SAMPLES_LATEST_VERSION
 #define PKG_USING_NETWORK_SAMPLES
 #define PKG_USING_NETWORK_SAMPLES_LATEST_VERSION
-#define NETWORK_SAMPLES_USING_TCP_CLIENT
 /* end of samples: kernel and components samples */
 
 /* entertainment: terminal games and other interesting software packages */
