@@ -1,0 +1,22 @@
+import os
+from building import *
+
+# Get the current directory
+cwd = GetCurrentDir()
+
+# Define source files
+src = Glob('*.c')  # Automatically find all `.c` files in the current directory
+
+# Define header file paths
+CPPPATH = [cwd]  # Add the current directory to the header file search paths
+
+# Define the build group
+group = DefineGroup(
+    'TCPClient',   # Module name, can be named as desired
+    src,           # Included source files
+    depend=[''],   # Dependencies, can be configured as needed
+    CPPPATH=CPPPATH  # Header file paths
+)
+
+# Return the build group to the top-level SConstruct
+Return('group')
