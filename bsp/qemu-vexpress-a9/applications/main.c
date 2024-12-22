@@ -16,5 +16,8 @@ int main(void)
 {
     rt_kprintf("Hello RT-Thread!My darling\n");
 
+    // Initialize workload tasks
+      //workload_init();
+
     return 0;
 }
