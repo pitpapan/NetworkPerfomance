@@ -11,11 +11,11 @@ void cpu_intensive_task(void *parameter)
     while (1)
     {
         volatile int counter = 0;
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 100000; i++)
         {
             counter += i;  // An CPU intensive workload
         }
-        rt_thread_mdelay(10);  // Simulate periodic workload
+        rt_thread_mdelay(1);  // Simulate periodic workload
     }
 }
 
@@ -39,12 +39,13 @@ void io_simulation_task(void *parameter)
     while (1)
     {
         custom_log_output("Performing I/O operation\n");
-        rt_thread_mdelay(30);  // Simulate periodic I/O workload
+        rt_thread_mdelay(5);  // Simulate periodic I/O workload
     }
 }
 
 int workload_init(void)
 {
+    rt_kprintf("Initialized workload");
     rt_thread_t cpu_task = rt_thread_create(
         "cpu_task",          // Thread name
         cpu_intensive_task,   // Entry function
@@ -73,4 +74,3 @@ int workload_init(void)
 
     return 0;
 }
-INIT_APP_EXPORT(workload_init);
