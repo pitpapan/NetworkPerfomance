@@ -149,6 +149,8 @@ rt_weak void *rt_memcpy(void *dst, const void *src, rt_ubase_t count)
     long *aligned_src = RT_NULL;
     rt_ubase_t len = count;
 
+	unsigned short *test_dst;
+	unsigned short *test_src;
     /* If the size is small, or either SRC or DST is unaligned,
     then punt into the byte copy loop.  This should be rare. */
     if (!TOO_SMALL(len) && !UNALIGNED(src_ptr, dst_ptr))
@@ -178,6 +180,20 @@ rt_weak void *rt_memcpy(void *dst, const void *src, rt_ubase_t count)
         src_ptr = (char *)aligned_src;
     }
 
+        /* 增加2字节对齐时的拷贝 */
+	if( !((long)src_ptr & 0x01)  && !((long)dst_ptr & 0x01))
+	{
+		test_dst = (unsigned short*)dst_ptr;
+		test_src = (unsigned short*)src_ptr;
+		while (len > 1)
+		{
+			*test_dst++ = *test_src++;
+			len -= 2;
+		}	
+		dst_ptr = (char *)test_dst;
+        src_ptr = (char *)test_src;
+	}
+                        
     while (len--)
         *dst_ptr++ = *src_ptr++;
 
