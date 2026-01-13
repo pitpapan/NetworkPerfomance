@@ -262,6 +262,9 @@
 #define LWIP_SO_LINGER 0
 #define LWIP_NETIF_LOOPBACK 0
 #define RT_LWIP_USING_PING
+#define LWIP_USING_DHCPD
+#define DHCPD_SERVER_IP "192.168.169.1"
+#define DHCPD_USING_ROUTER
 /* end of Network */
 
 /* Memory protection */
@@ -315,6 +318,8 @@
 /* end of CYW43439 WiFi */
 /* end of Wi-Fi */
 #define PKG_USING_NETUTILS
+#define PKG_NETUTILS_IPERF
+#define IPERF_THREAD_STACK_SIZE 2048
 #define PKG_USING_NETUTILS_LATEST_VERSION
 #define PKG_NETUTILS_VER_NUM 0x99999
 
