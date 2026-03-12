@@ -26,6 +26,7 @@ struct rt_ofw_stub *rt_ofw_stub_probe_range(struct rt_ofw_node *np,
     const struct rt_ofw_stub *stub = RT_NULL;
 
     if (np && stub_start && stub_end &&
+        rt_ofw_node_is_available(np) &&
         !rt_ofw_node_test_flag(np, RT_OFW_F_READLY) &&
         !rt_ofw_node_test_flag(np, RT_OFW_F_SYSTEM))
     {
@@ -69,6 +70,12 @@ struct ofw_obj_cmp_list
 
 static const struct ofw_obj_cmp_list ofw_obj_cmp_list[] =
 {
+#ifdef RT_USING_CLK
+    { "#clock-cells", RT_CLK_NODE_OBJ_NAME, sizeof(struct rt_clk_node) },
+#endif
+#ifdef RT_USING_RESET
+    { "#reset-cells", RT_RESET_CONTROLLER_OBJ_NAME, sizeof(struct rt_reset_controller) },
+#endif
     { "#power-domain-cells", RT_POWER_DOMAIN_PROXY_OBJ_NAME, sizeof(struct rt_dm_power_domain_proxy) },
     { "#power-domain-cells", RT_POWER_DOMAIN_OBJ_NAME, sizeof(struct rt_dm_power_domain) },
 };
@@ -300,7 +307,26 @@ rt_err_t rt_ofw_console_setup(void)
 
     if (err == -RT_ENOSYS && !rt_ofw_prop_read_string(ofw_node_chosen, "stdout-path", &stdout_path))
     {
-        struct rt_ofw_node *stdout_np = rt_ofw_find_node_by_path(stdout_path);
+        struct rt_ofw_node *stdout_np;
+
+        if (*stdout_path != '/' && ofw_node_aliases)
+        {
+            int alias_len;
+            struct rt_ofw_prop *prop;
+
+            alias_len = strchrnul(stdout_path, ':') - stdout_path;
+
+            rt_ofw_foreach_prop(ofw_node_aliases, prop)
+            {
+                if (!rt_strncmp(prop->name, stdout_path, alias_len))
+                {
+                    stdout_path = prop->value;
+                    break;
+                }
+            }
+        }
+
+        stdout_np = rt_ofw_find_node_by_path(stdout_path);
 
         if (stdout_np && (ofw_name = ofw_console_serial_find(con_name, stdout_np)))
         {

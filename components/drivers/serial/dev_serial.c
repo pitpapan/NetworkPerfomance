@@ -27,6 +27,7 @@
  * 2020-12-14     Meco Man     implement function of setting window's size(TIOCSWINSZ)
  * 2021-08-22     Meco Man     implement function of getting window's size(TIOCGWINSZ)
  * 2023-09-15     xqyjlj       perf rt_hw_interrupt_disable/enable
+ * 2024-11-25     zhujiale     add bypass mode
  */
 
 #include <rthw.h>
@@ -124,7 +125,7 @@ static int serial_fops_ioctl(struct dfs_file *fd, int cmd, void *args)
     int mask  = O_NONBLOCK | O_APPEND;
 
     device = (rt_device_t)fd->vnode->data;
-    switch (cmd)
+    switch ((rt_ubase_t)cmd)
     {
     case FIONREAD:
         break;
@@ -303,6 +304,23 @@ rt_inline int _serial_int_rx(struct rt_serial_device *serial, rt_uint8_t *data, 
     rx_fifo = (struct rt_serial_rx_fifo*) serial->serial_rx;
     RT_ASSERT(rx_fifo != RT_NULL);
 
+#ifdef RT_USING_SERIAL_BYPASS
+    if (serial->bypass)
+    {
+        rt_bypass_work_straight(serial);
+        while (length)
+        {
+            rt_uint8_t ch;
+            if (!rt_bypass_getchar(serial, &ch))
+                break;
+
+            *data = ch & 0xff;
+            data++; length--;
+        }
+
+        return size - length;
+    }
+#endif
     /* read from software FIFO */
     while (length)
     {
@@ -645,11 +663,6 @@ static rt_err_t rt_serial_open(struct rt_device *dev, rt_uint16_t oflag)
 
     /* get open flags */
     dev->open_flag = oflag & 0xff;
-
-#ifdef RT_USING_PINCTRL
-    /* initialize iomux in DM */
-    rt_pin_ctrl_confs_apply_by_name(dev, RT_NULL);
-#endif
 
     /* initialize the Rx/Tx structure according to open flag */
     if (serial->serial_rx == RT_NULL)
@@ -1056,7 +1069,7 @@ static rt_err_t rt_serial_control(struct rt_device *dev,
     RT_ASSERT(dev != RT_NULL);
     serial = (struct rt_serial_device *)dev;
 
-    switch (cmd)
+    switch ((rt_ubase_t)cmd)
     {
         case RT_DEVICE_CTRL_SUSPEND:
             /* suspend device */
@@ -1413,10 +1426,31 @@ void rt_hw_serial_isr(struct rt_serial_device *serial, int event)
                 ch = serial->ops->getc(serial);
                 if (ch == -1) break;
 
-
                 /* disable interrupt */
-                level = rt_spin_lock_irqsave(&(serial->spinlock));
+#ifdef RT_USING_SERIAL_BYPASS
+                if (serial->bypass && serial->bypass->upper_h && (serial->bypass->upper_h->head.next != &serial->bypass->upper_h->head))
+                {
+                    rt_bool_t skip = RT_FALSE;
+                    char buf = (char)ch;
+                    int ret;
+                    rt_list_t* node = serial->bypass->upper_h->head.next;
+                    do {
+                        struct rt_serial_bypass_func* bypass_run = rt_container_of(node, struct rt_serial_bypass_func, node);
+                        ret = bypass_run->bypass(serial, buf, bypass_run->data);
+                        if (!ret)
+                        {
+                            skip = RT_TRUE;
+                            break;
+                        }
+                        node = node->next;
+                    } while (node != &serial->bypass->upper_h->head);
 
+                    if (skip)
+                        continue;
+                }
+
+#endif
+                level = rt_spin_lock_irqsave(&(serial->spinlock));
                 rx_fifo->buffer[rx_fifo->put_index] = ch;
                 rx_fifo->put_index += 1;
                 if (rx_fifo->put_index >= serial->config.bufsz) rx_fifo->put_index = 0;
@@ -1424,9 +1458,8 @@ void rt_hw_serial_isr(struct rt_serial_device *serial, int event)
                 /* if the next position is read index, discard this 'read char' */
                 if (rx_fifo->put_index == rx_fifo->get_index)
                 {
-                    rx_fifo->get_index += 1;
+                    rx_fifo->get_index = rx_fifo->put_index;
                     rx_fifo->is_full = RT_TRUE;
-                    if (rx_fifo->get_index >= serial->config.bufsz) rx_fifo->get_index = 0;
 
                     _serial_check_buffer_size();
                 }
@@ -1435,17 +1468,12 @@ void rt_hw_serial_isr(struct rt_serial_device *serial, int event)
                 rt_spin_unlock_irqrestore(&(serial->spinlock), level);
             }
 
-            /**
-             * Invoke callback.
-             * First try notify if any, and if notify is existed, rx_indicate()
-             * is not callback. This separate the priority and makes the reuse
-             * of same serial device reasonable for RT console.
-             */
-            if (serial->rx_notify.notify)
-            {
-                serial->rx_notify.notify(serial->rx_notify.dev);
-            }
-            else if (serial->parent.rx_indicate != RT_NULL)
+#ifdef RT_USING_SERIAL_BYPASS
+            if (serial->bypass && serial->bypass->lower_h)
+                rt_workqueue_dowork(serial->bypass->lower_workq, &serial->bypass->work);
+#endif
+
+            if (serial->parent.rx_indicate != RT_NULL)
             {
                 rt_size_t rx_length;
 

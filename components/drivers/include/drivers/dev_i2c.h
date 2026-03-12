@@ -14,10 +14,9 @@
 
 #include <rtthread.h>
 /**
- * @addtogroup  Drivers          RTTHREAD Driver
- * @defgroup    I2C              I2C
- *
+ * @defgroup    group_drivers_i2c I2C
  * @brief       I2C driver api
+ * @ingroup     group_device_driver
  *
  * <b>Example</b>
  * @code {.c}
@@ -168,12 +167,10 @@
  * // 导出到 msh 命令列表中
  * MSH_CMD_EXPORT(i2c_aht10_sample, i2c aht10 sample);
  * @endcode
- *
- * @ingroup     Drivers
  */
 
 /*!
- * @addtogroup I2C
+ * @addtogroup group_drivers_i2c
  * @{
  */
 #ifdef __cplusplus
@@ -289,6 +286,21 @@ rt_err_t rt_i2c_driver_register(struct rt_i2c_driver *driver);
 rt_err_t rt_i2c_device_register(struct rt_i2c_client *client);
 
 #define RT_I2C_DRIVER_EXPORT(driver)  RT_DRIVER_EXPORT(driver, i2c, BUILIN)
+
+/**
+ * @brief Get ID match data from I2C client
+ *
+ * This function retrieves the driver-specific data associated with the matched
+ * device ID or OFW node ID for the I2C client.
+ *
+ * @param client the I2C client device
+ *
+ * @return const void* pointer to the ID match data, or RT_NULL if no match data exists
+ */
+rt_inline const void *rt_i2c_client_id_data(struct rt_i2c_client *client)
+{
+    return client->id ? client->id->data : (client->ofw_id ? client->ofw_id->data : RT_NULL);
+}
 #endif /* RT_USING_DM */
 
 /**

@@ -10,6 +10,9 @@ LOCAL_CFLAGS = ''
 if GetDepend('RT_USING_SPI_BITOPS'):
     src += ['dev_spi_bit_ops.c']
 
+if GetDepend('RT_USING_SOFT_SPI'):
+    src += ['dev_soft_spi.c']
+
 if GetDepend('RT_USING_QSPI'):
     src += ['dev_qspi_core.c']
 
@@ -30,10 +33,14 @@ if GetDepend('RT_USING_SFUD'):
     if GetDepend('RT_SFUD_USING_SFDP'):
         src_device += ['sfud/src/sfud_sfdp.c']
 
-    if rtconfig.PLATFORM in GetGCCLikePLATFORM():
-        LOCAL_CFLAGS += ' -std=c99'
-    elif rtconfig.PLATFORM in ['armcc']:
-        LOCAL_CFLAGS += ' --c99'
+    if not GetDepend('RT_USING_DM'):
+        if rtconfig.PLATFORM in GetGCCLikePLATFORM():
+            LOCAL_CFLAGS += ' -std=c99'
+        elif rtconfig.PLATFORM in ['armcc']:
+            LOCAL_CFLAGS += ' --c99'
+
+if GetDepend('RT_USING_DM'):
+    src += ['dev_spi_dm.c', 'dev_spi_bus.c']
 
 src += src_device
 

@@ -391,7 +391,6 @@ time_t timegm(struct tm * const t)
         return (time_t)-1;
     }
 
-    years = (time_t)t->tm_year - 70;
     if (t->tm_sec > 60)         /* seconds after the minute - [0, 60] including leap second */
     {
         t->tm_min += t->tm_sec / 60;
@@ -432,6 +431,8 @@ time_t timegm(struct tm * const t)
         rt_set_errno(EINVAL);
         return (time_t) -1;
     }
+
+    years = (time_t)t->tm_year - 70;
 
     /* Days since 1970 is 365 * number of years + number of leap years since 1970 */
     day = years * 365 + (years + 1) / 4;
@@ -602,9 +603,9 @@ int clock_getres(clockid_t clockid, struct timespec *res)
 
     switch (clockid)
     {
-#ifdef RT_USING_RTC
         case CLOCK_REALTIME:  // use RTC
         case CLOCK_REALTIME_COARSE:
+#ifdef RT_USING_RTC
             return _control_rtc(RT_DEVICE_CTRL_RTC_GET_TIMERES, res);
 #endif /* RT_USING_RTC */
 
@@ -635,9 +636,9 @@ int clock_gettime(clockid_t clockid, struct timespec *tp)
 
     switch (clockid)
     {
-#ifdef RT_USING_RTC
         case CLOCK_REALTIME:  // use RTC
         case CLOCK_REALTIME_COARSE:
+#ifdef RT_USING_RTC
             return _control_rtc(RT_DEVICE_CTRL_RTC_GET_TIMESPEC, tp);
 #endif /* RT_USING_RTC */
 
@@ -679,8 +680,8 @@ int clock_nanosleep(clockid_t clockid, int flags, const struct timespec *rqtp, s
 
     switch (clockid)
     {
-#ifdef RT_USING_RTC
         case CLOCK_REALTIME:  // use RTC
+#ifdef RT_USING_RTC
             if (flags & TIMER_ABSTIME)
                 err = _control_rtc(RT_DEVICE_CTRL_RTC_GET_TIMESPEC, &ts);
             break;
@@ -700,7 +701,7 @@ int clock_nanosleep(clockid_t clockid, int flags, const struct timespec *rqtp, s
     if (err != RT_EOK)
         return err;
 
-    int64_t ns = rqtp->tv_nsec - ts.tv_nsec + (rqtp->tv_sec - ts.tv_sec) * NANOSECOND_PER_SECOND;
+    rt_int64_t ns = rqtp->tv_nsec - ts.tv_nsec + (rt_int64_t)(rqtp->tv_sec - ts.tv_sec) * NANOSECOND_PER_SECOND;
     if (ns <= 0)
         return 0;
 
@@ -801,7 +802,7 @@ RTM_EXPORT(rt_timespec_to_tick);
 struct timer_obj
 {
     struct rt_ktime_hrtimer hrtimer;
-    void (*sigev_notify_function)(union sigval val);
+    void (*sigev_notify_func)(union sigval val);
     union sigval val;
     struct timespec interval;              /* Reload value */
     struct timespec value;                 /* Reload value */
@@ -903,7 +904,7 @@ static void rtthread_timer_wrapper(void *timerobj)
     }
 #ifdef RT_USING_SMART
     /* this field is named as tid in musl */
-    void *ptid = &timer->sigev_notify_function;
+    void *ptid = &timer->sigev_notify_func;
     int tid = *(int *)ptid;
     struct lwp_timer_event_param *data = rt_container_of(timer->work, struct lwp_timer_event_param, work);
     data->signo = timer->sigev_signo;
@@ -922,9 +923,9 @@ static void rtthread_timer_wrapper(void *timerobj)
     if (rt_work_submit(timer->work, 0))
         RT_ASSERT(0);
 #else
-    if(timer->sigev_notify_function != RT_NULL)
+    if(timer->sigev_notify_func != RT_NULL)
     {
-        (timer->sigev_notify_function)(timer->val);
+        (timer->sigev_notify_func)(timer->val);
     }
 #endif /* RT_USING_SMART */
 }
@@ -1012,7 +1013,7 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid)
 
     timer->work = work;
 #endif /* RT_USING_SMART */
-    timer->sigev_notify_function = evp->sigev_notify_function;
+    timer->sigev_notify_func = evp->sigev_notify_function;
     timer->val = evp->sigev_value;
     timer->interval.tv_sec = 0;
     timer->interval.tv_nsec = 0;
@@ -1222,7 +1223,7 @@ int timer_settime(timer_t timerid, int flags, const struct itimerspec *value,
     if (err != RT_EOK)
         return err;
 
-    int64_t ns = value->it_value.tv_nsec - ts.tv_nsec + (value->it_value.tv_sec - ts.tv_sec) * NANOSECOND_PER_SECOND;
+    rt_int64_t ns = value->it_value.tv_nsec - ts.tv_nsec + (rt_int64_t)(value->it_value.tv_sec - ts.tv_sec) * NANOSECOND_PER_SECOND;
 
     if (ns <= 0)
         return 0;

@@ -14,7 +14,7 @@
 #define DBG_LVL DBG_INFO
 #include <rtdbg.h>
 
-static struct rt_spinlock msi_irq_map_lock = {};
+static RT_DEFINE_SPINLOCK(msi_irq_map_lock);
 static RT_BITMAP_DECLARE(msi_irq_map, MAX_HANDLERS) = {};
 
 rt_err_t rt_pci_msi_setup_irqs(struct rt_pci_device *pdev, int nvec, int type)
@@ -34,7 +34,7 @@ rt_err_t rt_pci_msi_setup_irqs(struct rt_pci_device *pdev, int nvec, int type)
 
     if (type == PCIY_MSI)
     {
-        int last_irq = -1;
+        int last_irq = -1, irq_idx;
         rt_size_t irq_nr;
 
         desc = rt_pci_msi_first_desc(pdev);
@@ -71,15 +71,15 @@ rt_err_t rt_pci_msi_setup_irqs(struct rt_pci_device *pdev, int nvec, int type)
         if (!err)
         {
             /* Get the first irq */
-            desc->irq = irq - irq_nr;
+            desc->irq = irq - (irq_nr - 1);
         }
 
-        rt_bitmap_for_each_set_bit(msi_irq_map, irq, MAX_HANDLERS)
+        rt_bitmap_for_each_set_bit(msi_irq_map, irq_idx, MAX_HANDLERS)
         {
-            msi_pic->ops->irq_free_msi(msi_pic, irq);
+            msi_pic->ops->irq_free_msi(msi_pic, irq_idx);
 
             /* Free bit so the next user doesn't need to bzero */
-            rt_bitmap_clear_bit(msi_irq_map, irq);
+            rt_bitmap_clear_bit(msi_irq_map, irq_idx);
         }
 
         rt_hw_spin_unlock(&msi_irq_map_lock.lock);
@@ -143,4 +143,43 @@ rt_err_t rt_pci_msi_setup_irqs(struct rt_pci_device *pdev, int nvec, int type)
     }
 
     return err;
+}
+
+rt_err_t rt_pci_msi_cleanup_irqs(struct rt_pci_device *pdev)
+{
+    int type;
+    struct rt_pic *msi_pic;
+    struct rt_pci_msi_desc *desc;
+
+    if (!pdev)
+    {
+        return -RT_EINVAL;
+    }
+
+    msi_pic = pdev->msi_pic;
+
+    if (!msi_pic)
+    {
+        return -RT_EINVAL;
+    }
+
+    desc = rt_pci_msi_first_desc(pdev);
+    type = desc->is_msix ? PCIY_MSIX : PCIY_MSI;
+
+    if (type == PCIY_MSI)
+    {
+        for (int idx = 0; idx < desc->vector_used; ++idx)
+        {
+            msi_pic->ops->irq_free_msi(msi_pic, desc->irq + idx);
+        }
+    }
+    else if (type == PCIY_MSIX)
+    {
+        rt_pci_msi_for_each_desc(pdev, desc)
+        {
+            msi_pic->ops->irq_free_msi(msi_pic, desc->irq);
+        }
+    }
+
+    return RT_EOK;
 }

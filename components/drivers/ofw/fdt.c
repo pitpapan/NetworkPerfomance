@@ -23,7 +23,7 @@
 
 #include "ofw_internal.h"
 
-struct rt_fdt_earlycon fdt_earlycon rt_section(".bss.noclean.earlycon");
+struct rt_fdt_earlycon fdt_earlycon;
 
 RT_OFW_SYMBOL_TYPE_RANGE(earlycon, struct rt_fdt_earlycon_id, _earlycon_start = {}, _earlycon_end = {});
 
@@ -36,6 +36,12 @@ static rt_phandle _phandle_min;
 static rt_phandle _phandle_max;
 static rt_size_t _root_size_cells;
 static rt_size_t _root_addr_cells;
+
+#ifdef ARCH_CPU_64BIT
+#define MIN_BIT   16
+#else
+#define MIN_BIT   8
+#endif
 
 const char *rt_fdt_node_name(const char *full_name)
 {
@@ -358,11 +364,11 @@ static rt_err_t fdt_scan_memory(void)
 
             if (!err)
             {
-                LOG_I("Memory node(%d) ranges: %p - %p%s", no, base, base + size, "");
+                LOG_I("Memory node(%d) ranges: 0x%.*lx - 0x%.*lx%s", no, MIN_BIT, base, MIN_BIT, base + size, "");
             }
             else
             {
-                LOG_W("Memory node(%d) ranges: %p - %p%s", no, base, base + size, " unable to record");
+                LOG_W("Memory node(%d) ranges: 0x%.*lx - 0x%.*lx%s", no, MIN_BIT, base, MIN_BIT, base + size, " unable to record");
             }
         }
     }
@@ -587,7 +593,7 @@ rt_err_t rt_fdt_scan_chosen_stdout(void)
     int len, options_len = 0;
     const char *options = RT_NULL, *con_type = RT_NULL;
 
-    rt_memset(&fdt_earlycon, 0, sizeof(fdt_earlycon) - sizeof(fdt_earlycon.msg));
+    rt_memset(&fdt_earlycon, 0, rt_offsetof(struct rt_fdt_earlycon, msg_idx));
     fdt_earlycon.nodeoffset = -1;
 
     offset = fdt_path_offset(_fdt, "/chosen");
@@ -686,7 +692,11 @@ rt_err_t rt_fdt_scan_chosen_stdout(void)
 
                     if (*options)
                     {
+                        int type_len_no_option;
+
                         type_len = strchrnul(options, ',') - options;
+                        type_len_no_option = strchrnul(options, ' ') - options;
+                        type_len = rt_min(type_len, type_len_no_option);
                     }
                 }
 
@@ -788,6 +798,10 @@ rt_err_t rt_fdt_scan_chosen_stdout(void)
     {
         LOG_I("Earlycon: %s at MMIO/PIO %p (options '%s')",
                 con_type, fdt_earlycon.mmio, fdt_earlycon.options);
+    }
+    else if (con_type)
+    {
+        LOG_I("Earlycon: %s (options '%s')", con_type, fdt_earlycon.options);
     }
 
     return err;

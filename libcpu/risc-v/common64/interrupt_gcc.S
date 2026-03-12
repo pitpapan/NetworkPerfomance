@@ -46,7 +46,8 @@ _distinguish_syscall:
 #ifdef RT_USING_SMART
     // TODO swap 8 with config macro name
     li      t1, 8
-    beq     t0, t1, syscall_entry
+    bne     t0, t1, _handle_interrupt_and_exception
+    call syscall_entry
     // syscall never return here
 #endif
 
@@ -59,10 +60,17 @@ _handle_interrupt_and_exception:
     call    handle_trap
 
 _interrupt_exit:
+#ifndef RT_USING_SMP
     la      s0, rt_thread_switch_interrupt_flag
     lw      s2, 0(s0)
     beqz    s2, _resume_execution
     sw      zero, 0(s0)
+#else
+    mv      a0, sp
+    call    rt_scheduler_do_irq_switch
+    // if failed, jump to __resume_execution
+    j       _resume_execution
+#endif /* RT_USING_SMP */
 
 _context_switch:
     la      t0, rt_interrupt_from_thread
@@ -78,7 +86,8 @@ _resume_execution:
 #ifdef RT_USING_SMART
     LOAD    t0, FRAME_OFF_SSTATUS(sp)
     andi    t0, t0, SSTATUS_SPP
-    beqz    t0, arch_ret_to_user
+    bnez    t0, _resume_kernel
+    call arch_ret_to_user
 #endif
 
 _resume_kernel:
@@ -86,6 +95,7 @@ _resume_kernel:
     csrw    sscratch, zero
     sret
 
+#ifndef RT_USING_SMP
 .global rt_hw_interrupt_enable
 rt_hw_interrupt_enable:
     csrs sstatus, a0    /* restore to old csr */
@@ -95,3 +105,18 @@ rt_hw_interrupt_enable:
 rt_hw_interrupt_disable:
     csrrci a0, sstatus, 2   /* clear SIE */
     jr ra
+#else
+.global rt_hw_local_irq_disable
+rt_hw_local_irq_disable:
+    csrrci a0, sstatus, 2
+    jr ra
+
+.global rt_hw_local_irq_enable
+rt_hw_local_irq_enable:
+    csrs sstatus, a0
+    jr ra
+
+.global rt_hw_secondary_cpu_idle_exec
+rt_hw_secondary_cpu_idle_exec:
+    jr ra
+#endif  /* RT_USING_SMP */

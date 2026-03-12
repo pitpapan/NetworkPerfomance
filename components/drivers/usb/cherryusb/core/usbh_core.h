@@ -21,6 +21,7 @@
 #include "usb_osal.h"
 #include "usbh_hub.h"
 #include "usb_memcpy.h"
+#include "usb_dcache.h"
 #include "usb_version.h"
 
 #ifdef __cplusplus
@@ -46,7 +47,7 @@ extern "C" {
 #define CLASS_INFO_DEFINE __attribute__((section(".usbh_class_info"))) __USED __ALIGNED(1)
 #endif
 
-#define USBH_GET_URB_INTERVAL(interval, speed) (speed < USB_SPEED_HIGH ? interval : (1 << (interval - 1)))
+#define USBH_GET_URB_INTERVAL(interval, speed) (speed < USB_SPEED_HIGH ? (interval * 1000) : ((1 << (interval - 1)) * 125))
 
 #define USBH_EP_INIT(ep, ep_desc)                                            \
     do {                                                                     \
@@ -61,9 +62,9 @@ extern "C" {
 
 struct usbh_class_info {
     uint8_t match_flags;           /* Used for product specific matches; range is inclusive */
-    uint8_t class;                 /* Base device class code */
-    uint8_t subclass;              /* Sub-class, depends on base class. Eg. */
-    uint8_t protocol;              /* Protocol, depends on base class. Eg. */
+    uint8_t bInterfaceClass;       /* Base device class code */
+    uint8_t bInterfaceSubClass;    /* Sub-class, depends on base class. Eg. */
+    uint8_t bInterfaceProtocol;    /* Protocol, depends on base class. Eg. */
     const uint16_t (*id_table)[2]; /* List of Vendor/Product ID pairs */
     const struct usbh_class_driver *class_driver;
 };
@@ -254,9 +255,10 @@ int usbh_control_transfer(struct usbh_hubport *hport, struct usb_setup_packet *s
  * @param hport Pointer to the USB hub port structure.
  * @param index Index of the string descriptor to retrieve.
  * @param output Pointer to the buffer where the retrieved descriptor will be stored.
+ * @param output_len Length of the output buffer.
  * @return On success will return 0, and others indicate fail.
  */
-int usbh_get_string_desc(struct usbh_hubport *hport, uint8_t index, uint8_t *output);
+int usbh_get_string_desc(struct usbh_hubport *hport, uint8_t index, uint8_t *output, uint16_t output_len);
 
 /**
  * @brief Sets the alternate setting for a USB interface on a specific hub port.
@@ -275,6 +277,7 @@ int usbh_set_interface(struct usbh_hubport *hport, uint8_t intf, uint8_t altsett
 int usbh_initialize(uint8_t busid, uintptr_t reg_base);
 int usbh_deinitialize(uint8_t busid);
 void *usbh_find_class_instance(const char *devname);
+struct usbh_hubport *usbh_find_hubport(uint8_t busid, uint8_t hub_index, uint8_t hub_port);
 
 int lsusb(int argc, char **argv);
 

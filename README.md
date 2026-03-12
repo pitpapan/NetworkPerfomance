@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# NetworkPerfomance
-=======
 <p align="center">
 <img src="documentation/figures/logo.png" width="60%" >
 </p>
@@ -126,7 +123,7 @@ Based on [STM32F103 BluePill](https://github.com/RT-Thread/rt-thread/tree/master
 ## Simulator
 
 RT-Thread BSP can be compiled directly and downloaded to the corresponding development board for use. In addition, RT-Thread also provides qemu-vexpress-a9 BSP, which can be used without hardware platform. See the getting started guide below for details. Getting Started of QEMU with Env:
-[Windows](documentation/quick-start/quick_start_qemu/quick_start_qemu.md) | [Linux Ubuntu](documentation/quick-start/quick_start_qemu/quick_start_qemu_linux.md) | [Mac OS](documentation/quick-start/quick_start_qemu/quick_start_qemu_macos.md)
+[Windows](documentation/2.quick-start/quick_start_qemu/quick_start_qemu_windows.md) | [Linux Ubuntu](documentation/2.quick-start/quick_start_qemu/quick_start_qemu_linux.md) | [Mac OS](documentation/2.quick-start/quick_start_qemu/quick_start_qemu_macos.md)
 
 # License
 
@@ -155,4 +152,3 @@ If you are interested in RT-Thread and want to join in the development of RT-Thr
 <a href="https://github.com/RT-Thread/rt-thread/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=RT-Thread/rt-thread" />
 </a>
->>>>>>> ff71964 (Initial commit)

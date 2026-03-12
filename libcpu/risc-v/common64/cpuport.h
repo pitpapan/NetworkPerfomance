@@ -14,6 +14,8 @@
 #include <rtconfig.h>
 #include <opcode.h>
 
+#ifndef __ASSEMBLY__
+
 #ifdef RT_USING_SMP
 typedef union {
     unsigned long slock;
@@ -24,8 +26,7 @@ typedef union {
 } rt_hw_spinlock_t;
 #endif
 
-#ifndef __ASSEMBLY__
-#include <rtdef.h>
+#include <rtcompiler.h>
 
 rt_inline void rt_hw_dsb(void)
 {
@@ -42,7 +43,9 @@ rt_inline void rt_hw_isb(void)
     __asm__ volatile(OPC_FENCE_I:::"memory");
 }
 
-int rt_hw_cpu_id(void);
+#ifdef ARCH_MM_MMU
+void rt_hw_percpu_hartid_init(rt_ubase_t *percpu_ptr, rt_ubase_t hartid);
+#endif
 
 #endif
 
