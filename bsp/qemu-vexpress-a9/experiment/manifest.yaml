@@ -1,0 +1,165 @@
+# TFG formal B/C/D x RTT experiment manifest
+# Frozen matrix — see report for full derivation/validation evidence.
+# This file is the single source of truth for the formal sweep. It does not
+# execute anything; experiment/scripts/*.sh consume it manually, one step at
+# a time, with no hidden parameter changes.
+
+meta:
+  repository: ~/NetworkPerfomance/bsp/qemu-vexpress-a9
+  rt_thread_version: "5.3.0"
+  lwip_version: "2.0.3"
+  tcp_mss: 1460
+  rt_tick_per_second: 100
+  netutils_iperf_commit: b77ba3f80f7ab48f7ec22685d495daa7bbffeb44
+  host_ubuntu_iperf: "GNU iperf 2.1.9"
+  ip_host_tap0: 192.168.10.1
+  ip_rtthread: 192.168.10.2
+
+# 6 unique TCP configurations. BASE is the single shared baseline for A0/B0/C0/D0 —
+# do not treat it as four separate baselines.
+tcp_configurations:
+  - id: BASE
+    also_known_as: [A0, B0, C0, D0]
+    tcp_snd_buf: 8196
+    tcp_snd_queuelen: 22
+    memp_num_tcp_seg: 40
+    varies_vs_baseline: null
+  - id: B1
+    tcp_snd_buf: 16384
+    tcp_snd_queuelen: 22
+    memp_num_tcp_seg: 40
+    varies_vs_baseline: tcp_snd_buf
+  - id: C1
+    tcp_snd_buf: 8196
+    tcp_snd_queuelen: 30
+    memp_num_tcp_seg: 40
+    varies_vs_baseline: tcp_snd_queuelen
+  - id: C2
+    tcp_snd_buf: 8196
+    tcp_snd_queuelen: 40
+    memp_num_tcp_seg: 40
+    varies_vs_baseline: tcp_snd_queuelen
+  - id: D1
+    tcp_snd_buf: 8196
+    tcp_snd_queuelen: 22
+    memp_num_tcp_seg: 60
+    varies_vs_baseline: memp_num_tcp_seg
+  - id: D2
+    tcp_snd_buf: 8196
+    tcp_snd_queuelen: 22
+    memp_num_tcp_seg: 80
+    varies_vs_baseline: memp_num_tcp_seg
+
+# Explicitly NOT in the matrix (rejected candidate points), kept here so nobody
+# re-derives and re-runs them by accident.
+rejected_points:
+  - id: B2_rejected
+    tcp_snd_buf: 32768
+    tcp_snd_queuelen: 22
+    memp_num_tcp_seg: 40
+    reason: >
+      Fails lwIP init.c hard check: TCP_SND_QUEUELEN(22) < 2*(TCP_SND_BUF/TCP_MSS)(44).
+      Raising TCP_SND_QUEUELEN to compensate would no longer be a pure SND_BUF-only
+      experiment, so this point is excluded rather than patched.
+
+rtt_points_ms: [50, 100, 200, 500]
+
+repetitions_per_cell: 5
+
+traffic_direction:
+  primary: "RT-Thread -> Ubuntu"
+  rationale: >
+    TCP_SND_BUF / TCP_SND_QUEUELEN / MEMP_NUM_TCP_SEG are sender-side resources.
+    RT-Thread must be the TCP sender (netutils iperf client) for this to be a
+    sender-resource experiment. Ubuntu -> RT-Thread runs are explicitly out of
+    scope for this dataset.
+  rtthread_role: "TCP sender / netutils iperf client"
+  ubuntu_role: "TCP receiver / GNU iperf server"
+  netem_effect_in_this_direction: >
+    tap0 root netem delays host (Ubuntu) egress only. In this direction, DATA
+    travels RT-Thread -> Ubuntu (tap0 ingress from the host's perspective, NOT
+    delayed); ACKs travel Ubuntu -> RT-Thread (tap0 egress, DELAYED). The
+    ACK-return delay still governs sender buffer recycling / effective RTT as
+    seen by the sender's congestion/flow-control logic.
+
+netem:
+  qdisc_type: netem
+  placement: "tap0 root (replaces default qdisc entirely, never stacked)"
+  apply_command_template: "sudo tc qdisc replace dev tap0 root netem delay {X}ms"
+  required_properties:
+    - "delay == configured value exactly"
+    - "no jitter term"
+    - "no loss"
+    - "no rate limit"
+    - "no duplicate/reorder/corrupt"
+    - "single qdisc only (no stacked fq_codel or other AQM)"
+  verify_commands:
+    - "tc qdisc show dev tap0"
+    - "tc -s qdisc show dev tap0"
+  important_note: >
+    The configured netem delay is one-sided (tap0 egress only). Prior calibration
+    (50ms point) showed measured end-to-end ping RTT closely tracks the configured
+    value because only one leg of any round trip crosses tap0 egress. This must
+    NEVER be assumed without measurement: every cell records both the configured
+    delay and the measured host-side ping RTT as separate fields.
+
+iperf:
+  port: 5001
+  server_command: "iperf -s -p 5001 -i 1"       # run on Ubuntu
+  client_command: "iperf -c 192.168.10.1 -p 5001"  # run on RT-Thread msh
+  target_duration_seconds: 30
+  stop_command: "iperf --stop"                   # RT-Thread msh, clean shutdown
+  primary_metric: "Ubuntu GNU iperf server-side final average Mbit/s"
+  supporting_metric: "RT-Thread-side self-reported Mbps (5s interval LOG_I lines)"
+
+run_matrix:
+  unique_tcp_configurations: 6
+  rtt_points: 4
+  unique_cells: 24
+  repetitions_per_cell: 5
+  total_planned_runs: 120
+  note: "BASE is one shared baseline cell per RTT point, not duplicated 4x under B0/C0/D0."
+
+validity_gates:
+  # A run failing ANY of these must be recorded as INVALID with its reason,
+  # then replaced by a new repetition under a NEW run_id. Never silently
+  # rerun-and-overwrite.
+  - "qdisc dropped > 0 due to netem queue exhaustion"
+  - "unexpected packet loss occurs"
+  - "overlimit/drop behavior indicates unintended shaping"
+  - "iperf connection terminates abnormally"
+  - "wrong TCP configuration was compiled (macro dump mismatch)"
+  - "wrong netem delay was active"
+  - "another benchmark instance was active (stale iperf process/session)"
+  - "QEMU/RT-Thread restarted unexpectedly mid-run"
+  - "required output/metadata field missing"
+
+aggregate_statistics_per_cell:
+  - mean_throughput_mbps
+  - stddev_throughput_mbps
+  - coefficient_of_variation
+  - min_throughput_mbps
+  - max_throughput_mbps
+  note: "Computed only over the 5 VALID repetitions. No hypothesis testing at this stage."
+
+per_run_record_fields:
+  - run_id
+  - config_id
+  - tcp_snd_buf
+  - tcp_snd_queuelen
+  - memp_num_tcp_seg
+  - configured_delay_ms
+  - measured_rtt_ms
+  - repetition_number
+  - total_bytes
+  - duration_seconds
+  - ubuntu_avg_mbps
+  - rtthread_reported_mbps
+  - qdisc_packets
+  - qdisc_dropped
+  - qdisc_overlimits
+  - qdisc_backlog
+  - runtime_or_socket_errors
+  - valid
+  - invalid_reason
+  - notes

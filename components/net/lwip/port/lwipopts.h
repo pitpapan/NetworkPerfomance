@@ -383,7 +383,11 @@
 
 /* TCP sender buffer space (pbufs). This must be at least = 2 *
    TCP_SND_BUF/TCP_MSS for things to work. */
+#ifdef RT_LWIP_TCP_SND_QUEUELEN
+#define TCP_SND_QUEUELEN            RT_LWIP_TCP_SND_QUEUELEN
+#else
 #define TCP_SND_QUEUELEN            (4 * TCP_SND_BUF/TCP_MSS)
+#endif
 
 /* TCP writable space (bytes). This must be less than or equal
    to TCP_SND_BUF. It is the amount of space which must be

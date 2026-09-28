@@ -159,6 +159,15 @@ if RT_USING_LWIP
         int "the size of send buffer"
         default 8196
 
+    config RT_LWIP_TCP_SND_QUEUELEN
+        int "the length of the TCP send queue (pbufs), overriding the default 4*TCP_SND_BUF/TCP_MSS formula"
+        help
+          Optional. Leave unset to keep the default derived value
+          (4 * TCP_SND_BUF / TCP_MSS). Set explicitly to decouple the
+          send queue length from TCP_SND_BUF, e.g. for independent-variable
+          experiments. lwIP's own documentation recommends this be at
+          least 2 * TCP_SND_BUF / TCP_MSS.
+
     config RT_LWIP_TCP_WND
         int "the size of TCP send window"
         default 8196
