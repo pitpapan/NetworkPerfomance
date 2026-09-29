@@ -3,13 +3,13 @@
 ## Git state
 - Repository: `~/NetworkPerfomance`
 - Branch: `clean-benchmark`
-- HEAD commit: `fc586d5` ("adding new shit before P0C")
-- Uncommitted changes currently present (must be applied on top of HEAD to reach the state described in this archive):
+- HEAD commit: `1204b4b` ("reading logs"). Ancestry: `fc586d5` (experiment scaffolding) → `9b4178f` ("testing pcb") → `1204b4b` (evidence archive).
+- **The instrumentation is COMMITTED**, not uncommitted. `9b4178f` contains all four files, at exactly the line counts earlier drafts of this document listed as pending:
   - `components/net/lwip/lwip-2.0.3/src/api/sockets.c` (+21 lines: `lwip_get_tcp_pcb()`)
   - `components/net/lwip/lwip-2.0.3/src/include/lwip/sockets.h` (+2 lines: forward decl + prototype)
-  - `bsp/qemu-vexpress-a9/applications/instr.c` (new, 350 lines, untracked)
-  - `bsp/qemu-vexpress-a9/applications/instr.h` (new, 13 lines, untracked)
-  - `bsp/qemu-vexpress-a9/packages/netutils-latest/iperf/iperf.c` (+4 lines: `#include "instr.h"` + two hook calls) — **this file lives under a gitignored path (`packages/`) and is NOT tracked by git at all.** The diff is only preserved in `02_experiment_history.md`/prior session reports and must be manually re-applied if `packages/netutils-latest/` is ever re-cloned.
+  - `bsp/qemu-vexpress-a9/applications/instr.c` (350 lines)
+  - `bsp/qemu-vexpress-a9/applications/instr.h` (13 lines)
+- The only artefact still at risk is `bsp/qemu-vexpress-a9/packages/netutils-latest/iperf/iperf.c` (+4 lines: `#include "instr.h"` at :24, `instr_attach_client_socket(sock)` at :244, `instr_detach_client_socket(sock)` at :286) — **this file lives under a gitignored path (`packages/`) and is NOT tracked by git at all.** It must be manually re-applied if `packages/netutils-latest/` is ever re-cloned.
 
 ## Build command
 ```
@@ -62,19 +62,23 @@ INSTR_CFG TCP_MSS=1460 TCP_SND_BUF=8196 TCP_SND_QUEUELEN=22 MEMP_NUM_TCP_SEG=40 
 Appears once at boot, after `[I/FileSystem] file system initialization done!` and before the `[W/kernel.service] rt_hw_us_delay()...` warnings (those warnings are pre-existing/harmless, unrelated to this project's changes).
 
 ## Current known-good baseline config
-`TCP_SND_BUF=8196`, `TCP_SND_QUEUELEN=22`, `MEMP_NUM_TCP_SEG=40` — set via `bsp/qemu-vexpress-a9/rtconfig.h:305-307` (`RT_LWIP_TCP_SEG_NUM`, `RT_LWIP_TCP_SND_BUF`, `RT_LWIP_TCP_SND_QUEUELEN`). A helper reproduces this exactly: `bsp/qemu-vexpress-a9/experiment/scripts/set_config.sh BASE` (VERIFIED — this exact invocation was used to restore baseline in a prior session and rebuilds/verifies via macro dump automatically).
+**`L0` = `TCP_SND_BUF=8196`, `TCP_SND_QUEUELEN=44`, `MEMP_NUM_TCP_SEG=44`, `TCP_WND=2048`** — the pinned anchor of the ladder. Set via `bsp/qemu-vexpress-a9/experiment/scripts/set_config.sh L0`, which edits `rtconfig.h` **and** `.config` together, rebuilds, verifies the effective values via the compiler's own preprocessor, checks `iperf` is linked exactly once, and archives the build log plus full macro dump under `docs/tfg_evidence/raw_logs/`. VERIFIED 2026-09-29.
 
-Other named, build-tested configurations available the same way: `set_config.sh {B1|C1|C2|D1|D2}` (values in `00_project_state.md`).
+> Note: `TCP_WND` is now pinned by the script in both files. A prior desync (`rtconfig.h` = 2048, `.config` = 8196) meant any `menuconfig` run would have silently regenerated `rtconfig.h` with a different receive window mid-sweep. Fixed.
+
+Other named, build-verified configurations available the same way: `set_config.sh {L1|L2|STOCK|PINNED}`. `L1` = 16384/44/44, `L2` = 32768/44/44, `STOCK` = 8196/22/40 (the shipped, unpinned config, used only as the pinning-control arm), `PINNED` = alias of `L0`. All five were built 2026-09-29 with zero warnings; logs and macro dumps are in `raw_logs/`.
 
 ## Known invalid test configurations (do not attempt without changing the matrix)
-- `TCP_SND_BUF=32768` with `TCP_SND_QUEUELEN=22` fixed — build FAILS (`#error`, see `01_verified_facts.md` F32).
+- `TCP_SND_BUF=32768` **with `TCP_SND_QUEUELEN=22`** — build FAILS (`#error`, `01_verified_facts.md` F32). At the pinned `QUEUELEN=44`/`SEG=44` it builds cleanly; the value was never the problem, the fixed QUEUELEN was. (`L2` is exactly this point.)
 - `TCP_SND_BUF=65536` (any QUEUELEN/SEG combination satisfying the other constraints) — builds but is wrong at runtime (truncates to 0), excluded from the ladder.
 - `TCP_SND_QUEUELEN` set below `2*(TCP_SND_BUF/TCP_MSS)` for the active `TCP_SND_BUF` — build FAILS.
 - `MEMP_NUM_TCP_SEG` set below the active `TCP_SND_QUEUELEN` — build FAILS.
 
 ## Locations of raw results/logs
 - `docs/tfg_evidence/raw_logs/baseline_macro_dump_full.txt` — full baseline `-dM` preprocessor dump (archived this session).
-- `docs/tfg_evidence/raw_logs/build_BASE.log` — short baseline build log excerpt.
+- `docs/tfg_evidence/raw_logs/build_{L0,L1,L2,STOCK}.log` — full `scons -j2` build logs (182 compiled objects each, zero warnings, `size` output appended), one per configuration, 2026-09-29.
+- `docs/tfg_evidence/raw_logs/macro_dump_{L0,L1,L2,STOCK}.txt` — full `-dM` preprocessor dumps, one per configuration, proving the effective compiled values.
+- `docs/tfg_evidence/raw_logs/build_BASE.log` — **superseded and not evidence.** Contains only `scons: '.' is up to date` (a no-op invocation with zero compiler output); it cannot support any "builds cleanly" claim. Retained only so its earlier citations remain traceable.
 - `docs/tfg_evidence/raw_logs/host_iperf_server_instr_verify.log` — a host-side `iperf -s` session log from the instrumentation-verification period; **UNKNOWN — NOT RECORDED** whether this corresponds byte-for-byte to any specific quoted Mbps figure in `04_historical_measurements.md` — treat as representative context, not as proof of a specific number.
 - `bsp/qemu-vexpress-a9/experiment/manifest.yaml`, `run_matrix.csv` — formal Phase 1 design, all cells pending.
 - `bsp/qemu-vexpress-a9/experiment/results.csv` — **does not exist yet.** This is where `collect_run_meta.sh` would append formal run data; it must be created by the first actual formal run.

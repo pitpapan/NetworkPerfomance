@@ -1,8 +1,13 @@
-# TFG formal B/C/D x RTT experiment manifest
-# Frozen matrix — see report for full derivation/validation evidence.
-# This file is the single source of truth for the formal sweep. It does not
-# execute anything; experiment/scripts/*.sh consume it manually, one step at
-# a time, with no hidden parameter changes.
+# TFG mechanism-attribution experiment manifest.
+#
+# Research question and rationale: docs/tfg_evidence/00_project_state.md and
+# docs/tfg_evidence/08_design_rationale.md. This file is the single source of
+# truth for the formal sweep. It does not execute anything;
+# experiment/scripts/*.sh consume it manually, one step at a time, with no
+# hidden parameter changes.
+#
+# SUPERSEDED: the former 6-config B/C/D x 4 RTT x 5 rep = 120-run matrix.
+# TCP_SND_QUEUELEN and MEMP_NUM_TCP_SEG are now PINNED CONTROLS, not factors.
 
 meta:
   repository: ~/NetworkPerfomance/bsp/qemu-vexpress-a9
@@ -15,110 +20,72 @@ meta:
   ip_host_tap0: 192.168.10.1
   ip_rtthread: 192.168.10.2
 
-# 6 unique TCP configurations. BASE is the single shared baseline for A0/B0/C0/D0 —
-# do not treat it as four separate baselines.
-tcp_configurations:
-  - id: BASE
-    also_known_as: [A0, B0, C0, D0]
-    tcp_snd_buf: 8196
-    tcp_snd_queuelen: 22
-    memp_num_tcp_seg: 40
-    varies_vs_baseline: null
-  - id: B1
-    tcp_snd_buf: 16384
-    tcp_snd_queuelen: 22
-    memp_num_tcp_seg: 40
-    varies_vs_baseline: tcp_snd_buf
-  - id: C1
-    tcp_snd_buf: 8196
-    tcp_snd_queuelen: 30
-    memp_num_tcp_seg: 40
-    varies_vs_baseline: tcp_snd_queuelen
-  - id: C2
-    tcp_snd_buf: 8196
-    tcp_snd_queuelen: 40
-    memp_num_tcp_seg: 40
-    varies_vs_baseline: tcp_snd_queuelen
-  - id: D1
-    tcp_snd_buf: 8196
-    tcp_snd_queuelen: 22
-    memp_num_tcp_seg: 60
-    varies_vs_baseline: memp_num_tcp_seg
-  - id: D2
-    tcp_snd_buf: 8196
-    tcp_snd_queuelen: 22
-    memp_num_tcp_seg: 80
-    varies_vs_baseline: memp_num_tcp_seg
+research_question: >
+  Under controlled RTT, which sender-side mechanisms limit bulk TCP
+  throughput in this RT-Thread/lwIP configuration? Answered from
+  internal PCB state, not from throughput correlation. Multiple
+  mechanisms may be active; no migration assumed.
 
-# Explicitly NOT in the matrix (rejected candidate points), kept here so nobody
-# re-derives and re-runs them by accident.
+independent_variables:
+  rtt_ms: [50, 100, 200, 500]
+  tcp_snd_buf: [8196, 16384, 32768]        # L0, L1, L2
+
+controls_pinned:
+  tcp_snd_queuelen: 44
+  memp_num_tcp_seg: 44
+  # identical across all builds; minimum required by L2.
+  # non-binding: analytic (F32) + per-cell high-water (Layer 2).
+  # build-verified at all three ladder points 2026-09-29:
+  #   raw_logs/build_L{0,1,2}.log, raw_logs/macro_dump_L{0,1,2}.txt
+  # static cost: 60 bytes/segment exactly (memp_memory_TCP_SEG_base
+  #   0x963 @ SEG=40 -> 0xa53 @ SEG=44); 240 bytes total.
+
+fixed:
+  tcp_mss: 1460
+  tcp_oversize: 1460
+  tcp_wnd: 2048                # receive window; not a factor. Pinned in BOTH
+                               # rtconfig.h and .config by set_config.sh.
+  lwip_wnd_scale: 0
+  iperf_bufsz: 4096
+  direction: rt-thread -> ubuntu
+  netem: one-sided, constant, tap0 root, host egress
+  link_rate_cap: none
+
+coupled_not_operative:
+  tcp_sndlowat: "TCP_SND_BUF/2 -> 4098/8192/16384. Traced 2026-09-29: all
+    runtime references (api_msg.c:330,364,1565) only drive select()/poll()
+    writability via API_EVENT. The blocking write path is gated by tcp_write()
+    returning ERR_MEM, not by TCP_SNDLOWAT, and netutils-iperf never calls
+    select(). No fixed-TCP_SNDLOWAT arm is required."
+
+tbd_from_pilot:
+  repetitions: null            # from noisiest pilot cell
+  run_duration_s: null         # from transient characterization
+  discard_interval_s: null     # from transient characterization
+  sampling_interval_ms: null   # from perturbation pilot
+  snd_buf_low_threshold: null  # from observed distribution
+
 rejected_points:
-  - id: B2_rejected
-    tcp_snd_buf: 32768
-    tcp_snd_queuelen: 22
-    memp_num_tcp_seg: 40
-    reason: >
-      Fails lwIP init.c hard check: TCP_SND_QUEUELEN(22) < 2*(TCP_SND_BUF/TCP_MSS)(44).
-      Raising TCP_SND_QUEUELEN to compensate would no longer be a pure SND_BUF-only
-      experiment, so this point is excluded rather than patched.
+  - value: 65536
+    reason: "u16_t truncation to 0 in pcb->snd_buf (F33)"
+  - value: 17519
+    reason: "arithmetic ceiling at QUEUELEN=22; superseded by pinning at 44"
 
-rtt_points_ms: [50, 100, 200, 500]
+separate_run_sets:
+  platform_characterization:
+    rtt_ms: [0]
+    tcp_snd_buf: [8196, 16384, 32768]
+    note: "reported separately; not a pass/fail gate"
+  pinning_control:
+    configs: ["8196/22/40 (stock)", "8196/44/44 (pinned)"]
+    rtt_ms: [50, 500]
+    note: "external-validity check; interleaved by build"
 
-repetitions_per_cell: 5
-
-traffic_direction:
-  primary: "RT-Thread -> Ubuntu"
-  rationale: >
-    TCP_SND_BUF / TCP_SND_QUEUELEN / MEMP_NUM_TCP_SEG are sender-side resources.
-    RT-Thread must be the TCP sender (netutils iperf client) for this to be a
-    sender-resource experiment. Ubuntu -> RT-Thread runs are explicitly out of
-    scope for this dataset.
-  rtthread_role: "TCP sender / netutils iperf client"
-  ubuntu_role: "TCP receiver / GNU iperf server"
-  netem_effect_in_this_direction: >
-    tap0 root netem delays host (Ubuntu) egress only. In this direction, DATA
-    travels RT-Thread -> Ubuntu (tap0 ingress from the host's perspective, NOT
-    delayed); ACKs travel Ubuntu -> RT-Thread (tap0 egress, DELAYED). The
-    ACK-return delay still governs sender buffer recycling / effective RTT as
-    seen by the sender's congestion/flow-control logic.
-
-netem:
-  qdisc_type: netem
-  placement: "tap0 root (replaces default qdisc entirely, never stacked)"
-  apply_command_template: "sudo tc qdisc replace dev tap0 root netem delay {X}ms"
-  required_properties:
-    - "delay == configured value exactly"
-    - "no jitter term"
-    - "no loss"
-    - "no rate limit"
-    - "no duplicate/reorder/corrupt"
-    - "single qdisc only (no stacked fq_codel or other AQM)"
-  verify_commands:
-    - "tc qdisc show dev tap0"
-    - "tc -s qdisc show dev tap0"
-  important_note: >
-    The configured netem delay is one-sided (tap0 egress only). Prior calibration
-    (50ms point) showed measured end-to-end ping RTT closely tracks the configured
-    value because only one leg of any round trip crosses tap0 egress. This must
-    NEVER be assumed without measurement: every cell records both the configured
-    delay and the measured host-side ping RTT as separate fields.
-
-iperf:
-  port: 5001
-  server_command: "iperf -s -p 5001 -i 1"       # run on Ubuntu
-  client_command: "iperf -c 192.168.10.1 -p 5001"  # run on RT-Thread msh
-  target_duration_seconds: 30
-  stop_command: "iperf --stop"                   # RT-Thread msh, clean shutdown
-  primary_metric: "Ubuntu GNU iperf server-side final average Mbit/s"
-  supporting_metric: "RT-Thread-side self-reported Mbps (5s interval LOG_I lines)"
-
-run_matrix:
-  unique_tcp_configurations: 6
-  rtt_points: 4
-  unique_cells: 24
-  repetitions_per_cell: 5
-  total_planned_runs: 120
-  note: "BASE is one shared baseline cell per RTT point, not duplicated 4x under B0/C0/D0."
+run_ordering:
+  block_by: build
+  randomize_within_block: rtt
+  repeat_sequence: n_times
+  seed: recorded_per_plan
 
 validity_gates:
   # A run failing ANY of these must be recorded as INVALID with its reason,
@@ -135,31 +102,79 @@ validity_gates:
   - "required output/metadata field missing"
 
 aggregate_statistics_per_cell:
-  - mean_throughput_mbps
-  - stddev_throughput_mbps
-  - coefficient_of_variation
-  - min_throughput_mbps
-  - max_throughput_mbps
-  note: "Computed only over the 5 VALID repetitions. No hypothesis testing at this stage."
+  throughput:
+    - mean_throughput_mbps
+    - stddev_throughput_mbps
+    - coefficient_of_variation
+    - min_throughput_mbps
+    - max_throughput_mbps
+  mechanism:
+    - snd_buf_min_over_cell
+    - snd_buf_low_fraction
+    - snd_queuelen_high_water
+    - cwnd_min_max_mean
+    - snd_wnd_min_max_mean
+    - inflight_min_max_mean
+    - unsent_nonempty_fraction
+    - limiting_mechanism_verdict
+  note: >
+    Computed only over the VALID repetitions of a cell (n TBD FROM PILOT).
+    No hypothesis testing at this stage. The mechanism block is the primary
+    evidence; the throughput block is context for it.
 
+# Per-run record. The throughput fields alone are NOT sufficient under the
+# mechanism-attribution framing: the joint sender state is the primary
+# evidence, so it is recorded per run, not derived afterwards. The
+# instr_* fields come from one `instr_dump` JSON line captured immediately
+# after each run (applications/instr.c accumulators).
 per_run_record_fields:
-  - run_id
-  - config_id
-  - tcp_snd_buf
-  - tcp_snd_queuelen
-  - memp_num_tcp_seg
-  - configured_delay_ms
-  - measured_rtt_ms
-  - repetition_number
-  - total_bytes
-  - duration_seconds
-  - ubuntu_avg_mbps
-  - rtthread_reported_mbps
-  - qdisc_packets
-  - qdisc_dropped
-  - qdisc_overlimits
-  - qdisc_backlog
-  - runtime_or_socket_errors
-  - valid
-  - invalid_reason
-  - notes
+  identity:
+    - run_id
+    - set                        # main | platform | pinctl
+    - config_id                  # L0 | L1 | L2 | STOCK | PINNED
+    - repetition_number
+  configuration:
+    - tcp_snd_buf
+    - tcp_snd_queuelen
+    - memp_num_tcp_seg
+    - tcp_wnd
+  conditions:
+    - configured_delay_ms
+    - measured_rtt_ms
+  throughput:
+    - total_bytes
+    - duration_seconds
+    - ubuntu_avg_mbps
+    - rtthread_reported_mbps
+  sender_state:                  # from instr_dump; Layer 2 evidence
+    - instr_sample_count
+    - instr_snd_buf_min
+    - instr_snd_buf_low_count
+    - instr_snd_queuelen_max
+    - instr_cwnd_min
+    - instr_cwnd_max
+    - instr_cwnd_mean_x1000
+    - instr_snd_wnd_min
+    - instr_snd_wnd_max
+    - instr_snd_wnd_mean_x1000
+    - instr_inflight_min
+    - instr_inflight_max
+    - instr_inflight_mean_x1000
+    - instr_unsent_nonempty_count
+    - instr_unsent_bytes_max
+  link_validity:
+    - qdisc_packets
+    - qdisc_dropped
+    - qdisc_overlimits
+    - qdisc_backlog
+  bookkeeping:
+    - runtime_or_socket_errors
+    - valid
+    - invalid_reason
+    - notes
+
+validity_gates_additional:
+  - "instr_sample_count == 0 (no sender-state data captured; run yields no
+     mechanism evidence and must not be counted toward n)"
+  - "instr_snd_queuelen_max > tcp_snd_queuelen (impossible; instrumentation fault)"
+  - "instr_inflight_max > instr_snd_wnd_max (bounds violation; instrumentation fault)"

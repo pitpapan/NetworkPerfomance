@@ -1,0 +1,2824 @@
+#define RT_USING_DEVICE_IPC 
+#define CMD_OPTIONS_STATEMENT(command) static struct msh_cmd_opt command ##_msh_options[];
+#define RT_MM_PAGE_SIZE 4096
+#define __GNUCLIKE_BUILTIN_NEXT_ARG 1
+#define SI_TIMER 0x03
+#define _FEXECSRCH 0x400000
+#define __builtin_align_up(x,align) ((__typeof__(x))(((__uintptr_t)(x)+((align)-1))&(~((align)-1))))
+#define _Nullable 
+#define S_ISCHR(m) (((m)&_IFMT) == _IFCHR)
+#define __PRI32FAST(x) __FAST32 __STRINGIFY(x)
+#define __strftimelike(fmtarg,firstvararg) __attribute__((__format__ (__strftime__, fmtarg, firstvararg)))
+#define __DBL_MIN_EXP__ (-1021)
+#define ICMPH_TYPE(hdr) ((hdr)->type)
+#define _NOINLINE_STATIC _NOINLINE static
+#define __HQ_FBIT__ 15
+#define rt_inline static __inline
+#define __RT_KLIBC_H__ 
+#define EMULTIHOP 74
+#define ip4_netif_get_local_ip(netif) (((netif) != NULL) ? netif_ip_addr4(netif) : NULL)
+#define MEMP_NUM_API_MSG MEMP_NUM_TCPIP_MSG_API
+#define RT_DFS_ELM_CODE_PAGE 437
+#define RT_NULL 0
+#define IGMP_STATS_DISPLAY() 
+#define IP_CLASSB_NSHIFT 16
+#define __IMPORT 
+#define __WORKQUEUE_LEGACY_H__ 
+#define EOWNERDEAD 142
+#define O_NOCTTY _FNOCTTY
+#define SLIPIF_THREAD_NAME "slipif_loop"
+#define MEMP_SANITY_REGION_BEFORE 16
+#define __returns_twice __attribute__((__returns_twice__))
+#define __unused __attribute__((__unused__))
+#define __UINT_LEAST16_MAX__ 0xffff
+#define _FAPPEND 0x0008
+#define __ARM_SIZEOF_WCHAR_T 4
+#define ip_current_netif() (ip_data.current_netif)
+#define __generic(expr,t,yes,no) __builtin_choose_expr( __builtin_types_compatible_p(__typeof((0, (expr))), t), yes, no)
+#define __ATOMIC_ACQUIRE 2
+#define STATS_DEC(x) 
+#define RT_TIMER_THREAD_STACK_SIZE 4096
+#define TF_SEG_OPTS_WND_SCALE (u8_t)0x08U
+#define RT_DEFINE_HW_SPINLOCK(x) rt_ubase_t x
+#define __SFRACT_IBIT__ 0
+#define _REENT _impure_ptr
+#define __FLT_MIN__ 1.1754943508222875e-38F
+#define __GCC_IEC_559_COMPLEX 0
+#define __SCN16LEAST(x) __LEAST16 __STRINGIFY(x)
+#define rt_hw_spin_lock(lock) *(lock) = rt_hw_interrupt_disable()
+#define IP_ANY_TYPE IP_ADDR_ANY
+#define RT_TIMER_FLAG_DEACTIVATED 0x0
+#define _DEV_T_DECLARED 
+#define N_PROFIBUS_FDL 10
+#define RT_DEBUGING_CONTEXT 
+#define __UFRACT_MAX__ 0XFFFFP-16UR
+#define __UINT_LEAST8_TYPE__ unsigned char
+#define _T_WCHAR_ 
+#define SIOCDELDLCI 0x8981
+#define tcp_backlog_accepted(pcb) 
+#define INT_LEAST16_MIN (-INT_LEAST16_MAX - 1)
+#define N_X25 6
+#define CHAR_BIT __CHAR_BIT__
+#define __attribute_malloc__ 
+#define __flexarr [0]
+#define IP_DF 0x4000U
+#define IP_CLASSA_MAX 128
+#define IP6_FRAG_STATS_DISPLAY() 
+#define RT_USING_POSIX_AIO 
+#define _REENT_CHECK_MISC(ptr) 
+#define __SYS_SIGNAL_H__ 
+#define __DQ_FBIT__ 63
+#define __DEFINED_ptrdiff_t 
+#define SIGBUS 10
+#define __INTMAX_C(c) c ## LL
+#define LWIP_TCP_OPT_LEN_TS_OUT 0
+#define __ARM_FEATURE_SAT 1
+#define _BSD_SIZE_T_DEFINED_ 
+#define RT_DEBUG_NOT_IN_INTERRUPT do { if (rt_interrupt_get_nest() != 0) { rt_kprintf("Function[%s] shall not be used in ISR\n", __FUNCTION__); RT_ASSERT(0) } } while (0)
+#define PACK_STRUCT_BEGIN 
+#define _REENT_RAND_NEXT(ptr) ((ptr)->_new._reent._rand_next)
+#define TIOCM_CAR 0x040
+#define O_ACCMODE (O_RDONLY|O_WRONLY|O_RDWR)
+#define __ULFRACT_FBIT__ 32
+#define ip_addr_get_ip4_u32(ipaddr) ip4_addr_get_u32(ip_2_ip4(ipaddr))
+#define LWIP_HDR_INET_CHKSUM_H 
+#define TIOCEXCL 0x540C
+#define __CHAR_BIT__ 8
+#define TIOCPKT_IOCTL 64
+#define IP6_STATS_DISPLAY() 
+#define __malloc_like __attribute__((__malloc__))
+#define FIOGETOWN 0x8903
+#define RT_THREAD_CTRL_CLOSE 0x01
+#define __predict_false(exp) __builtin_expect((exp), 0)
+#define LWIP_TIMERS_CUSTOM 0
+#define SHRT_MAX __SHRT_MAX__
+#define __USQ_IBIT__ 0
+#define NETIF_FLAG_BROADCAST 0x02U
+#define TIOCSERGETMULTI 0x545A
+#define SIGTTIN 21
+#define EEXIST 17
+#define RT_DEVICE_OFLAG_RDONLY 0x001
+#define _FOPEN (-1)
+#define TCP_WND RT_LWIP_TCP_WND
+#define EACCES 13
+#define __UINT8_MAX__ 0xff
+#define TF_NODELAY 0x40U
+#define RT_IDLE_HOOK_LIST_SIZE 4
+#define SIOCADDDLCI 0x8980
+#define S_IFSOCK _IFSOCK
+#define CLOCK_REALTIME_COARSE 0
+#define TCP_KEEPIDLE_DEFAULT 7200000UL
+#define NANOSECOND_PER_SECOND 1000000000UL
+#define ip4_addr_cmp(addr1,addr2) ((addr1)->addr == (addr2)->addr)
+#define CLOCK_ENABLED 1
+#define RT_LIBC_USING_LIGHT_TZ_DST 
+#define __ACCUM_FBIT__ 15
+#define __FINSH_H__ 
+#define PRIiLEAST16 __PRI16LEAST(i)
+#define IP_REASS_DEBUG LWIP_DBG_OFF
+#define INT16_C(c) __INT16_C(c)
+#define TCP_OOSEQ_TIMEOUT 6U
+#define __WINT_MAX__ 0xffffffffU
+#define INIT_ENV_EXPORT(fn) INIT_EXPORT(fn, "5")
+#define ip_ntoa(ipaddr) ipaddr_ntoa(ipaddr)
+#define SIOCSIFENCAP 0x8926
+#define __FLT32_MIN_EXP__ (-125)
+#define __printf0like(fmtarg,firstvararg) 
+#define RT_USING_CACHE 
+#define IPADDR4_INIT_BYTES(a,b,c,d) IPADDR4_INIT(PP_HTONL(LWIP_MAKEU32(a,b,c,d)))
+#define INT8_MAX __INT8_MAX__
+#define _MSH_FUNCTION_EXPORT_CMD3_OPT(a0,a1,a2,a3) MSH_FUNCTION_EXPORT_CMD(a0, a1, a2, a0 ##_msh_options)
+#define UINT_LEAST64_MAX __UINT_LEAST64_MAX__
+#define __int32_t_defined 1
+#define IP_ADDR_PCB_VERSION_MATCH_EXACT(pcb,ipaddr) 1
+#define FIQMODE 0x11
+#define RT_TIMER_CTRL_GET_FUNC 0x6
+#define DHCP_DOES_ARP_CHECK (LWIP_DHCP)
+#define TCP_EVENT_CLOSED(pcb,ret) do { if(((pcb)->recv != NULL)) { (ret) = (pcb)->recv((pcb)->callback_arg,(pcb),NULL,ERR_OK); } else { (ret) = ERR_OK; } } while (0)
+#define RT_ESCHEDLOCKED 252
+#define ip4_addr_set_hton(dest,src) ((dest)->addr = ((src) == NULL ? 0: lwip_htonl((src)->addr)))
+#define COMPLETION_H_ 
+#define EILSEQ 138
+#define _IOC_NONE 0U
+#define SIOCSIFDSTADDR 0x8918
+#define ESPIPE 29
+#define __USFRACT_FBIT__ 8
+#define LWIP_NETIF_LOOPBACK 0
+#define _SYS_REENT_H_ 
+#define IP4_ADDR_ANY4 (ip_2_ip4(&ip_addr_any))
+#define rt_list_for_each_entry(pos,head,member) for (pos = rt_list_entry((head)->next, rt_typeof(*pos), member); &pos->member != (head); pos = rt_list_entry(pos->member.next, rt_typeof(*pos), member))
+#define UDP_STATS 0
+#define EMLINK 31
+#define __ORDER_LITTLE_ENDIAN__ 1234
+#define __SIZE_MAX__ 0xffffffffU
+#define htonl(x) lwip_htonl(x)
+#define ip4_addr_isloopback(ipaddr) (((ipaddr)->addr & PP_HTONL(IP_CLASSA_NET)) == PP_HTONL(((u32_t)IP_LOOPBACKNET) << 24))
+#define LWIP_CHKSUM_COPY_ALGORITHM 0
+#define FINSH_USING_OPTION_COMPLETION 
+#define INIT_EXPORT(fn,level) rt_used const init_fn_t __rt_init_ ##fn rt_section(".rti_fn." level) = fn
+#define IP_STATS_INC(x) 
+#define __ARM_ARCH_ISA_ARM 1
+#define PRIdMAX __PRIMAX(d)
+#define __WCHAR_MAX__ 0xffffffffU
+#define S_ISSOCK(m) (((m)&_IFMT) == _IFSOCK)
+#define SIOCGIFADDR 0x8915
+#define FIOASYNC _IOW('f', 125, int)
+#define INT16_MAX __INT16_MAX__
+#define ip_debug_print(is_ipv6,p) ip4_debug_print(p)
+#define LWIP_DBG_STATE 0x20U
+#define IP_FORWARD_ALLOW_TX_ON_RX_NETIF 0
+#define __LACCUM_IBIT__ 32
+#define LWIP_TIMEVAL_PRIVATE 0
+#define _FCREAT 0x0200
+#define IP_MF 0x2000U
+#define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1 1
+#define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2 1
+#define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4 1
+#define __DBL_DENORM_MIN__ ((double)4.9406564584124654e-324L)
+#define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8 1
+#define __GCC_ATOMIC_CHAR_LOCK_FREE 2
+#define RT_PAGE_MAX_ORDER 11
+#define MEM_ALIGNMENT RT_LWIP_MEM_ALIGNMENT
+#define htons(x) lwip_htons(x)
+#define __GCC_IEC_559 0
+#define rt_container_of(ptr,type,member) ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
+#define __FLT32X_DECIMAL_DIG__ 17
+#define _OFF_T_DECLARED 
+#define RT_ASSERT(EX) if (!(EX)) { rt_assert_handler(#EX, __FUNCTION__, __LINE__); }
+#define __FLT_EVAL_METHOD__ 0
+#define __requires_shared(...) __lock_annotate(shared_locks_required(__VA_ARGS__))
+#define __DOTS , ...
+#define SHRT_MIN (-SHRT_MAX - 1)
+#define DEFAULT_THREAD_PRIO 1
+#define __TQ_IBIT__ 0
+#define MB_CUR_MAX __locale_mb_cur_max()
+#define _GLOBAL_REENT (&_impure_data)
+#define __LLACCUM_MAX__ 0X7FFFFFFFFFFFFFFFP-31LLK
+#define rt_list_entry(node,type,member) rt_container_of(node, type, member)
+#define LWIP_SOCKET_SELECT 1
+#define LWIP_HDR_NETIF_H 
+#define RT_EINTR EINTR
+#define NETIF_FLAG_ETHERNET 0x10U
+#define __FLT64_DECIMAL_DIG__ 17
+#define _WINT_T 
+#define MEM_STATS 0
+#define __GCC_ATOMIC_CHAR32_T_LOCK_FREE 2
+#define SIG_ERR ((_sig_func_ptr)-1)
+#define LWIP_MULTICAST_TX_OPTIONS (LWIP_IGMP && LWIP_UDP)
+#define LWIP_NETIF_HWADDRHINT 0
+#define CLOCK_CPUTIME_ID 2
+#define NSIG 32
+#define RT_DEVICE_FLAG_DEACTIVATE 0x000
+#define MEMP_NUM_DNS_API_MSG MEMP_NUM_TCPIP_MSG_API
+#define _FREAD 0x0001
+#define LWIP_IPV4 1
+#define INT8_MIN (-INT8_MAX - 1)
+#define __DEFINED_wchar_t 
+#define ip_addr_set_ipaddr(dest,src) ip4_addr_set(dest, src)
+#define _REENT_STDERR(_ptr) ((_ptr)->_stderr)
+#define ip_current_input_netif() (ip_data.current_input_netif)
+#define TIOCSRS485 0x542F
+#define RT_LWIP_MEM_ALIGNMENT 4
+#define LWIP_MAX(x,y) (((x) > (y)) ? (x) : (y))
+#define DST_NONE 0
+#define LWIP_TCPIP_TIMEOUT 0
+#define __DEFINED_size_t 
+#define RT_DEVICE_CTRL_CONSOLE_OFLAG 0x09
+#define _SYS__STDINT_H 
+#define _HAVE_CC_INHIBIT_LOOP_TO_LIBCALL 1
+#define RT_USING_POSIX_PIPE_SIZE 512
+#define RT_SFUD_USING_SFDP 
+#define __UINT_FAST64_MAX__ 0xffffffffffffffffULL
+#define __SIG_ATOMIC_TYPE__ int
+#define LWIP_HDR_IP6_H 
+#define __locks_shared(...) __lock_annotate(shared_lock_function(__VA_ARGS__))
+#define IP_REASS_MAXAGE 3
+#define RT_USING_USER_MAIN 
+#define __CC_SUPPORTS_VARADIC_XXX 1
+#define __DBL_MIN_10_EXP__ (-307)
+#define LWIP_TCP_OPT_LEN_WS_OUT 0
+#define INT16_MIN (-INT16_MAX - 1)
+#define NETIF_FLAG_ETHARP 0x08U
+#define ENOTTY 25
+#define __FINITE_MATH_ONLY__ 1
+#define __ARMEL__ 1
+#define SYS_STATS_DISPLAY() 
+#define LWIP_DBG_OFF 0x00U
+#define lwip_ntohs(x) lwip_htons(x)
+#define MEM_SIZE 1600
+#define RTTHREAD_VERSION RT_VERSION_CHECK(RT_VERSION_MAJOR, RT_VERSION_MINOR, RT_VERSION_PATCH)
+#define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 1
+#define LWIP_NETIF_LOOPBACK_MULTITHREADING (!NO_SYS)
+#define ip_output_hinted(p,src,dest,ttl,tos,proto,addr_hint) ip4_output_hinted(p, src, dest, ttl, tos, proto, addr_hint)
+#define _FASYNC 0x0040
+#define __FLT32X_MAX_EXP__ 1024
+#define LWIP_MEMPOOL_DECLARE_STATS_REFERENCE(name) 
+#define tcp_eff_send_mss(sendmss,src,dest) tcp_eff_send_mss_impl(sendmss, dest, src)
+#define SIOCGIFTXQLEN 0x8942
+#define RT_USING_POSIX_DEVIO 
+#define LWIP_HDR_MEMP_PRIV_H 
+#define IP_CLASSB_NET 0xffff0000
+#define S16_F PRId16
+#define PRIxPTR __PRIPTR(x)
+#define __LFRACT_IBIT__ 0
+#define __NULLABILITY_PRAGMA_POP 
+#define LWIP_IPV6_DHCP6 0
+#define ERANGE 34
+#define __GNUC_PATCHLEVEL__ 1
+#define LWIP_MIN(x,y) (((x) < (y)) ? (x) : (y))
+#define __FLT32_HAS_DENORM__ 1
+#define __PRIPTR(x) __STRINGIFY(x)
+#define CLK_TCK CLOCKS_PER_SEC
+#define ECANCELED 140
+#define _IFMT 0170000
+#define S_ISGID 0002000
+#define S_IFBLK _IFBLK
+#define SIGFPE 8
+#define RT_USING_MUTEX 
+#define __FAST8 
+#define __LFRACT_MAX__ 0X7FFFFFFFP-31LR
+#define NETDEV_USING_IFCONFIG 
+#define PBUF_FLAG_LLBCAST 0x08U
+#define RT_USING_POSIX_PIPE 
+#define LWIP_ND6_RETRANS_TIMER 1000
+#define __USA_FBIT__ 16
+#define ICMP6_STATS_DISPLAY() 
+#define __UINT_FAST8_MAX__ 0xffffffffU
+#define _MB_LEN_MAX 1
+#define LWIP_POSIX_SOCKETS_IO_NAMES 0
+#define _LIMITS_H___ 
+#define SYS_LIGHTWEIGHT_PROT 1
+#define __align_down(x,y) __builtin_align_down(x, y)
+#define __LEAST32 "l"
+#define TIOCM_CTS 0x020
+#define __FLT32_MAX_10_EXP__ 38
+#define ND6_STATS 0
+#define _LONG_DOUBLE long double
+#define _WCHAR_T_DEFINED 
+#define MEMP_NUM_ND6_QUEUE 20
+#define RT_USING_COMPONENTS_INIT 
+#define LWIP_IP_HDRINCL NULL
+#define _MODE_T_DECLARED 
+#define ETXTBSY 26
+#define ENOMEM 12
+#define __INT8_C(c) c
+#define WCHAR_MAX __WCHAR_MAX__
+#define RT_DEVICE_FLAG_INT_RX 0x100
+#define EALREADY 120
+#define SIOCSIFNETMASK 0x891c
+#define _INTPTR_T_DECLARED 
+#define PRIXFAST32 __PRI32FAST(X)
+#define __INT_LEAST8_WIDTH__ 8
+#define ip4_addr_debug_print_val(debug,ipaddr) ip4_addr_debug_print_parts(debug, ip4_addr1_16(&(ipaddr)), ip4_addr2_16(&(ipaddr)), ip4_addr3_16(&(ipaddr)), ip4_addr4_16(&(ipaddr)))
+#define __UINT_LEAST64_MAX__ 0xffffffffffffffffULL
+#define RT_USING_SYSTEM_WORKQUEUE 
+#define RT_VERSION_MINOR 3
+#define __SA_FBIT__ 15
+#define LWIP_WND_SCALE 0
+#define RT_SPINLOCK_INIT {0}
+#define CLOCKS_PER_SEC RT_TICK_PER_SECOND
+#define _REENT_STRTOK_LAST(ptr) ((ptr)->_new._reent._strtok_last)
+#define __restrict restrict
+#define __always_inline __inline__ __attribute__((__always_inline__))
+#define RT_MMCSD_THREAD_PRIORITY 22
+#define TCP_SEQ_GT(a,b) ((s32_t)((u32_t)(a) - (u32_t)(b)) > 0)
+#define tcp_listen(pcb) tcp_listen_with_backlog(pcb, TCP_DEFAULT_LISTEN_BACKLOG)
+#define RT_OBJECT_HOOKLIST_CALL(name,argv) 
+#define N_SMSBLOCK 12
+#define __noinline __attribute__ ((__noinline__))
+#define __LEAST64 "ll"
+#define __SHRT_MAX__ 0x7fff
+#define RT_LWIP_TCPTHREAD_STACKSIZE 1024
+#define stats_display() 
+#define __LOCK_INIT(class,lock) static int lock = 0;
+#define TCP_SND_BUF RT_LWIP_TCP_SND_BUF
+#define __LDBL_MAX__ 1.7976931348623157e+308L
+#define TIOCSETD 0x5423
+#define RT_DEVICE_FLAG_INT_TX 0x400
+#define __FRACT_MAX__ 0X7FFFP-15R
+#define ip_current_is_v6() 0
+#define __SCCSID(s) struct __hack
+#define LWIP_DHCP_AUTOIP_COOP_TRIES 9
+#define STATS_INC_USED(x) 
+#define FINSH_CMD_SIZE 256
+#define _REENT_ERRNO(_ptr) ((_ptr)->_errno)
+#define S_IXOTH 0000001
+#define ICMP_STATS_DISPLAY() 
+#define SIGTTOU 22
+#define TIOCSSERIAL 0x541F
+#define RT_CPU_CACHE_LINE_SZ 32
+#define _HAVE_INITFINI_ARRAY 1
+#define MEMP_NUM_TCP_SEG RT_LWIP_TCP_SEG_NUM
+#define TCP_FR_DEBUG LWIP_DBG_OFF
+#define LWIP_TCPIP_CORE_LOCKING 1
+#define __PRI8(x) __INT8 __STRINGIFY(x)
+#define __LDBL_IS_IEC_60559__ 1
+#define LWIP_RANDOMIZE_INITIAL_LOCAL_PORTS 0
+#define ICMP_STATS_INC(x) 
+#define __UFRACT_FBIT__ 16
+#define LWIP_ND6_MAX_ANYCAST_DELAY_TIME 1000
+#define IP_CLASSD_NET 0xf0000000
+#define TCP_SYN 0x02U
+#define PRIu16 __PRI16(u)
+#define LWIP_ND6_MAX_UNICAST_SOLICIT 3
+#define PBUF_LINK_HLEN 16
+#define SCNd16 __SCN16(d)
+#define __asserts_exclusive(...) __lock_annotate(assert_exclusive_lock(__VA_ARGS__))
+#define _SSIZE_T_DECLARED 
+#define __UFRACT_MIN__ 0.0UR
+#define __UINT_LEAST8_MAX__ 0xff
+#define __GCC_ATOMIC_BOOL_LOCK_FREE 2
+#define __alloc_size(x) __attribute__((__alloc_size__(x)))
+#define MEMCPY(dst,src,len) rt_memcpy(dst,src,len)
+#define _ANSIDECL_H_ 
+#define _REENT_INC(_ptr) ((_ptr)->_inc)
+#define TF_RESET (u8_t)0x08U
+#define __RT_KSTDIO_H__ 
+#define DFS_USING_WORKDIR 
+#define __UINTMAX_TYPE__ long long unsigned int
+#define EINPROGRESS 119
+#define INT_LEAST8_MAX __INT_LEAST8_MAX__
+#define _GID_T_DECLARED 
+#define __LLFRACT_EPSILON__ 0x1P-63LLR
+#define LWIP_MEMPOOL_FREE(name,x) memp_free_pool(&memp_ ## name, (x))
+#define LWIP_TCP_KEEPALIVE 1
+#define MEMP_STATS_GET(x,i) 0
+#define __result_use_check __attribute__((__warn_unused_result__))
+#define INT_FAST8_MIN (-INT_FAST8_MAX - 1)
+#define CLOCK_MONOTONIC_COARSE 6
+#define IP_PROTO_UDPLITE 136
+#define ip4_current_dest_addr() (&ip_data.current_iphdr_dest)
+#define LWIP_HDR_IP_ADDR_H 
+#define ICMPH_CODE(hdr) ((hdr)->code)
+#define SIOCSHIWAT _IOW('s', 0, int)
+#define WCHAR_MIN __WCHAR_MIN__
+#define SIOCSIFBRDADDR 0x891a
+#define MICROSECOND_PER_TICK (MICROSECOND_PER_SECOND / RT_TICK_PER_SECOND)
+#define ___int64_t_defined 1
+#define _CLOCKID_T_DECLARED 
+#define RT_ALIGN_DOWN(size,align) ((size) & ~((align) - 1))
+#define __FLT_EVAL_METHOD_TS_18661_3__ 0
+#define ULONG_LONG_MAX (LONG_LONG_MAX * 2ULL + 1ULL)
+#define ip_output_if(p,src,dest,ttl,tos,proto,netif) ip4_output_if(p, src, dest, ttl, tos, proto, netif)
+#define ip_addr_copy(dest,src) ip4_addr_copy(dest, src)
+#define MEMP_NUM_TCP_PCB_LISTEN 8
+#define RT_USING_LEGACY 
+#define RT_USING_IDLE_HOOK 
+#define FINSH_THREAD_STACK_SIZE 4096
+#define PBUF_IP_HLEN 20
+#define A_Bit (1<<8)
+#define RT_THREAD_CTRL_CHANGE_PRIORITY 0x02
+#define __UINT32_MAX__ 0xffffffffUL
+#define RECV_BUFSIZE_DEFAULT 8192
+#define RT_USING_ADT_REF 
+#define _IFREG 0100000
+#define ip_route(src,dest) ip4_route_src(dest, src)
+#define __ULFRACT_MAX__ 0XFFFFFFFFP-32ULR
+#define LWIP_HOOK_IP4_ROUTE_SRC(dest,src) lwip_ip4_route_src(dest, src)
+#define __TA_IBIT__ 64
+#define __SIZE_T 
+#define SCNd64 __SCN64(d)
+#define RT_BACKTRACE_LEVEL_MAX_NR 32
+#define IGMP_DEBUG LWIP_DBG_OFF
+#define SIGUSR1 30
+#define __LDBL_MAX_EXP__ 1024
+#define MEM_USE_POOLS 0
+#define MEMP_SIZE (LWIP_MEM_ALIGN_SIZE(sizeof(struct memp)) + MEMP_SANITY_REGION_BEFORE_ALIGNED)
+#define RT_TIMER_CTRL_GET_PARM 0x8
+#define SCNo32 __SCN32(o)
+#define __printflike(fmtarg,firstvararg) __attribute__((__format__ (__printf__, fmtarg, firstvararg)))
+#define __have_longlong64 1
+#define RT_SYSTEM_WORKQUEUE_PRIORITY 23
+#define SCNuLEAST16 __SCN16LEAST(u)
+#define UINT_FAST16_MAX __UINT_FAST16_MAX__
+#define RT_LWIP_ETHTHREAD_STACKSIZE 1024
+#define rt_slist_for_each_entry(pos,head,member) for (pos = ((head)->next == (RT_NULL) ? (RT_NULL) : rt_slist_entry((head)->next, rt_typeof(*pos), member)); pos != (RT_NULL) && &pos->member != (RT_NULL); pos = (pos->member.next == (RT_NULL) ? (RT_NULL) : rt_slist_entry(pos->member.next, rt_typeof(*pos), member)))
+#define tzname _tzname
+#define __WINT_MIN__ 0U
+#define TCP_PSH 0x08U
+#define TF_CLOSED (u8_t)0x10U
+#define RT_DFS_ELM_LFN_UNICODE 0
+#define WORKQUEUE_H__ 
+#define TCPH_HDRLEN_FLAGS_SET(phdr,len,flags) (phdr)->_hdrlen_rsvd_flags = (u16_t)(lwip_htons((u16_t)((len) << 12) | (flags)))
+#define CLOCK_ID_MAX CLOCK_MONOTONIC
+#define EPROTOTYPE 107
+#define __pure2 __attribute__((__const__))
+#define ARCH_ARM_CORTEX_A9 
+#define RT_VERSION_MAJOR 5
+#define RT_DFS_ELM_WORD_ACCESS 
+#define UINT16_C(c) __UINT16_C(c)
+#define BYTE_ORDER LITTLE_ENDIAN
+#define ALIGN rt_align
+#define LWIP_IP_CHECK_PBUF_REF_COUNT_FOR_TX(p) LWIP_ASSERT("p->ref == 1", (p)->ref == 1)
+#define SIOCSIFPFLAGS 0x8934
+#define __NEWLIB_PATCHLEVEL__ 0
+#define TCXONC 0x540A
+#define DEFAULT_RAW_RECVMBOX_SIZE 1
+#define __FLT32X_IS_IEC_60559__ 1
+#define RT_MEMP_NUM_NETCONN 8
+#define SCHAR_MIN (-SCHAR_MAX - 1)
+#define SCNo64 __SCN64(o)
+#define ENOMSG 35
+#define EXIT_FAILURE 1
+#define LWIP_SO_RCVTIMEO 1
+#define __INT_LEAST16_WIDTH__ 16
+#define _SIZE_T_DEFINED_ 
+#define LWIP_ND6_NUM_ROUTERS 3
+#define INIT_DEVICE_EXPORT(fn) INIT_EXPORT(fn, "3")
+#define __ULLFRACT_MIN__ 0.0ULLR
+#define __SCHAR_MAX__ 0x7f
+#define LWIP_ETHERNET LWIP_ARP
+#define LWIP_MEM_ALIGN(addr) ((void *)(((mem_ptr_t)(addr) + MEM_ALIGNMENT - 1) & ~(mem_ptr_t)(MEM_ALIGNMENT-1)))
+#define LWIP_DHCP_BOOTP_FILE 0
+#define _Noreturn __dead2
+#define ip_addr_debug_print(debug,ipaddr) ip4_addr_debug_print(debug, ipaddr)
+#define LWIP_HDR_OPT_H 
+#define PRIiMAX __PRIMAX(i)
+#define __WCHAR_MIN__ 0U
+#define SCNxFAST16 __SCN16FAST(x)
+#define rt_slist_tail_entry(ptr,type,member) rt_slist_entry(rt_slist_tail(ptr), type, member)
+#define EDESTADDRREQ 121
+#define __RT_LEGACY_H__ 
+#define __INT64_C(c) c ## LL
+#define tcp_sndqueuelen(pcb) ((pcb)->snd_queuelen)
+#define SIOCGRARP 0x8961
+#define INET_DEBUG LWIP_DBG_OFF
+#define ip_addr_set_any(is_ipv6,ipaddr) ip4_addr_set_any(ipaddr)
+#define LWIP_TCP_CLOSE_TIMEOUT_MS_DEFAULT 20000
+#define __GCC_ATOMIC_POINTER_LOCK_FREE 2
+#define F_RDLCK 1
+#define RT_USING_DEBUG 
+#define __INT_WCHAR_T_H 
+#define LWIP_RAW 1
+#define stats_display_sys(sys) 
+#define __ATOMIC_SEQ_CST 5
+#define IPH_VHL_SET(hdr,v,hl) (hdr)->_v_hl = (u8_t)((((v) << 4) | (hl)))
+#define _INTPTR_EQ_INT 
+#define FIONBIO _IOW('f', 126, int)
+#define IP_LOOPBACKNET 127
+#define __nosanitizeaddress 
+#define TIOCSERGSTRUCT 0x5458
+#define PRIxFAST32 __PRI32FAST(x)
+#define RT_LWIP_TCP_PCB_NUM 4
+#define netif_ip_netmask4(netif) ((const ip_addr_t*)&((netif)->netmask))
+#define __rangeof(type,start,end) (__offsetof(type, end) - __offsetof(type, start))
+#define IP_CLASSD_NSHIFT 28
+#define N_PPP 3
+#define _WIDE_ORIENT 1
+#define TIOCLINUX 0x541C
+#define S_IRWXG (S_IRGRP | S_IWGRP | S_IXGRP)
+#define _POSIX_SOURCE 1
+#define __SIZEOF_INT__ 4
+#define IP46_ADDR_ANY(type) (IP4_ADDR_ANY)
+#define S_IRWXU (S_IRUSR | S_IWUSR | S_IXUSR)
+#define INIT_SECONDARY_CPU_EXPORT(fn) INIT_EXPORT(fn, "7")
+#define TF_RXCLOSED 0x10U
+#define __ATTRIBUTE_IMPURE_PTR__ 
+#define IP_PCB_ADDRHINT 
+#define IP6_STATS 0
+#define SYS_STATS 0
+#define _USECONDS_T_DECLARED 
+#define __nosanitizememory 
+#define SCNo16 __SCN16(o)
+#define _REENT_CLEANUP(_ptr) ((_ptr)->__cleanup)
+#define NANOSECOND_PER_TICK (NANOSECOND_PER_SECOND / RT_TICK_PER_SECOND)
+#define RT_USING_SPI_MSD 
+#define SIOCDELRT 0x890C
+#define __SSP_FORTIFY_LEVEL 0
+#define S_IFMT _IFMT
+#define FIOSETOWN 0x8901
+#define CLOCK_REALTIME ((clockid_t) 1)
+#define __FLT32X_MANT_DIG__ 53
+#define ICMP_IRQ 15
+#define RT_UNAMED_PIPE_NUMBER 64
+#define USHRT_MAX (SHRT_MAX * 2 + 1)
+#define __USACCUM_IBIT__ 8
+#define TCPH_HDRLEN(phdr) ((u16_t)(lwip_ntohs((phdr)->_hdrlen_rsvd_flags) >> 12))
+#define ETIMEDOUT 116
+#define PRIuFAST16 __PRI16FAST(u)
+#define SCNx32 __SCN32(x)
+#define LWIP_TCP_TIMESTAMPS 0
+#define DNS_DEBUG LWIP_DBG_OFF
+#define LWIP_DHCP_CHECK_LINK_UP 0
+#define __GNUCLIKE___SECTION 1
+#define rt_current_thread rt_thread_self()
+#define HWREG64(x) (*((volatile rt_uint64_t *)(x)))
+#define LWIP_DBG_TRACE 0x40U
+#define ENODATA 61
+#define RT_THREAD_INIT 0x00
+#define netif_get_client_data(netif,id) (netif)->client_data[(id)]
+#define PRIuLEAST32 __PRI32LEAST(u)
+#define LINK_STATS_INC(x) 
+#define IPH_TOS_SET(hdr,tos) (hdr)->_tos = (tos)
+#define PBUF_LINK_ENCAPSULATION_HLEN 0u
+#define _MACHSTDLIB_H_ 
+#define _NEWLIB_VERSION_H__ 1
+#define IP_CLASSB_MAX 65536
+#define LWIP_DBG_LEVEL_ALL 0x00
+#define TCSETXW 0x5435
+#define IP_SOF_BROADCAST 0
+#define _NEWLIB_VERSION "4.4.0"
+#define PRIuFAST32 __PRI32FAST(u)
+#define ip_addr_get_network(target,host,mask) ip4_addr_get_network(target, host, mask)
+#define __CONCAT(x,y) __CONCAT1(x,y)
+#define tcp_sndbuf(pcb) (TCPWND16((pcb)->snd_buf))
+#define UINT8_MAX __UINT8_MAX__
+#define RT_DEVICE_FLAG_REMOVABLE 0x004
+#define RT_USING_POSIX_SELECT 
+#define LWIP_LOOPIF_MULTICAST 0
+#define LWIP_NETIF_TX_SINGLE_PBUF 0
+#define NETDEV_IPV4 1
+#define MSH_FUNCTION_EXPORT_CMD(name,cmd,desc,opt) const char __fsym_ ##cmd ##_name[] rt_section(".rodata.name") = #cmd; const char __fsym_ ##cmd ##_desc[] rt_section(".rodata.name") = #desc; rt_used const struct finsh_syscall __fsym_ ##cmd rt_section("FSymTab")= { __fsym_ ##cmd ##_name, FINSH_DESC(cmd, desc) FINSH_COND(opt) (syscall_func)&name };
+#define __ISO_C_VISIBLE 1999
+#define RT_DEVICE_CTRL_CLOSE 0x04
+#define __STDC_HOSTED__ 1
+#define LWIP_NETIF_HOSTNAME 1
+#define IP6_DEBUG LWIP_DBG_OFF
+#define SYS_DEBUG LWIP_DBG_OFF
+#define ip_2_ip4(ipaddr) (ipaddr)
+#define ___int_least64_t_defined 1
+#define _MSH_FUNCTION_CMD2_OPT(a0,a1,a2) MSH_FUNCTION_EXPORT_CMD(a0, a0, a1, a0 ##_msh_options)
+#define _INT8_T_DECLARED 
+#define __NO_MATH_ERRNO__ 1
+#define LWIP_DBG_LEVEL_SEVERE 0x03
+#define LWIP_HDR_DEF_H 
+#define netif_set_igmp_mac_filter(netif,function) do { if((netif) != NULL) { (netif)->igmp_mac_filter = function; }}while(0)
+#define _RAND48_SEED_0 (0x330e)
+#define _RAND48_SEED_2 (0x1234)
+#define IP_HLEN 20
+#define RT_SERIAL_USING_DMA 
+#define IP_CLASSD(a) (((u32_t)(a) & 0xf0000000UL) == 0xe0000000UL)
+#define _REENT_WCTOMB_STATE(ptr) ((ptr)->_new._reent._wctomb_state)
+#define S_ISREG(m) (((m)&_IFMT) == _IFREG)
+#define RT_USING_SFUD 
+#define RT_ENOSPC ENOSPC
+#define TIOCM_RTS 0x004
+#define TCP_KEEPCNT_DEFAULT 9U
+#define _MACHINE__TYPES_H 
+#define _ATTRIBUTE(attrs) __attribute__ (attrs)
+#define IP4_ADDR_ANY (&ip_addr_any)
+#define netif_ip_addr4(netif) ((const ip_addr_t*)&((netif)->ip_addr))
+#define TIOCGSID 0x5429
+#define PRIdPTR __PRIPTR(d)
+#define BIG_ENDIAN 4321
+#define LWIP_ND6_MAX_NEIGHBOR_ADVERTISEMENT 3
+#define __LFRACT_MIN__ (-0.5LR-0.5LR)
+#define N_TTY 0
+#define ip_addr_set_hton(dest,src) ip4_addr_set_hton(dest, src)
+#define __HA_IBIT__ 8
+#define _REENT_SIGNAL_SIZE 24
+#define RT_THREAD_SUSPEND_UNINTERRUPTIBLE (RT_THREAD_SUSPEND_MASK | RT_SIGNAL_COMMON_WAKEUP_MASK | RT_SIGNAL_KILL_WAKEUP_MASK)
+#define __DBL_DIG__ 15
+#define EINTR 4
+#define _WANT_REGISTER_FINI 1
+#define TCP_OVERSIZE_CALC_LENGTH(length) ((length) + TCP_OVERSIZE)
+#define __ASSOCIATIVE_MATH__ 1
+#define __FLT_EPSILON__ 1.1920928955078125e-7F
+#define INT32_MIN (-INT32_MAX - 1)
+#define ENOLINK 67
+#define __APCS_32__ 1
+#define FINSH_USING_DESCRIPTION 
+#define __scanflike(fmtarg,firstvararg) __attribute__((__format__ (__scanf__, fmtarg, firstvararg)))
+#define ECHILD 10
+#define IP_STATS_DISPLAY() 
+#define __SHRT_WIDTH__ 16
+#define _Nonnull 
+#define __RT_HW_H__ 
+#define __lock_release(lock) ((void) 0)
+#define RT_LWIP_RAW_PCB_NUM 4
+#define RT_USING_RTC 
+#define TCPH_UNSET_FLAG(phdr,flags) (phdr)->_hdrlen_rsvd_flags = ((phdr)->_hdrlen_rsvd_flags & ~lwip_htons(flags))
+#define __FLT32_IS_IEC_60559__ 1
+#define PBUF_FLAG_IS_CUSTOM 0x02U
+#define LWIP_HDR_MEMP_H 
+#define ICMP_TSR 14
+#define S_IWGRP 0000020
+#define _TIMER_T_DECLARED 
+#define SIOCGIFPFLAGS 0x8935
+#define RT_USING_GIC_V2 
+#define MEM_STATS_DEC_USED(x,y) 
+#define __USFRACT_IBIT__ 0
+#define ENOTCONN 128
+#define _REENT_SIGNGAM(ptr) ((ptr)->_new._reent._gamma_signgam)
+#define LINK_STATS_DISPLAY() 
+#define ETHARP_STATS_INC(x) 
+#define TIOCGICOUNT 0x545D
+#define __LDBL_MIN__ 2.2250738585072014e-308L
+#define __STDC_UTF_16__ 1
+#define __DBL_IS_IEC_60559__ 1
+#define _FDIRECTORY 0x200000
+#define __FRACT_MIN__ (-0.5R-0.5R)
+#define IP_RF 0x8000U
+#define TIOCMGET 0x5415
+#define INIT_PREV_EXPORT(fn) INIT_EXPORT(fn, "2")
+#define TCP_ACK 0x10U
+#define SIOCGIFCOUNT 0x8938
+#define INT_FAST64_MAX __INT_FAST64_MAX__
+#define ip4_addr_set_any(ipaddr) ((ipaddr)->addr = IPADDR_ANY)
+#define __guarded_by(x) __lock_annotate(guarded_by(x))
+#define O_TMPFILE 0x800000
+#define EDQUOT 132
+#define RT_DEVICE_CTRL_CLR_INT 0x07
+#define __MSH_GET_MACRO(_1,_2,_3,_FUN,...) _FUN
+#define SOF_REUSEADDR 0x04U
+#define IP4ADDR_STRLEN_MAX 16
+#define IP6_FRAG_STATS_INC(x) 
+#define __DA_IBIT__ 32
+#define __CC_SUPPORTS_WARNING 1
+#define LWIP_IPV4_SRC_ROUTING 1
+#define TIOCNXCL 0x540D
+#define IP_CLASSA_NET 0xff000000
+#define SIOCSIFFLAGS 0x8914
+#define st_ctime st_ctim.tv_sec
+#define __lock_acquire(lock) ((void) 0)
+#define RT_LWIP_ICMP 
+#define __ARM_SIZEOF_MINIMAL_ENUM 1
+#define _REENT_MP_RESULT_K(ptr) ((ptr)->_result_k)
+#define _FSEEK_OPTIMIZATION 1
+#define _WCHAR_T_ 
+#define RT_DEVICE_CTRL_MASK 0x1f
+#define RT_USING_SMALL_MEM 
+#define STATS_INC(x) 
+#define IP_ADDR_ANY IP4_ADDR_ANY
+#define _IO(a,b) _IOC(_IOC_NONE, (a), (b), 0)
+#define RT_DEVICE_FLAG_RDONLY 0x001
+#define SIOCGLOWAT _IOR('s', 3, int)
+#define _RAND48_MULT_0 (0xe66d)
+#define _STDDEF_H 
+#define _RAND48_MULT_1 (0xdeec)
+#define CLOCK_BOOTTIME_ALARM 9
+#define TIOCSLCKTRMIOS 0x5457
+#define _FTRUNC 0x0400
+#define IPH_PROTO_SET(hdr,proto) (hdr)->_proto = (u8_t)(proto)
+#define _VA_LIST_DEFINED 
+#define RT_USING_DEV_BUS 
+#define __FLT32X_HAS_INFINITY__ 1
+#define __XSI_VISIBLE 0
+#define __INT32_MAX__ 0x7fffffffL
+#define ip_set_option(pcb,opt) ((pcb)->so_options |= (opt))
+#define IPH_LEN(hdr) ((hdr)->_len)
+#define RT_USING_ADT_HASHMAP 
+#define SIG_DFL ((_sig_func_ptr)0)
+#define LWIP_BROADCAST_PING 0
+#define __pt_guarded_by(x) __lock_annotate(pt_guarded_by(x))
+#define SCNdPTR __SCNPTR(d)
+#define LWIP_DHCP 0
+#define rt_atomic_load(ptr) rt_hw_atomic_load(ptr)
+#define RT_ENOSYS ENOSYS
+#define __UQQ_FBIT__ 8
+#define __INT_WIDTH__ 32
+#define RT_DEVICE_CTRL_SET_INT 0x06
+#define __UACCUM_MAX__ 0XFFFFFFFFP-16UK
+#define ip4_addr_isbroadcast(addr1,netif) ip4_addr_isbroadcast_u32((addr1)->addr, netif)
+#define SCNu64 __SCN64(u)
+#define SIGEV_NONE 1
+#define TCP_TTL 255
+#define PRIoFAST16 __PRI16FAST(o)
+#define RT_SDIO_THREAD_PRIORITY 15
+#define SWAP_BYTES_IN_WORD(w) (((w) & 0xff) << 8) | (((w) & 0xff00) >> 8)
+#define _SYS__TYPES_H 
+#define ip4_addr_copy(dest,src) ((dest).addr = (src).addr)
+#define _REENT_RAND48_MULT(ptr) ((ptr)->_new._reent._r48._mult)
+#define SCNoLEAST32 __SCN32LEAST(o)
+#define _SYS_STAT_H 
+#define SIGCLD 20
+#define __DECIMAL_DIG__ 17
+#define __LFRACT_EPSILON__ 0x1P-31LR
+#define IPH_LEN_SET(hdr,len) (hdr)->_len = (len)
+#define TCP_RCV_SCALE 0
+#define _FMARK 0x0010
+#define rt_list_for_each_safe(pos,n,head) for (pos = (head)->next, n = pos->next; pos != (head); pos = n, n = pos->next)
+#define MEMP_NUM_NETIFAPI_MSG MEMP_NUM_TCPIP_MSG_API
+#define PRIoFAST32 __PRI32FAST(o)
+#define F_DUPFD 0
+#define SLIPIF_THREAD_STACKSIZE 0
+#define LWIP_TCPIP_THREAD_ALIVE() 
+#define __FLT64_EPSILON__ 2.2204460492503131e-16F64
+#define __ULFRACT_MIN__ 0.0ULR
+#define TCPIP_THREAD_PRIO RT_LWIP_TCPTHREAD_PRIORITY
+#define __lockable __lock_annotate(lockable)
+#define ip4_addr2_16(ipaddr) ((u16_t)ip4_addr2(ipaddr))
+#define ENETDOWN 115
+#define ESTALE 133
+#define RT_LWIP_TCP 
+#define FIONWRITE _IOR('f', 121, int)
+#define SIOCSIFLINK 0x8911
+#define ENOTSOCK 108
+#define MSH_CMD_EXPORT(...) __MSH_GET_MACRO(__VA_ARGS__, _MSH_FUNCTION_CMD2_OPT, _MSH_FUNCTION_CMD2)(__VA_ARGS__)
+#define SCNdLEAST32 __SCN32LEAST(d)
+#define LWIP_ASSERT(message,assertion) do { if (!(assertion)) { LWIP_PLATFORM_ASSERT(message); }} while(0)
+#define rt_atomic_xor(ptr,v) rt_hw_atomic_xor(ptr, v)
+#define O_EXEC 0x400000
+#define TIOCGPGRP 0x540F
+#define RT_UINT32_MAX UINT32_MAX
+#define PRIX8 __PRI8(X)
+#define RT_SCHED_DEBUG_IS_LOCKED 
+#define __LDBL_HAS_QUIET_NAN__ 1
+#define INT64_C(c) __INT64_C(c)
+#define TCP_QUEUE_OOSEQ 1
+#define __RT_KSTRING_H__ 
+#define ENOSR 63
+#define S_ISDIR(m) (((m)&_IFMT) == _IFDIR)
+#define TCP_WND_DEBUG LWIP_DBG_OFF
+#define IP_SOF_BROADCAST_RECV 0
+#define DEFAULT_TCP_RECVMBOX_SIZE 10
+#define __GNUC_PREREQ__(ma,mi) __GNUC_PREREQ(ma, mi)
+#define PPP_SUPPORT 0
+#define __ULACCUM_IBIT__ 32
+#define N_STRIP 4
+#define PRIi64 __PRI64(i)
+#define SIGIO 23
+#define __GNUCLIKE_BUILTIN_VARARGS 1
+#define __FLT64_MANT_DIG__ 53
+#define _IFSOCK 0140000
+#define __int16_t_defined 1
+#define __NEWLIB_MINOR__ 4
+#define RT_DEFINE_SPINLOCK(x) struct rt_spinlock x = RT_SPINLOCK_INIT
+#define LWIP_NETIF_STATUS_CALLBACK 1
+#define RT_SYSTEM_WORKQUEUE_STACKSIZE 8196
+#define __THROW 
+#define HWREG16(x) (*((volatile rt_uint16_t *)(x)))
+#define BSP_DRV_EMAC 
+#define ip4_addr_debug_print(debug,ipaddr) ip4_addr_debug_print_parts(debug, (u16_t)((ipaddr) != NULL ? ip4_addr1_16(ipaddr) : 0), (u16_t)((ipaddr) != NULL ? ip4_addr2_16(ipaddr) : 0), (u16_t)((ipaddr) != NULL ? ip4_addr3_16(ipaddr) : 0), (u16_t)((ipaddr) != NULL ? ip4_addr4_16(ipaddr) : 0))
+#define LWIP_UDP 1
+#define __UACCUM_EPSILON__ 0x1P-16UK
+#define _REENT_CVTBUF(_ptr) ((_ptr)->_cvtbuf)
+#define RT_LWIP_TCP_SND_BUF 16384
+#define O_APPEND _FAPPEND
+#define _REENT_ASCTIME_SIZE 26
+#define LWIP_PTR_NUMERIC_CAST(target_type,val) LWIP_CONST_CAST(target_type, val)
+#define RT_SEM_VALUE_MAX RT_UINT16_MAX
+#define _REENT_LOCALE(_ptr) ((_ptr)->_locale)
+#define ___int_wchar_t_h 
+#define ENABLE_LOOPBACK (LWIP_NETIF_LOOPBACK || LWIP_HAVE_LOOPIF)
+#define _T_PTRDIFF 
+#define __GNUC__ 13
+#define LWIP_HDR_IP_H 
+#define PRId16 __PRI16(d)
+#define PBUF_FLAG_MCASTLOOP 0x04U
+#define _SPIN_UNLOCK_DEBUG_CRITICAL(lock,critical) do {critical = 0; RT_UNUSED(lock);} while (0)
+#define __ULLACCUM_MAX__ 0XFFFFFFFFFFFFFFFFP-32ULLK
+#define SIGWINCH 28
+#define PRIoLEAST16 __PRI16LEAST(o)
+#define PP_NTOHS(x) PP_HTONS(x)
+#define lwip_ntohl(x) lwip_htonl(x)
+#define RT_THREAD_RESUME_RES_THR_ERR (-1)
+#define TIOCPKT_NOSTOP 16
+#define ND6_STATS_DISPLAY() 
+#define rt_slist_for_each(pos,head) for (pos = (head)->next; pos != RT_NULL; pos = pos->next)
+#define LWIP_ND6_REACHABLE_TIME 30000
+#define TCP_EVENT_POLL(pcb,ret) do { if((pcb)->poll != NULL) (ret) = (pcb)->poll((pcb)->callback_arg,(pcb)); else (ret) = ERR_OK; } while (0)
+#define __HQ_IBIT__ 0
+#define _UINTMAX_T_DECLARED 
+#define LWIP_NO_CTYPE_H 0
+#define LWIP_PERF 0
+#define DEFAULT_UDP_RECVMBOX_SIZE 1
+#define MEMP_NUM_TCP_PCB RT_LWIP_TCP_PCB_NUM
+#define LWIP_SNMP 0
+#define offsetof(TYPE,MEMBER) __builtin_offsetof (TYPE, MEMBER)
+#define INIT_PLATFORM_EXPORT(fn) INIT_EXPORT(fn, "1.2")
+#define LWIP_IPV6_FRAG 0
+#define N_MASC 8
+#define __RT_DEF_H__ 
+#define __FLT_HAS_DENORM__ 1
+#define __SIZEOF_LONG_DOUBLE__ 8
+#define ip4_debug_print(p) 
+#define RT_TIMER_FLAG_PERIODIC 0x2
+#define TCP_SND_QUEUELEN RT_LWIP_TCP_SND_QUEUELEN
+#define TCPIP_MBOX_SIZE RT_LWIP_TCPTHREAD_MBOX_SIZE
+#define RT_OBJECT_HOOKLIST_DEFINE(name) 
+#define _CLOCKS_PER_SEC_ RT_TICK_PER_SECOND
+#define RT_TIMER_CTRL_SET_PARM 0x9
+#define SCNoLEAST16 __SCN16LEAST(o)
+#define PRIoLEAST32 __PRI32LEAST(o)
+#define __SA_IBIT__ 16
+#define IP_REASSEMBLY 0
+#define LWIP_HDR_ERR_H 
+#define __GNUCLIKE_ASM 3
+#define TCP_DATA_COPY(dst,src,len,seg) MEMCPY(dst, src, len)
+#define PKG_USING_NETUTILS_LATEST_VERSION 
+#define INT_FAST16_MIN (-INT_FAST16_MAX - 1)
+#define N_6PACK 7
+#define PRIdLEAST16 __PRI16LEAST(d)
+#define RT_MB_ENTRY_MAX RT_UINT16_MAX
+#define SSIZE_MAX INT_MAX
+#define LWIP_DHCP_GET_NTP_SRV 0
+#define RT_IS_ALIGN(addr,align) ((!(addr & (align - 1))) && (addr != RT_NULL))
+#define __BIGGEST_ALIGNMENT__ 8
+#define RT_USED rt_used
+#define PRIiFAST8 __PRI8FAST(i)
+#define PTRDIFF_MIN (-PTRDIFF_MAX - 1)
+#define LONG_MAX __LONG_MAX__
+#define IP_PROTO_TCP 6
+#define ARP_TABLE_SIZE 10
+#define TIOCCBRK 0x5428
+#define __PRI16FAST(x) __FAST16 __STRINGIFY(x)
+#define __int64_t_defined 1
+#define UDP_DEBUG LWIP_DBG_OFF
+#define IPADDR_ANY ((u32_t)0x00000000UL)
+#define _INO_T_DECLARED 
+#define CHECKSUM_GEN_ICMP 1
+#define NO_SYS 0
+#define ETHARP_STATS 0
+#define sigaddset(what,sig) (*(what) |= (1<<(sig)), 0)
+#define __FLT64_MAX_10_EXP__ 308
+#define NUM_TCP_PCB_LISTS_NO_TIME_WAIT 3
+#define PP_HTONL(x) ((((x) & 0x000000ffUL) << 24) | (((x) & 0x0000ff00UL) << 8) | (((x) & 0x00ff0000UL) >> 8) | (((x) & 0xff000000UL) >> 24))
+#define PP_HTONS(x) ((((x) & 0x00ffUL) << 8) | (((x) & 0xff00UL) >> 8))
+#define PRIdLEAST32 __PRI32LEAST(d)
+#define RT_TIMER_CTRL_GET_STATE 0x4
+#define __ASMNAME(cname) __XSTRING (__USER_LABEL_PREFIX__) cname
+#define NOINT 0xc0
+#define __COPYRIGHT(s) struct __hack
+#define TCP_DEFAULT_LISTEN_BACKLOG 0xff
+#define __pure __attribute__((__pure__))
+#define IPADDR_LOOPBACK ((u32_t)0x7f000001UL)
+#define IP_IS_V6_VAL(ipaddr) 0
+#define __GNUC_STDC_INLINE__ 1
+#define _FNOFOLLOW 0x100000
+#define RT_DFS_ELM_LFN_UNICODE_0 
+#define MEM_STATS_INC(x) 
+#define LWIP_ERRNO_INCLUDE "sys/errno.h"
+#define RT_USING_TIMER_SOFT 
+#define __DQ_IBIT__ 0
+#define IP_GET_TYPE(ipaddr) IPADDR_TYPE_V4
+#define TF_CLOSEPEND 0x08U
+#define N_IRDA 11
+#define __GNU_VISIBLE 0
+#define EXIT_SUCCESS 0
+#define RT_DEVICE_CTRL_BASE(Type) ((RT_Device_Class_ ##Type + 1) * 0x100)
+#define RT_LWIP_MSKADDR "255.255.255.0"
+#define __DBL_MAX__ ((double)1.7976931348623157e+308L)
+#define X32_F PRIx32
+#define CPUPORT_H__ 
+#define PRIiFAST16 __PRI16FAST(i)
+#define SI_QUEUE 0x02
+#define __ULFRACT_IBIT__ 0
+#define MLD6_STATS_DISPLAY() 
+#define PKG_NETUTILS_VER_NUM 0x99999
+#define __lock_init(lock) ((void) 0)
+#define __INT_FAST32_MAX__ 0x7fffffff
+#define IPADDR_BROADCAST ((u32_t)0xffffffffUL)
+#define __DBL_HAS_INFINITY__ 1
+#define _PID_T_DECLARED 
+#define IP_NAT 0
+#define ip4_addr_get_network(target,host,netmask) do { ((target)->addr = ((host)->addr) & ((netmask)->addr)); } while(0)
+#define RT_USING_POSIX_DELAY 
+#define _IFDIR 0040000
+#define TCP_PRIO_MAX 127
+#define _KEY_T_DECLARED 
+#define UDP_STATS_DISPLAY() 
+#define PRId8 __PRI8(d)
+#define RT_MAIN_THREAD_STACK_SIZE 8196
+#define MILLISECOND_PER_SECOND 1000UL
+#define RT_ERROR 255
+#define netif_ip_gw4(netif) ((const ip_addr_t*)&((netif)->gw))
+#define rt_sched_thread_is_binding(thread) (RT_TRUE)
+#define RT_USING_LIBC 1
+#define PRIiFAST32 __PRI32FAST(i)
+#define PRIi16 __PRI16(i)
+#define SIGQUIT 3
+#define LWIP_IPV6_MLD (LWIP_IPV6)
+#define __HAVE_SPECULATION_SAFE_VALUE 1
+#define TF_FIN 0x20U
+#define __ACCUM_IBIT__ 16
+#define rt_always_inline static inline __attribute__((always_inline))
+#define __RT_SCHED_H__ 
+#define RT_DEBUGING_ASSERT 
+#define TCP_SYN_RCVD_TIMEOUT 20000
+#define MEMP_NUM_NETBUF 2
+#define MEMP_NUM_TCPIP_MSG_API 8
+#define rt_atomic_exchange(ptr,v) rt_hw_atomic_exchange(ptr, v)
+#define _REENT_ASCTIME_BUF(ptr) ((ptr)->_new._reent._asctime_buf)
+#define __THUMB_INTERWORK__ 1
+#define SYS_STATS_INC(x) 
+#define ENOSYS 88
+#define RT_EFAULT EFAULT
+#define LWIP_FIONREAD_LINUXMODE 0
+#define _REENT_CHECK_EMERGENCY(ptr) 
+#define __INTPTR_WIDTH__ 32
+#define EPIPE 32
+#define TCP_MSL 60000UL
+#define TF_SEG_DATA_CHECKSUMMED (u8_t)0x04U
+#define TCP_MSS 1460
+#define RT_EVENT_FLAG_OR 0x02
+#define __UINT_LEAST32_MAX__ 0xffffffffUL
+#define LONG_MIN (-LONG_MAX - 1L)
+#define LWIP_PLATFORM_DIAG(x) do {rt_kprintf x;} while(0)
+#define RT_USING_DFS 
+#define __LACCUM_MAX__ 0X7FFFFFFFFFFFFFFFP-31LK
+#define LWIP_HDR_PBUF_H 
+#define RT_LWIP_IGMP 
+#define __attribute_format_strfmon__(a,b) 
+#define ip_addr_copy_from_ip4(dest,src) ip4_addr_copy(dest, src)
+#define RT_EVENT_FLAG_CLEAR 0x04
+#define __FLT32X_HAS_DENORM__ 1
+#define __INT_FAST16_TYPE__ int
+#define RT_THREAD_SUSPEND_KILLABLE (RT_THREAD_SUSPEND_MASK | RT_SIGNAL_COMMON_WAKEUP_MASK)
+#define _SIZE_T_DEFINED 
+#define RT_DFS_ELM_DRIVES 2
+#define _RAND48_MULT_2 (0x0005)
+#define _CLOCK_T_ unsigned long
+#define ip4_addr2(ipaddr) (((const u8_t*)(&(ipaddr)->addr))[1])
+#define MIB2_STATS 0
+#define SI_USER 0x01
+#define _WCHAR_T_DEFINED_ 
+#define PRIi8 __PRI8(i)
+#define _BLKCNT_T_DECLARED 
+#define ICMP6_STATS_INC(x) 
+#define EBADMSG 77
+#define __errno_r(ptr) _REENT_ERRNO(ptr)
+#define UINT_LEAST8_MAX __UINT_LEAST8_MAX__
+#define IPH_PROTO(hdr) ((hdr)->_proto)
+#define RT_DEVICE_FLAG_STANDALONE 0x008
+#define __LDBL_HAS_DENORM__ 1
+#define FINSH_COND(opt) opt,
+#define rt_cpu_get_id() (0)
+#define __ARM_FEATURE_LDREX 15
+#define NETIF_MAX_HWADDR_LEN 6U
+#define RT_LIBC_TZ_DEFAULT_MIN 0
+#define SYS_STATS_DEC(x) 
+#define NETDEV_IPV6 0
+#define __INT_LEAST32_MAX__ 0x7fffffffL
+#define rt_slist_first_entry(ptr,type,member) rt_slist_entry((ptr)->next, type, member)
+#define SIGABRT 6
+#define SAL_USING_LWIP 
+#define __unbounded 
+#define RT_EEMPTY ENODATA
+#define LWIP_EVENT_API 0
+#define __ARM_PCS 1
+#define LWIP_TCP 1
+#define RT_USING_MEMTRACE 
+#define DNS_MAX_NAME_LENGTH 256
+#define LWIP_MEMPOOL_DECLARE(name,num,size,desc) LWIP_DECLARE_MEMORY_ALIGNED(memp_memory_ ## name ## _base, ((num) * (MEMP_SIZE + MEMP_ALIGN_SIZE(size)))); LWIP_MEMPOOL_DECLARE_STATS_INSTANCE(memp_stats_ ## name) static struct memp *memp_tab_ ## name; const struct memp_desc memp_ ## name = { DECLARE_LWIP_MEMPOOL_DESC(desc) LWIP_MEMPOOL_DECLARE_STATS_REFERENCE(memp_stats_ ## name) LWIP_MEM_ALIGN_SIZE(size), (num), memp_memory_ ## name ## _base, &memp_tab_ ## name };
+#define ip_addr_netmask_valid(netmask) ip4_addr_netmask_valid((netmask)->addr)
+#define TIOCGETD 0x5424
+#define CHECKSUM_GEN_TCP 1
+#define PRIi32 __PRI32(i)
+#define SCNiLEAST32 __SCN32LEAST(i)
+#define __ACCUM_MAX__ 0X7FFFFFFFP-15K
+#define __SCN32(x) __INT32 __STRINGIFY(x)
+#define RT_COMPLETION_INIT(comp) {0}
+#define LWIP_HDR_IP4_H 
+#define netif_ip4_gw(netif) ((const ip4_addr_t*)ip_2_ip4(&((netif)->gw)))
+#define __FLT32_DENORM_MIN__ 1.4012984643248171e-45F32
+#define TIOCPKT_STOP 4
+#define SND_WND_SCALE(pcb,wnd) (wnd)
+#define F_SETFD 2
+#define __DBL_MAX_EXP__ 1024
+#define LWIP_NETCONN 1
+#define IPH_TTL_SET(hdr,ttl) (hdr)->_ttl = (u8_t)(ttl)
+#define __USACCUM_EPSILON__ 0x1P-8UHK
+#define __WCHAR_WIDTH__ 32
+#define SCNiLEAST16 __SCN16LEAST(i)
+#define __BIT_TYPES_DEFINED__ 1
+#define IP_ADDR_PCB_VERSION_MATCH(addr,pcb) 1
+#define __FLT32_MAX__ 3.4028234663852886e+38F32
+#define TCP_WRITE_FLAG_COPY 0x01
+#define RT_MEMHEAP_FAST_MODE 
+#define TF_ACK_NOW 0x02U
+#define __GCC_ATOMIC_LONG_LOCK_FREE 2
+#define MEM_USE_POOLS_TRY_BIGGER_POOL 0
+#define __BSD_VISIBLE 0
+#define MIB2_STATS_INC(x) 
+#define LWIP_NETCONN_FULLDUPLEX 0
+#define __SFRACT_MAX__ 0X7FP-7HR
+#define __FRACT_IBIT__ 0
+#define TCP_SNDQUEUELEN_OVERFLOW (0xffffU-3)
+#define IP_CLASSC_NSHIFT 8
+#define _VA_LIST_ 
+#define USERMODE 0x10
+#define S_BLKSIZE 1024
+#define PRIo8 __PRI8(o)
+#define __SCN64(x) __INT64 __STRINGIFY(x)
+#define __PTRDIFF_MAX__ 0x7fffffff
+#define __CC_SUPPORTS_INLINE 1
+#define __UACCUM_MIN__ 0.0UK
+#define ETOOMANYREFS 129
+#define __SCN16(x) __INT16 __STRINGIFY(x)
+#define EPFNOSUPPORT 96
+#define LWIP_DBG_ON 0x80U
+#define __SCNMAX(x) __STRINGIFY(ll ##x)
+#define ARCH_ARM_CORTEX_A 
+#define RT_LWIP_TCPTHREAD_MBOX_SIZE 8
+#define MEMP_USE_CUSTOM_POOLS 0
+#define __RT_STRINGIFY(x...) #x
+#define __strfmonlike(fmtarg,firstvararg) __attribute__((__format__ (__strfmon__, fmtarg, firstvararg)))
+#define SCNdLEAST16 __SCN16LEAST(d)
+#define RT_FALSE 0
+#define ENOTSUP 134
+#define X8_F "02" PRIx8
+#define TIOCM_DSR 0x100
+#define SCNdFAST16 __SCN16FAST(d)
+#define RT_TIMER_FLAG_THREAD_TIMER (0x8 | RT_TIMER_FLAG_HARD_TIMER)
+#define __UACCUM_IBIT__ 16
+#define DFS_USING_POSIX 
+#define __bounded 
+#define SIOCDELMULTI 0x8932
+#define __LLACCUM_MIN__ (-0X1P31LLK-0X1P31LLK)
+#define LWIP_RAND rand
+#define LWIP_SO_SNDRCVTIMEO_NONSTANDARD 0
+#define _PTRDIFF_T_DECLARED 
+#define FINSH_NEXT_SYSCALL(index) index++
+#define __compiler_membar() __asm __volatile(" " : : : "memory")
+#define TIOCM_DTR 0x002
+#define RT_THREAD_PRIORITY_256 
+#define TCGETX 0x5432
+#define __CC_SUPPORTS_DYNAMIC_ARRAY_INIT 1
+#define _REENT_RAND48_ADD(ptr) ((ptr)->_new._reent._r48._add)
+#define PRIx8 __PRI8(x)
+#define ip4_current_header() ((const struct ip_hdr*)(ip_data.current_ip4_header))
+#define _REENT_GETDATE_ERR_P(ptr) (&((ptr)->_new._reent._getdate_err))
+#define __FLT32_HAS_QUIET_NAN__ 1
+#define IRQMODE 0x12
+#define _T_WCHAR 
+#define __RTM_H__ 
+#define CMD_OPTIONS_NODE(_id,_name,_des) {.id = _id, .name = #_name, .des = #_des},
+#define LWIP_DBG_FRESH 0x10U
+#define __LONG_LONG_MAX__ 0x7fffffffffffffffLL
+#define __POSIX_VISIBLE 199009
+#define NETDEV_USING_AUTO_DEFAULT 
+#define __ULACCUM_MAX__ 0XFFFFFFFFFFFFFFFFP-32ULK
+#define ICMPH_CODE_SET(hdr,c) ((hdr)->code = (c))
+#define ND6_STATS_INC(x) 
+#define __unreachable() __builtin_unreachable()
+#define _REENT_INIT_RESERVED_6_7 
+#define __offsetof(type,field) offsetof(type, field)
+#define RT_USING_RANDOM 
+#define RT_THREAD_SUSPEND_MASK 0x04
+#define _WCHAR_T 
+#define O_NONBLOCK _FNONBLOCK
+#define IP_ADDR4(ipaddr,a,b,c,d) IP4_ADDR(ipaddr,a,b,c,d)
+#define SCNiPTR __SCNPTR(i)
+#define st_atime st_atim.tv_sec
+#define FINSH_THREAD_NAME "tshell"
+#define N_SLIP 1
+#define RT_OBJECT_FLAG_MODULE 0x80
+#define SIG_BLOCK 1
+#define TCP_OVERSIZE_DBGCHECK 0
+#define DNS_DOES_NAME_CHECK 1
+#define RT_NAME_MAX 16
+#define __lock_annotate(x) 
+#define RT_DEVICE_FLAG_SUSPENDED 0x020
+#define PRIu8 __PRI8(u)
+#define SIZE_MAX __SIZE_MAX__
+#define __SIZEOF_WINT_T__ 4
+#define PRIxLEAST8 __PRI8LEAST(x)
+#define LWIP_IPV6_AUTOCONFIG (LWIP_IPV6)
+#define PRIiLEAST32 __PRI32LEAST(i)
+#define RT_DEVICE_OFLAG_OPEN 0x008
+#define LWIP_NO_STDINT_H 0
+#define DNS_LOCAL_HOSTLIST 0
+#define LWIP_ERROR(message,expression,handler) do { if (!(expression)) { LWIP_PLATFORM_ERROR(message); handler;}} while(0)
+#define TIOCSPGRP 0x5410
+#define rt_typeof __typeof__
+#define RT_OBJECT_HOOK_CALL(func,argv) _RT_OBJECT_HOOK_CALL(func, argv)
+#define SIOCGHIWAT _IOR('s', 1, int)
+#define PBUF_POOL_FREE_OOSEQ 1
+#define PBUF_FLAG_LLMCAST 0x10U
+#define UINT64_C(c) __UINT64_C(c)
+#define __NULLABILITY_PRAGMA_PUSH 
+#define __LONG_LONG_WIDTH__ 64
+#define RT_OBJECT_HOOKLIST_DECLARE(handler_type,name) 
+#define __DOUBLE_TYPE double
+#define __strong_reference(sym,aliassym) extern __typeof (sym) aliassym __attribute__ ((__alias__ (#sym)))
+#define _GCC_WCHAR_T 
+#define __FLT32_MAX_EXP__ 128
+#define WINT_MAX __WINT_MAX__
+#define SIOCATMARK _IOR('s', 7, int)
+#define __MSH_GET_EXPORT_MACRO(_1,_2,_3,_4,_FUN,...) _FUN
+#define F_SETLK 8
+#define S_IWUSR 0000200
+#define FINSH_FUNCTION_EXPORT(name,desc) 
+#define UINTPTR_MAX __UINTPTR_MAX__
+#define __ULLACCUM_MIN__ 0.0ULLK
+#define TCP_OOSEQ_MAX_BYTES 0
+#define __no_lock_analysis __lock_annotate(no_thread_safety_analysis)
+#define _SYS_FEATURES_H 
+#define _PTRDIFF_T 
+#define __ptrvalue 
+#define ip_reset_option(pcb,opt) ((pcb)->so_options &= ~(opt))
+#define TCP_OOSEQ_MAX_PBUFS 0
+#define SIOCSLOWAT _IOW('s', 2, int)
+#define __GXX_ABI_VERSION 1018
+#define rt_atomic_add(ptr,v) rt_hw_atomic_add(ptr, v)
+#define __OBSOLETE_MATH __OBSOLETE_MATH_DEFAULT
+#define SAL_INTERNET_CHECK 
+#define RT_LWIP_ETHTHREAD_MBOX_SIZE 8
+#define RT_DEVICE_CTRL_NOTIFY_SET 0x05
+#define __UTA_FBIT__ 64
+#define SIOCGARP 0x8954
+#define MEMP_NUM_PBUF 32
+#define F_UNLCK 3
+#define LWIP_DNS_SUPPORT_MDNS_QUERIES 0
+#define __FLT_MIN_EXP__ (-125)
+#define LWIP_HDR_STATS_H 
+#define _UINT8_T_DECLARED 
+#define rt_atomic_flag_test_and_set(ptr) rt_hw_atomic_flag_test_and_set(ptr)
+#define __DEVOLATILE(type,var) ((type)(__uintptr_t)(volatile void *)(var))
+#define __GCC_HAVE_DWARF2_CFI_ASM 1
+#define __UFRACT_IBIT__ 0
+#define _IOC_WRITE 1U
+#define LWIP_HDR_IP6_ADDR_H 
+#define RT_SCHED_CTX(thread) ((thread)->sched_thread_ctx)
+#define EBADF 9
+#define O_WRONLY 1
+#define ICMP_SQ 4
+#define UINT32_MAX __UINT32_MAX__
+#define ip_addr_set_loopback(is_ipv6,ipaddr) ip4_addr_set_loopback(ipaddr)
+#define TCP_CHECKSUM_ON_COPY_SANITY_CHECK 0
+#define alloca(size) __builtin_alloca(size)
+#define CHECKSUM_GEN_IP 1
+#define __INT16_MAX__ 0x7fff
+#define _Alignas(x) __aligned(x)
+#define RT_USING_POSIX_STDIO 
+#define RT_SCHED_PRIV(thread) ((thread)->sched_thread_ctx.sched_thread_priv)
+#define tcp_debug_print(tcphdr) 
+#define MONITORMODE 0x16
+#define SIGCHLD 20
+#define __RT_KERRNO_H__ 
+#define __SVID_VISIBLE 0
+#define MILLISECOND_PER_TICK (MILLISECOND_PER_SECOND / RT_TICK_PER_SECOND)
+#define __PTRDIFF_T 
+#define lwip_strerr(x) ""
+#define HWREG32(x) (*((volatile rt_uint32_t *)(x)))
+#define _BSD_SIZE_T_ 
+#define RT_USING_SAL 
+#define TIOCSBRK 0x5427
+#define TIOCSERSWILD 0x5455
+#define F_GETFL 3
+#define __ARM_FEATURE_QBIT 1
+#define __datatype_type_tag(kind,type) 
+#define __INT_FAST64_TYPE__ long long int
+#define RT_USING_ZERO 
+#define _REENT_IS_NULL(_ptr) ((_ptr) == NULL)
+#define _FSYNC 0x2000
+#define ip4_addr_isany_val(addr1) ((addr1).addr == IPADDR_ANY)
+#define _FEXLOCK 0x0100
+#define LWIP_DBG_HALT 0x08U
+#define F_GETFD 1
+#define _ANSI_STDDEF_H 
+#define ENOTEMPTY 90
+#define __FLT64_DENORM_MIN__ 4.9406564584124654e-324F64
+#define TCP_EVENT_ACCEPT(lpcb,pcb,arg,err,ret) do { if((lpcb)->accept != NULL) (ret) = (lpcb)->accept((arg),(pcb),(err)); else (ret) = ERR_ARG; } while (0)
+#define RT_USING_INTERRUPT_INFO 
+#define N_HDLC 13
+#define __DBL_MIN__ ((double)2.2250738585072014e-308L)
+#define LINK_STATS 0
+#define WINT_MIN __WINT_MIN__
+#define _FDEFER 0x0020
+#define PRIx16 __PRI16(x)
+#define LWIP_ALIGNMENT_CAST(target_type,val) LWIP_CONST_CAST(target_type, val)
+#define SO_REUSE_RXTOALL 0
+#define PRIuPTR __PRIPTR(u)
+#define RT_USING_DFS_ELMFAT 
+#define RT_THREAD_STAT_SIGNAL 0x10
+#define MEMP_STATS_DEC(x,i) 
+#define SIOCGIFFLAGS 0x8913
+#define DECLARE_LWIP_MEMPOOL_DESC(desc) (desc),
+#define SMEMCPY(dst,src,len) MEMCPY(dst,src,len)
+#define rt_used __attribute__((used))
+#define S_IRWXO (S_IROTH | S_IWOTH | S_IXOTH)
+#define TCP_SLOW_INTERVAL (2*TCP_TMR_INTERVAL)
+#define LWIP_TIMERS 1
+#define __SIZEOF_POINTER__ 4
+#define __warn_references(sym,msg) __asm__(".section .gnu.warning." #sym); __asm__(".asciz \"" msg "\""); __asm__(".previous")
+#define __LWIPOPTS_H__ 
+#define DEFAULT_THREAD_STACKSIZE 0
+#define _RAND48_ADD (0x000b)
+#define netif_is_up(netif) (((netif)->flags & NETIF_FLAG_UP) ? (u8_t)1 : (u8_t)0)
+#define PRIx32 __PRI32(x)
+#define LWIP_PLATFORM_BYTESWAP 0
+#define RT_TIMER_CTRL_GET_TIME 0x1
+#define __NO_SIGNED_ZEROS__ 1
+#define IPH_CHKSUM(hdr) ((hdr)->_chksum)
+#define IPADDR2_COPY(dest,src) SMEMCPY(dest, src, sizeof(ip4_addr_t))
+#define _REENT_RAND48_SEED(ptr) ((ptr)->_new._reent._r48._seed)
+#define __DBL_HAS_QUIET_NAN__ 1
+#define __ATTRIBUTE_IMPURE_DATA__ 
+#define ENETRESET 126
+#define __restrict_arr restrict
+#define ip_current_dest_addr() (&ip_data.current_iphdr_dest)
+#define __FLT32X_EPSILON__ 2.2204460492503131e-16F32x
+#define ip_addr_set_zero_ip4(ipaddr) ip4_addr_set_zero(ipaddr)
+#define SIGUSR2 31
+#define PBUF_FLAG_TCP_FIN 0x20U
+#define sigismember(what,sig) (((*(what)) & (1<<(sig))) != 0)
+#define CLOCK_REALTIME_ALARM 8
+#define stats_display_mem(mem,name) 
+#define __predict_true(exp) __builtin_expect((exp), 1)
+#define TCP_TCPLEN(seg) ((seg)->len + (((TCPH_FLAGS((seg)->tcphdr) & (TCP_FIN | TCP_SYN)) != 0) ? 1U : 0U))
+#define F_GETLK 7
+#define NETIF_SET_CHECKSUM_CTRL(netif,chksumflags) 
+#define LWIP_ARRAYSIZE(x) (sizeof(x)/sizeof((x)[0]))
+#define TCP_SEQ_GEQ(a,b) ((s32_t)((u32_t)(a) - (u32_t)(b)) >= 0)
+#define SIGTRAP 5
+#define EISDIR 21
+#define __nonnull(x) __attribute__((__nonnull__ x))
+#define S_IFREG _IFREG
+#define __locks_exclusive(...) __lock_annotate(exclusive_lock_function(__VA_ARGS__))
+#define RT_WAITING_NO 0
+#define SCHAR_MAX __SCHAR_MAX__
+#define __FLT64_MIN_EXP__ (-1021)
+#define __LACCUM_MIN__ (-0X1P31LK-0X1P31LK)
+#define PRIx64 __PRI64(x)
+#define ARP_QUEUE_LEN 3
+#define __FRACT_FBIT__ 15
+#define __ULLACCUM_FBIT__ 32
+#define CHAR_MAX UCHAR_MAX
+#define _INTTYPES_H 
+#define IP_IS_V4_VAL(ipaddr) 1
+#define IPERF_THREAD_STACK_SIZE 2048
+#define PACK_STRUCT_END 
+#define LWIP_ICMP6_HL 255
+#define RT_SCHED_THREAD_CTX struct rt_sched_thread_ctx sched_thread_ctx;
+#define ip4_addr1_16(ipaddr) ((u16_t)ip4_addr1(ipaddr))
+#define __GXX_TYPEINFO_EQUALITY_INLINE 0
+#define MEM_DEBUG LWIP_DBG_OFF
+#define __FLT64_MIN_10_EXP__ (-307)
+#define RT_MM_PAGE_MASK (RT_MM_PAGE_SIZE - 1)
+#define __has_extension __has_feature
+#define __RT_ATOMIC_H__ 
+#define __ULLFRACT_EPSILON__ 0x1P-64ULLR
+#define IP_OFFMASK 0x1fffU
+#define RT_USING_POSIX_FS 
+#define _IOC(a,b,c,d) (((a)<<30) | ((b)<<8) | (c) | ((d)<<16))
+#define __USES_INITFINI__ 1
+#define _REENT_MBLEN_STATE(ptr) ((ptr)->_new._reent._mblen_state)
+#define ULONG_MAX (LONG_MAX * 2UL + 1UL)
+#define _ATEXIT_DYNAMIC_ALLOC 1
+#define ETHARP_STATS_DISPLAY() 
+#define __SYS_IOCTL_H__ 
+#define _REENT_CHECK_VERIFY 1
+#define LWIP_HDR_MEM_H 
+#define RT_EIO EIO
+#define stats_display_memp(mem,index) 
+#define __REGISTER_PREFIX__ 
+#define __UINT16_MAX__ 0xffff
+#define __DBL_HAS_DENORM__ 1
+#define INT_LEAST32_MAX __INT_LEAST32_MAX__
+#define RT_MMCSD_MAX_PARTITION 16
+#define SOCKET_TABLE_STEP_LEN 4
+#define F_WRLCK 2
+#define EIDRM 36
+#define ip4_addr_set_u32(dest_ipaddr,src_u32) ((dest_ipaddr)->addr = (src_u32))
+#define __ACCUM_MIN__ (-0X1P15K-0X1P15K)
+#define RCV_WND_SCALE(pcb,wnd) (wnd)
+#define LWIP_SUPPORT_CUSTOM_PBUF ((IP_FRAG && !LWIP_NETIF_TX_SINGLE_PBUF) || (LWIP_IPV6 && LWIP_IPV6_FRAG))
+#define RT_USING_SMALL_MEM_AS_HEAP 
+#define LWIP_TCP_OPT_NOP 1
+#define IP_FRAG 0
+#define __LDBL_HAS_INFINITY__ 1
+#define _Alignof(x) __alignof(x)
+#define __SQ_IBIT__ 0
+#define ip_addr_debug_print_val(debug,ipaddr) ip4_addr_debug_print_val(debug, ipaddr)
+#define TIOCGSERIAL 0x541E
+#define RT_DEVICE_FLAG_DYNAMIC 0x080
+#define IP6_STATS_INC(x) 
+#define TCP_RST_DEBUG LWIP_DBG_OFF
+#define INIT_COMPONENT_EXPORT(fn) INIT_EXPORT(fn, "4")
+#define __FLT32_MIN__ 1.1754943508222875e-38F32
+#define __UINT8_TYPE__ unsigned char
+#define RT_KERNEL_FREE(ptr) rt_free(ptr)
+#define TIOCM_RNG 0x080
+#define RT_LWIP_TCP_SEG_NUM 44
+#define __UHA_FBIT__ 8
+#define MEMP_STATS 0
+#define __GNUCLIKE_BUILTIN_STDARG 1
+#define __FLT_DIG__ 6
+#define ip_input ip4_input
+#define TCP_MAXRTX 12
+#define __NO_INLINE__ 1
+#define SIOCSIFMETRIC 0x891e
+#define RT_USING_MAILBOX 
+#define __SFRACT_MIN__ (-0.5HR-0.5HR)
+#define O_EXCL _FEXCL
+#define __UTQ_FBIT__ 128
+#define RT_HOOK_USING_FUNC_PTR 
+#define RT_THREAD_CLOSE 0x01
+#define _IOR(a,b,c) _IOC(_IOC_READ, (a), (b), sizeof(c))
+#define LONG_LONG_MAX __LONG_LONG_MAX__
+#define __DEC_EVAL_METHOD__ 2
+#define RT_USING_SPI 
+#define _BEGIN_STD_C 
+#define ECONNABORTED 113
+#define TCP_STATS 0
+#define ERR_IS_FATAL(e) ((e) <= ERR_ABRT)
+#define S_ISLNK(m) (((m)&_IFMT) == _IFLNK)
+#define SIGEV_THREAD 2
+#define SIOCSIFMTU 0x8922
+#define LWIP_IPV6_REASS (LWIP_IPV6)
+#define LWIP_UNUSED_ARG(x) (void)x
+#define CHAR_MIN 0
+#define PRIuMAX __PRIMAX(u)
+#define _SUSECONDS_T_DECLARED 
+#define __FLT_MANT_DIG__ 24
+#define PBUF_DEBUG LWIP_DBG_OFF
+#define __LDBL_DECIMAL_DIG__ 17
+#define RT_SFUD_USING_FLASH_INFO_TABLE 
+#define RT_USING_POSIX_TERMIOS 
+#define RT_LIST_OBJECT_INIT(object) { &(object), &(object) }
+#define __min_size(x) static (x)
+#define INT_LEAST8_MIN (-INT_LEAST8_MAX - 1)
+#define MEMP_SANITY_CHECK 0
+#define __VERSION__ "13.2.1 20231009"
+#define S_IFCHR _IFCHR
+#define RT_DEVICE_OFLAG_WRONLY 0x002
+#define ip_addr_set(dest,src) ip4_addr_set(dest, src)
+#define TCP_KEEPINTVL_DEFAULT 75000UL
+#define TF_NAGLEMEMERR 0x80U
+#define RT_THREAD_CTRL_BIND_CPU 0x04
+#define S_ISFIFO(m) (((m)&_IFMT) == _IFIFO)
+#define UINT_LEAST16_MAX __UINT_LEAST16_MAX__
+#define MSH_USING_BUILT_IN_COMMANDS 
+#define rt_slist_entry(node,type,member) rt_container_of(node, type, member)
+#define __UINT64_C(c) c ## ULL
+#define SAL_USING_POSIX 
+#define RT_USING_MEMPOOL 
+#define _SYS_TYPES_H 
+#define _PTRDIFF_T_ 
+#define __used __attribute__((__used__))
+#define MEMP_NUM_NETDB 1
+#define PRIXLEAST16 __PRI16LEAST(X)
+#define __ULLFRACT_FBIT__ 64
+#define __format_arg(fmtarg) __attribute__((__format_arg__ (fmtarg)))
+#define __arg_type_tag(arg_kind,arg_idx,type_tag_idx) 
+#define __SOFTFP__ 1
+#define LWIP_TCP_OPT_LEN_MSS 4
+#define SCNi16 __SCN16(i)
+#define LWIP_SO_RCVBUF 1
+#define MEMP_DEBUG LWIP_DBG_OFF
+#define MEMP_NUM_TCPIP_MSG_INPKT 8
+#define RT_USING_NULL 
+#define __FRACT_EPSILON__ 0x1P-15R
+#define PERF_START 
+#define _FNBIO 0x1000
+#define __ULACCUM_MIN__ 0.0ULK
+#define RT_TIMER_CTRL_SET_ONESHOT 0x2
+#define __IEEE_LITTLE_ENDIAN 
+#define INT_LEAST32_MIN (-INT_LEAST32_MAX - 1)
+#define NETIF_FLAG_MLD6 0x40U
+#define __UDA_FBIT__ 32
+#define __LARGEFILE_VISIBLE 0
+#define ETHARP_SUPPORT_VLAN 0
+#define RT_USING_LWIP203 
+#define TCP_DEBUG LWIP_DBG_OFF
+#define __builtin_is_aligned(x,align) (((__uintptr_t)x & ((align) - 1)) == 0)
+#define RT_USING_ADT 
+#define __GNUC_VA_LIST_COMPATIBILITY 1
+#define _TIME_T_ __int_least64_t
+#define RT_USING_DFS_MQUEUE 
+#define LWIP_NETIF_REMOVE_CALLBACK 0
+#define __LLACCUM_EPSILON__ 0x1P-31LLK
+#define st_mtime st_mtim.tv_sec
+#define sigfillset(what) (*(what) = ~(0), 0)
+#define O_RDWR 2
+#define __containerof(x,s,m) ({ const volatile __typeof(((s *)0)->m) *__x = (x); __DEQUALIFY(s *, (const volatile char *)__x - __offsetof(s, m));})
+#define __unlocks(...) __lock_annotate(unlock_function(__VA_ARGS__))
+#define J_Bit (1<<24)
+#define IP_CLASSA_HOST (0xffffffff & ~IP_CLASSA_NET)
+#define SIOCGIFMAP 0x8970
+#define RT_USING_POSIX_MESSAGE_SEMAPHORE 
+#define ip_current_header_tot_len() (ip_data.current_ip_header_tot_len)
+#define __STRING(x) #x
+#define RT_EVENT_LENGTH 32
+#define __GCC_ATOMIC_INT_LOCK_FREE 2
+#define EHOSTUNREACH 118
+#define _T_PTRDIFF_ 
+#define _REENT_SIGNAL_BUF(ptr) ((ptr)->_new._reent._signal_buf)
+#define SIGVTALRM 26
+#define EPERM 1
+#define TCP_PRIO_NORMAL 64
+#define IP_IS_ANY_TYPE_VAL(ipaddr) 0
+#define RT_SDIO_STACK_SIZE 4096
+#define LONG_LONG_MIN (-LONG_LONG_MAX - 1LL)
+#define ICMP_RD 5
+#define SIGPOLL SIGIO
+#define SCNi64 __SCN64(i)
+#define NUM_TCP_PCB_LISTS 4
+#define __LOCK_INIT_RECURSIVE(class,lock) static int lock = 0;
+#define TCP_URG 0x20U
+#define RT_USING_SPI_ISR 
+#define RT_KERNEL_MALLOC(sz) rt_malloc(sz)
+#define TIOCMSET 0x5418
+#define TCPWND16(x) (x)
+#define __GNUC_PREREQ(maj,min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+#define IGMP_STATS 0
+#define LWIP_STATS_DISPLAY 0
+#define SIOCSIFHWADDR 0x8924
+#define _SYS_SIZE_T_H 
+#define TCSETSF 0x5404
+#define MEMP_STATS_DISPLAY(i) 
+#define RT_EBUSY EBUSY
+#define TIOCPKT_START 8
+#define CHECKSUM_GEN_ICMP6 1
+#define _REENT_WCRTOMB_STATE(ptr) ((ptr)->_new._reent._wcrtomb_state)
+#define __trylocks_exclusive(...) __lock_annotate(exclusive_trylock_function(__VA_ARGS__))
+#define __LEAST16 "h"
+#define __FLOAT_WORD_ORDER__ __ORDER_LITTLE_ENDIAN__
+#define SIGPROF 27
+#define SIOCGIFBRDADDR 0x8919
+#define SLIPIF_THREAD_PRIO 1
+#define SIOCGPGRP 0x8904
+#define CHECKSUM_CHECK_ICMP 1
+#define sigdelset(what,sig) (*(what) &= ~(1<<(sig)), 0)
+#define SCNoPTR __SCNPTR(o)
+#define RT_CPUS_NR 1
+#define __SIZE_T__ 
+#define __USFRACT_MIN__ 0.0UHR
+#define TCP_EVENT_CONNECTED(pcb,err,ret) do { if((pcb)->connected != NULL) (ret) = (pcb)->connected((pcb)->callback_arg,(pcb),(err)); else (ret) = ERR_OK; } while (0)
+#define RT_DFS_ELM_MAX_LFN 255
+#define __FLT32_MANT_DIG__ 24
+#define __ELASTERROR 2000
+#define FINSH_HISTORY_LINES 10
+#define SIG_ATOMIC_MAX __SIG_ATOMIC_MAX__
+#define RT_USING_WDT 
+#define EFAULT 14
+#define _ATEXIT_SIZE 32
+#define SIOCGIFMETRIC 0x891d
+#define DFS_FD_MAX 32
+#define __FBSDID(s) struct __hack
+#define LWIP_ND6_NUM_PREFIXES 5
+#define TCP_HLEN 20
+#define RT_IPC_CMD_UNKNOWN 0x00
+#define RT_USING_OVERFLOW_CHECK 
+#define RT_DEVICE_FLAG_RDWR 0x003
+#define RT_ENOMEM ENOMEM
+#define RT_CONSOLE_DEVICE_NAME "uart0"
+#define __align_up(x,y) __builtin_align_up(x, y)
+#define SIOCGSTAMP 0x8906
+#define INT32_MAX __INT32_MAX__
+#define SOF_INHERITED (SOF_REUSEADDR|SOF_KEEPALIVE)
+#define __compar_fn_t_defined 
+#define _IOW(a,b,c) _IOC(_IOC_WRITE, (a), (b), sizeof(c))
+#define TCP_RMV_ACTIVE(npcb) do { TCP_RMV(&tcp_active_pcbs, npcb); tcp_active_pcbs_changed = 1; } while (0)
+#define _FNDELAY _FNONBLOCK
+#define SOC_VEXPRESS_A9 
+#define __UQQ_IBIT__ 0
+#define TCSETSW 0x5403
+#define ETHARP_SUPPORT_STATIC_ENTRIES 0
+#define IP_BADCLASS(a) (((u32_t)(a) & 0xf0000000UL) == 0xf0000000UL)
+#define CLOCK_SGI_CYCLE 10
+#define TIOCSTI 0x5412
+#define RT_LWIP_UDP 
+#define PRIxFAST16 __PRI16FAST(x)
+#define SIOCGIFSLAVE 0x8929
+#define __PRI32LEAST(x) __LEAST32 __STRINGIFY(x)
+#define LWIP_ND6_TCP_REACHABILITY_HINTS 1
+#define LWIP_HDR_PROT_ICMP_H 
+#define ICMP_STATS 0
+#define LWIP_TCP_OPT_LENGTH(flags) (flags & TF_SEG_OPTS_MSS ? LWIP_TCP_OPT_LEN_MSS : 0) + (flags & TF_SEG_OPTS_TS ? LWIP_TCP_OPT_LEN_TS_OUT : 0) + (flags & TF_SEG_OPTS_WND_SCALE ? LWIP_TCP_OPT_LEN_WS_OUT : 0)
+#define SIOCDEVPRIVATE 0x89F0
+#define INT64_MIN (-INT64_MAX - 1)
+#define F_SETFL 4
+#define IPH_OFFSET_SET(hdr,off) (hdr)->_offset = (off)
+#define SIG_UNBLOCK 2
+#define RT_USING_CONSOLE 
+#define PRIdFAST16 __PRI16FAST(d)
+#define __USFRACT_MAX__ 0XFFP-8UHR
+#define __SCHAR_WIDTH__ 8
+#define RT_THREAD_SUSPEND_INTERRUPTIBLE (RT_THREAD_SUSPEND_MASK)
+#define SIOCGSTAMPNS 0x8907
+#define LWIP_ND6_MAX_MULTICAST_SOLICIT 3
+#define RT_THREAD_STAT_YIELD 0x08
+#define __INT32_C(c) c ## L
+#define __ORDER_PDP_ENDIAN__ 3412
+#define __UHQ_FBIT__ 16
+#define __PRI16(x) __INT16 __STRINGIFY(x)
+#define __LLACCUM_FBIT__ 31
+#define RT_TIMER_CTRL_SET_TIME 0x0
+#define ip_addr_cmp(addr1,addr2) ip4_addr_cmp(addr1, addr2)
+#define MEMP_NUM_ARP_QUEUE 30
+#define stats_display_proto(proto,name) 
+#define __lock_init_recursive(lock) ((void) 0)
+#define tcp_new_ip6() tcp_new_ip_type(IPADDR_TYPE_V6)
+#define ip_current_src_addr() (&ip_data.current_iphdr_src)
+#define __va_copy(d,s) __builtin_va_copy(d,s)
+#define SIGSEGV 11
+#define RT_USING_ADT_AVL 
+#define _REENT_MP_FREELIST(ptr) ((ptr)->_freelist)
+#define tcp_debug_print_pcbs() 
+#define _Null_unspecified 
+#define __INT_FAST32_TYPE__ int
+#define N_AX25 5
+#define ARP_QUEUEING 1
+#define RT_LWIP_IPADDR "192.168.10.2"
+#define RT_USING_DEVICE 
+#define UINT64_MAX __UINT64_MAX__
+#define __PRI32(x) __INT32 __STRINGIFY(x)
+#define LWIP_IPV6 0
+#define LWIP_NO_INTTYPES_H 0
+#define LWIP_DHCP_MAX_DNS_SERVERS DNS_MAX_SERVERS
+#define FINSH_USING_MSH 
+#define SCNxFAST32 __SCN32FAST(x)
+#define ARP_MAXAGE 300
+#define TIMERS_DEBUG LWIP_DBG_OFF
+#define O_RDONLY 0
+#define EINVAL 22
+#define ICMP_DEBUG LWIP_DBG_OFF
+#define _ANSI_STDARG_H_ 
+#define SIG_ATOMIC_MIN __SIG_ATOMIC_MIN__
+#define __UINT_LEAST16_TYPE__ short unsigned int
+#define MEMP_NUM_NETCONN RT_MEMP_NUM_NETCONN
+#define _FNONBLOCK 0x4000
+#define NETDEV_USING_PING 
+#define RT_TIMER_FLAG_ONE_SHOT 0x0
+#define _INTMAX_T_DECLARED 
+#define IPH_ID_SET(hdr,id) (hdr)->_id = (id)
+#define _GCC_PTRDIFF_T 
+#define PRIu32 __PRI32(u)
+#define _REENT_MBRLEN_STATE(ptr) ((ptr)->_new._reent._mbrlen_state)
+#define RAND_MAX __RAND_MAX
+#define _REENT_EMERGENCY(_ptr) ((_ptr)->_emergency)
+#define ip4_addr1(ipaddr) (((const u8_t*)(&(ipaddr)->addr))[0])
+#define ip4_addr3(ipaddr) (((const u8_t*)(&(ipaddr)->addr))[2])
+#define ip4_addr4(ipaddr) (((const u8_t*)(&(ipaddr)->addr))[3])
+#define IP_PROTO_UDP 17
+#define SCNdFAST32 __SCN32FAST(d)
+#define RT_TIMER_CTRL_GET_REMAIN_TIME 0x5
+#define LWIP_DBG_TYPES_ON (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH|LWIP_DBG_HALT)
+#define EDOM 33
+#define EADDRNOTAVAIL 125
+#define __INT8 "hh"
+#define IP_IS_V4(ipaddr) 1
+#define IP_IS_V6(ipaddr) 0
+#define LWIP_MEMPOOL_PROTOTYPE(name) extern const struct memp_desc memp_ ## name
+#define RT_USING_HW_ATOMIC 
+#define RT_USING_ADT_BITMAP 
+#define __PRI64(x) __INT64 __STRINGIFY(x)
+#define __SIZE_TYPE__ unsigned int
+#define rt_hw_spin_unlock(lock) rt_hw_interrupt_enable(*(lock))
+#define __UINT64_MAX__ 0xffffffffffffffffULL
+#define ETIME 62
+#define _REENT_INIT_PTR_ZEROED(var) { (var)->_stdin = &__sf[0]; (var)->_stdout = &__sf[1]; (var)->_stderr = &__sf[2]; (var)->_new._reent._rand_next = 1; (var)->_new._reent._r48._seed[0] = _RAND48_SEED_0; (var)->_new._reent._r48._seed[1] = _RAND48_SEED_1; (var)->_new._reent._r48._seed[2] = _RAND48_SEED_2; (var)->_new._reent._r48._mult[0] = _RAND48_MULT_0; (var)->_new._reent._r48._mult[1] = _RAND48_MULT_1; (var)->_new._reent._r48._mult[2] = _RAND48_MULT_2; (var)->_new._reent._r48._add = _RAND48_ADD; }
+#define _SIZE_T_DECLARED 
+#define ETHARP_TABLE_MATCH_NETIF 0
+#define RT_THREAD_SUSPEND RT_THREAD_SUSPEND_INTERRUPTIBLE
+#define __FLT_IS_IEC_60559__ 1
+#define __UDQ_FBIT__ 64
+#define NETIF_DEBUG LWIP_DBG_OFF
+#define LWIP_UDPLITE 0
+#define __GNUC_WIDE_EXECUTION_CHARSET_NAME "UTF-32LE"
+#define RT_LWIP_PBUF_NUM 16
+#define TIOCGRS485 0x542E
+#define _Kmax (sizeof (size_t) << 3)
+#define __GNUCLIKE_BUILTIN_CONSTANT_P 1
+#define ip_netif_get_local_ip(netif,dest) ip4_netif_get_local_ip(netif)
+#define __INT8_TYPE__ signed char
+#define TIOCGPKT 0x80045438
+#define SIOCDIFADDR 0x8936
+#define I_Bit (1<<7)
+#define stats_display_igmp(igmp,name) 
+#define IPFRAG_STATS 0
+#define __ELF__ 1
+#define __SCN32LEAST(x) __LEAST32 __STRINGIFY(x)
+#define CLOCK_THREAD_CPUTIME_ID 3
+#define __GCC_ASM_FLAG_OUTPUTS__ 1
+#define __RT_THREAD_H__ 
+#define NETIF_NAMESIZE RT_LWIP_NETIF_NAMESIZE
+#define _INT32_T_DECLARED 
+#define ip_addr_islinklocal(ipaddr) ip4_addr_islinklocal(ipaddr)
+#define TCPIP_THREAD_NAME "tcpip"
+#define MEMP_NUM_LOCALHOSTLIST 1
+#define _REENT_CHECK_MP(ptr) 
+#define TCP_WND_UPDATE_THRESHOLD LWIP_MIN((TCP_WND / 4), (TCP_MSS * 4))
+#define IP_CLASSC_HOST (0xffffffff & ~IP_CLASSC_NET)
+#define PRIxMAX __PRIMAX(x)
+#define __RECIPROCAL_MATH__ 1
+#define __SACCUM_EPSILON__ 0x1P-7HK
+#define LWIP_DEBUGF(debug,message) 
+#define LWIP_IPV6_SEND_ROUTER_SOLICIT 1
+#define RT_EINVAL EINVAL
+#define __ULFRACT_EPSILON__ 0x1P-32ULR
+#define LWIP_MPU_COMPATIBLE 0
+#define TIOCGPTLCK 0x80045439
+#define LWIP_IPV6_DUP_DETECT_ATTEMPTS 1
+#define __LLFRACT_FBIT__ 63
+#define TIOCSERGETLSR 0x5459
+#define MEMP_SANITY_REGION_AFTER 16
+#define ip4_addr_get_u32(src_ipaddr) ((src_ipaddr)->addr)
+#define LWIP_MIB2_CALLBACKS 0
+#define __FLT_RADIX__ 2
+#define _MSH_FUNCTION_CMD2(a0,a1) MSH_FUNCTION_EXPORT_CMD(a0, a0, a1, 0)
+#define RT_BLK_PARTITION_DFS 
+#define PRIdLEAST8 __PRI8LEAST(d)
+#define TCPH_FLAGS(phdr) ((u16_t)(lwip_ntohs((phdr)->_hdrlen_rsvd_flags) & TCP_FLAGS))
+#define __INT_LEAST16_TYPE__ short int
+#define RT_DFS_ELM_MAX_SECTOR_SIZE 4096
+#define netif_get_hostname(netif) (((netif) != NULL) ? ((netif)->hostname) : NULL)
+#define __ARM_ARCH_PROFILE 65
+#define __LDBL_EPSILON__ 2.2204460492503131e-16L
+#define INTPTR_MAX __INTPTR_MAX__
+#define __UINTMAX_C(c) c ## ULL
+#define O_SYNC _FSYNC
+#define CHECKSUM_CHECK_TCP 1
+#define _POSIX_C_SOURCE 1
+#define RT_USING_LWIP_VER_NUM 0x20003
+#define rt_atomic_compare_exchange_strong(ptr,v,des) rt_hw_atomic_compare_exchange_strong(ptr, v ,des)
+#define LWIP_CALLBACK_API 1
+#define MLD6_STATS 0
+#define RT_IPC_CMD_RESET 0x01
+#define __INT32 "l"
+#define _IOWR(a,b,c) _IOC(_IOC_READ|_IOC_WRITE, (a), (b), sizeof(c))
+#define _ELIDABLE_INLINE static __inline__
+#define SCNxLEAST16 __SCN16LEAST(x)
+#define __long_double_t long double
+#define __SACCUM_MAX__ 0X7FFFP-7HK
+#define MEMP_NUM_FRAG_PBUF 15
+#define LWIP_MEMPOOL_ALLOC(name) memp_malloc_pool(&memp_ ## name)
+#define __section(x) __attribute__((__section__(x)))
+#define TCP_FIN_WAIT_TIMEOUT 20000
+#define FINSH_ARG_MAX 10
+#define MEMP_NUM_RAW_PCB RT_LWIP_RAW_PCB_NUM
+#define RT_DEVICE_OFLAG_RDWR 0x003
+#define TCP_PRIO_MIN 1
+#define __FLT32X_MIN__ 2.2250738585072014e-308F32x
+#define __ON_HOOK_ARGS(__hook,argv) do {if ((__hook) != RT_NULL) __hook argv; } while (0)
+#define _INT16_T_DECLARED 
+#define LWIP_HDR_DEBUG_H 
+#define SCNx16 __SCN16(x)
+#define _REENT_TM(ptr) (&(ptr)->_new._reent._localtime_buf)
+#define CLOCK_MONOTONIC_RAW 5
+#define SLIP_DEBUG LWIP_DBG_OFF
+#define __PRI8FAST(x) __FAST8 __STRINGIFY(x)
+#define __SIG_ATOMIC_MAX__ 0x7fffffff
+#define TCP_CWR 0x80U
+#define LWIP_SOCKET_OFFSET 0
+#define DNS_TABLE_SIZE 4
+#define SCNxLEAST32 __SCN32LEAST(x)
+#define SIGCONT 19
+#define SIOCDARP 0x8953
+#define MEMP_MEM_MALLOC 0
+#define RT_USING_SEMAPHORE 
+#define IP_CLASSC(a) ((((u32_t)(a)) & 0xe0000000UL) == 0xc0000000UL)
+#define TF_GOT_FIN (u8_t)0x20U
+#define INT_LEAST64_MAX __INT_LEAST64_MAX__
+#define __UACCUM_FBIT__ 16
+#define IP_FORWARD 0
+#define RT_USING_SDIO 
+#define __GCC_ATOMIC_WCHAR_T_LOCK_FREE 2
+#define __USER_LABEL_PREFIX__ 
+#define RT_UINT64_MAX UINT64_MAX
+#define EOVERFLOW 139
+#define S_IRUSR 0000400
+#define SIGPIPE 13
+#define __VFP_FP__ 1
+#define tcp_backlog_delayed(pcb) 
+#define LWIP_ND6_NUM_DESTINATIONS 10
+#define UCHAR_MAX (SCHAR_MAX * 2 + 1)
+#define RT_IPC_CMD_SET_VLIMIT 0x03
+#define __SIZEOF_PTRDIFF_T__ 4
+#define rt_noreturn __attribute__ ((noreturn))
+#define _WANT_USE_GDTOA 1
+#define rt_atomic_sub(ptr,v) rt_hw_atomic_sub(ptr, v)
+#define LWIP_ND6_ALLOW_RA_UPDATES 1
+#define CLOCK_DISABLED 0
+#define RT_USING_NEWLIBC 1
+#define RT_LWIP_USING_PING 
+#define __sym_default(sym,impl,verid) __asm__(".symver " #impl ", " #sym "@@" #verid)
+#define TCP_PCB_COMMON(type) type *next; void *callback_arg; enum tcp_state state; u8_t prio; u16_t local_port
+#define __nosanitizethread 
+#define ip4_addr3_16(ipaddr) ((u16_t)ip4_addr3(ipaddr))
+#define RT_USING_I2C 
+#define __LEAST8 "hh"
+#define LWIP_TCP_OPT_TS 8
+#define HWREG8(x) (*((volatile rt_uint8_t *)(x)))
+#define _TIME_H_ 
+#define LWIP_SO_SNDTIMEO 1
+#define RT_DFS_ELM_USE_LFN 3
+#define RT_LWIP_ETHTHREAD_PRIORITY 12
+#define __FLT32_HAS_INFINITY__ 1
+#define RT_VERSION_PATCH 0
+#define SCNx64 __SCN64(x)
+#define CLOCK_TAI 11
+#define MEMP_ALIGN_SIZE(x) (LWIP_MEM_ALIGN_SIZE(x) + MEMP_SANITY_REGION_AFTER_ALIGNED)
+#define netif_ip4_addr(netif) ((const ip4_addr_t*)ip_2_ip4(&((netif)->ip_addr)))
+#define SCNoMAX __SCNMAX(o)
+#define INTPTR_MIN (-INTPTR_MAX - 1)
+#define _TIMEVAL_DEFINED 
+#define RT_TIMER_FLAG_ACTIVATED 0x1
+#define TCP_SNDQUEUELOWAT TCP_SND_QUEUELEN/2
+#define INT8_C(c) __INT8_C(c)
+#define EAFNOSUPPORT 106
+#define __SIZEOF_LONG__ 4
+#define RT_USING_RESOURCE_ID 
+#define CHECKSUM_GEN_UDP 1
+#define PRIu64 __PRI64(u)
+#define S_IFDIR _IFDIR
+#define INIT_CORE_EXPORT(fn) INIT_EXPORT(fn, "1.0")
+#define __LACCUM_EPSILON__ 0x1P-31LK
+#define tcp_ack_now(pcb) do { (pcb)->flags |= TF_ACK_NOW; } while (0)
+#define EBUSY 16
+#define _REENT_CHECK_ASCTIME_BUF(ptr) 
+#define _REENT_INIT_PTR(var) { memset((var), 0, sizeof(*(var))); _REENT_INIT_PTR_ZEROED(var); }
+#define __LDBL_DIG__ 15
+#define LWIP_PLATFORM_ERROR(message) LWIP_PLATFORM_ASSERT(message)
+#define RT_USING_PIN 
+#define DNS_MAX_SERVERS 2
+#define netif_ip4_netmask(netif) ((const ip4_addr_t*)ip_2_ip4(&((netif)->netmask)))
+#define LWIP_TCP_OPT_WS 3
+#define tcp_pcbs_sane() 1
+#define __FLT64_IS_IEC_60559__ 1
+#define _SIZE_T_ 
+#define __FLT32X_MIN_EXP__ (-1021)
+#define ip4_addr_set_loopback(ipaddr) ((ipaddr)->addr = PP_HTONL(IPADDR_LOOPBACK))
+#define UINT_FAST32_MAX __UINT_FAST32_MAX__
+#define TIOCSWINSZ 0x5414
+#define O_CREAT _FCREAT
+#define _CLOCK_T_DECLARED 
+#define _WCHAR_T_H 
+#define RT_USING_MTD_NAND 
+#define ip_addr_isany(ipaddr) ip4_addr_isany(ipaddr)
+#define EPROTO 71
+#define RT_USING_DEVICE_OPS 
+#define ENODEV 19
+#define PRIxLEAST16 __PRI16LEAST(x)
+#define SCNi32 __SCN32(i)
+#define RT_MAIN_THREAD_PRIORITY 10
+#define SOF_KEEPALIVE 0x08U
+#define ICMP_ECHO 8
+#define __PRIMAX(x) __STRINGIFY(ll ##x)
+#define __INT_FAST16_MAX__ 0x7fffffff
+#define __timer_t_defined 
+#define HYPMODE 0x1b
+#define _FEXCL 0x0800
+#define INT_MAX __INT_MAX__
+#define __SYS_CONFIG_H__ 
+#define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
+#define RT_VER_NUM 0x50300
+#define ___int_least16_t_defined 1
+#define N_R3964 9
+#define _REENT_INIT_RESERVED_0 
+#define __GCC_CONSTRUCTIVE_SIZE 64
+#define _REENT_INIT_RESERVED_2 
+#define _REENT_INIT_RESERVED_8 
+#define TCP_INPUT_DEBUG LWIP_DBG_OFF
+#define LWIP_COMPAT_SOCKETS 0
+#define PRIxLEAST32 __PRI32LEAST(x)
+#define ipaddr_ntoa(ipaddr) ip4addr_ntoa(ipaddr)
+#define LWIP_DBG_LEVEL_OFF LWIP_DBG_LEVEL_ALL
+#define __FLT64_DIG__ 15
+#define S_ISVTX 0001000
+#define EROFS 30
+#define RT_THREAD_CTRL_INFO 0x03
+#define SIOCSPGRP 0x8902
+#define _SYS_CDEFS_H_ 
+#define __UINT_FAST32_MAX__ 0xffffffffU
+#define DNS_LOCAL_HOSTLIST_IS_DYNAMIC 0
+#define __UINT_LEAST64_TYPE__ long long unsigned int
+#define _REENT_EMERGENCY_SIZE 25
+#define PRId64 __PRI64(d)
+#define PERF_STOP(x) 
+#define NULL ((void *)0)
+#define LWIP_TCPIP_CORE_LOCKING_INPUT 0
+#define __SFRACT_EPSILON__ 0x1P-7HR
+#define SIOCSIFSLAVE 0x8930
+#define DEFAULT_ACCEPTMBOX_SIZE 10
+#define PACK_STRUCT_FLD_8(x) PACK_STRUCT_FIELD(x)
+#define __FLT_HAS_QUIET_NAN__ 1
+#define CMD_OPTIONS_NODE_START(command) static struct msh_cmd_opt command ##_msh_options[] = {
+#define UINTMAX_MAX __UINTMAX_MAX__
+#define __PRI16LEAST(x) __LEAST16 __STRINGIFY(x)
+#define MODEMASK 0x1f
+#define INT32_C(c) __INT32_C(c)
+#define __FLT_MAX_10_EXP__ 38
+#define __DECONST(type,var) ((type)(__uintptr_t)(const void *)(var))
+#define __PRI64FAST(x) __FAST64 __STRINGIFY(x)
+#define RT_DEVICE_OFLAG_CLOSE 0x000
+#define ip_route_get_local_ip(src,dest,netif,ipaddr) do { (netif) = ip_route(src, dest); (ipaddr) = ip_netif_get_local_ip(netif, dest); }while(0)
+#define __LONG_MAX__ 0x7fffffffL
+#define __WCHAR_T__ 
+#define __SIZEOF_SIZE_T__ 4
+#define __dead2 __attribute__((__noreturn__))
+#define va_copy(d,s) __builtin_va_copy(d,s)
+#define _CLOCKID_T_ unsigned long
+#define RT_TRUE 1
+#define __FLT_HAS_INFINITY__ 1
+#define __GNUC_EXECUTION_CHARSET_NAME "UTF-8"
+#define TCSETA 0x5406
+#define _SPIN_UNLOCK_DEBUG_OWNER(lock) RT_UNUSED(lock)
+#define SIGALRM 14
+#define rt_list_for_each(pos,head) for (pos = (head)->next; pos != (head); pos = pos->next)
+#define TCSETS 0x5402
+#define LWIP_DHCP_AUTOIP_COOP (LWIP_DHCP && LWIP_AUTOIP)
+#define TCSETX 0x5433
+#define _REENT_CHECK_RAND48(ptr) 
+#define ICMP_PP 12
+#define RT_MQ_ENTRY_MAX RT_UINT16_MAX
+#define LWIP_SOCKET_POLL 1
+#define __CHAR_UNSIGNED__ 1
+#define RT_DEBUG_SCHEDULER_AVAILABLE(need_check) do { if (need_check) { if (rt_critical_level() != 0) { rt_kprintf("Function[%s]: scheduler is not available\n", __FUNCTION__); RT_ASSERT(0) } RT_DEBUG_IN_THREAD_CONTEXT; } } while (0)
+#define RT_DEVICE_FLAG_DMA_TX 0x800
+#define _BSD_PTRDIFF_T_ 
+#define __RAND_MAX 0x7fffffff
+#define tcp_mss(pcb) ((pcb)->mss)
+#define PRIXPTR __PRIPTR(X)
+#define _TIME_T_DECLARED 
+#define LWIP_DNS 1
+#define SIGXFSZ 25
+#define rt_atomic_store(ptr,v) rt_hw_atomic_store(ptr, v)
+#define __UINT_FAST16_TYPE__ unsigned int
+#define RT_LWIP_DNS 
+#define TCPH_FLAGS_SET(phdr,flags) (phdr)->_hdrlen_rsvd_flags = (((phdr)->_hdrlen_rsvd_flags & PP_HTONS(~TCP_FLAGS)) | lwip_htons(flags))
+#define RT_DEVICE_FLAG_ACTIVATED 0x010
+#define __ARM_32BIT_STATE 1
+#define __INT_FAST32_WIDTH__ 32
+#define __CHAR16_TYPE__ short unsigned int
+#define __asserts_shared(...) __lock_annotate(assert_shared_lock(__VA_ARGS__))
+#define LWIP_NETBUF_RECVINFO 0
+#define __PRAGMA_REDEFINE_EXTNAME 1
+#define __INT64 "ll"
+#define SCNuPTR __SCNPTR(u)
+#define va_end(v) __builtin_va_end(v)
+#define E2BIG 7
+#define SIOCSIFMAP 0x8971
+#define TCSETAW 0x5407
+#define SI_MESGQ 0x05
+#define PRIX32 __PRI32(X)
+#define __SIZE_WIDTH__ 32
+#define RT_EVENT_FLAG_AND 0x01
+#define rt_packed(declare) declare __attribute__((packed))
+#define RT_THREAD_LIST_NODE(thread) (RT_SCHED_CTX(thread).thread_list_node)
+#define RT_LIBC_TZ_DEFAULT_HOUR 8
+#define __INT_LEAST16_MAX__ 0x7fff
+#define INT_MIN (-INT_MAX - 1)
+#define LWIP_ICMP6 (LWIP_IPV6)
+#define ip_init() 
+#define RT_MMCSD_STACK_SIZE 16384
+#define RT_THREAD_STAT_SIGNAL_WAIT 0x20
+#define RT_DEVICE_CTRL_SUSPEND 0x02
+#define RAW_TTL (IP_DEFAULT_TTL)
+#define TCP_RMV(pcbs,npcb) do { if(*(pcbs) == (npcb)) { (*(pcbs)) = (*pcbs)->next; } else { struct tcp_pcb *tcp_tmp_pcb; for (tcp_tmp_pcb = *pcbs; tcp_tmp_pcb != NULL; tcp_tmp_pcb = tcp_tmp_pcb->next) { if(tcp_tmp_pcb->next == (npcb)) { tcp_tmp_pcb->next = (npcb)->next; break; } } } (npcb)->next = NULL; } while(0)
+#define __INT64_MAX__ 0x7fffffffffffffffLL
+#define EDEADLK 45
+#define _UINT64_T_DECLARED 
+#define __SACCUM_FBIT__ 7
+#define MEM_SIZE_F U16_F
+#define EADDRINUSE 112
+#define __NO_TRAPPING_MATH__ 1
+#define ip_addr_set_ip4_u32(ipaddr,val) ip4_addr_set_u32(ip_2_ip4(ipaddr), val)
+#define __FAST_MATH__ 1
+#define TCPWNDSIZE_F U16_F
+#define ip4_addr_set(dest,src) ((dest)->addr = ((src) == NULL ? 0 : (src)->addr))
+#define PRIiLEAST8 __PRI8LEAST(i)
+#define __SIG_ATOMIC_WIDTH__ 32
+#define ICMP_ER 0
+#define LWIP_DNS_SECURE_RAND_XID 1
+#define __INT_LEAST64_TYPE__ long long int
+#define rt_hw_local_irq_disable rt_hw_interrupt_disable
+#define INT64_MAX __INT64_MAX__
+#define ip_addr_netcmp(addr1,addr2,mask) ip4_addr_netcmp(addr1, addr2, mask)
+#define _IFIFO 0010000
+#define ip4_addr_netcmp(addr1,addr2,mask) (((addr1)->addr & (mask)->addr) == ((addr2)->addr & (mask)->addr))
+#define __ARM_FEATURE_CLZ 1
+#define ICMP6_STATS 0
+#define __INT16_TYPE__ short int
+#define __INT_LEAST8_TYPE__ signed char
+#define _WANT_IO_LONG_LONG 1
+#define SIGSTOP 17
+#define RT_PAGE_AFFINITY_BLOCK_SIZE 0x1000
+#define __XSTRING(x) __STRING(x)
+#define PRIX64 __PRI64(X)
+#define __STDC_VERSION__ 199901L
+#define RT_USING_MTD_NOR 
+#define __SQ_FBIT__ 31
+#define SIOCSIFMEM 0x8920
+#define __OBSOLETE_MATH_DEFAULT 1
+#define ENOTDIR 20
+#define SIOCGIFBR 0x8940
+#define rt_align(n) __attribute__((aligned(n)))
+#define IPH_OFFSET(hdr) ((hdr)->_offset)
+#define __ARM_ARCH_ISA_THUMB 2
+#define TIMER_ABSTIME 4
+#define IPH_TOS(hdr) ((hdr)->_tos)
+#define __INT_FAST8_MAX__ 0x7fffffff
+#define __ARM_ARCH 7
+#define UINTMAX_C(c) __UINTMAX_C(c)
+#define SVCMODE 0x13
+#define FINSH_THREAD_PRIORITY 20
+#define __PMT(args) args
+#define __INTPTR_MAX__ 0x7fffffff
+#define tcp_backlog_set(pcb,new_backlog) 
+#define IP_SET_TYPE(ipaddr,iptype) 
+#define BSP_USING_UART 
+#define __lock_release_recursive(lock) ((void) 0)
+#define PRIuFAST8 __PRI8FAST(u)
+#define ECONNRESET 104
+#define __trylocks_shared(...) __lock_annotate(shared_trylock_function(__VA_ARGS__))
+#define TCP_EVENT_SENT(pcb,space,ret) do { if((pcb)->sent != NULL) (ret) = (pcb)->sent((pcb)->callback_arg,(pcb),(space)); else (ret) = ERR_OK; } while (0)
+#define _NOTHROW 
+#define __QQ_FBIT__ 7
+#define tcp_nagle_disable(pcb) ((pcb)->flags |= TF_NODELAY)
+#define SIGSYS 12
+#define SIOCGIFMEM 0x891f
+#define ICMP_IR 16
+#define ENXIO 6
+#define ntohl(x) lwip_ntohl(x)
+#define TIOCPKT_FLUSHREAD 1
+#define ntohs(x) lwip_ntohs(x)
+#define CLOCK_MONOTONIC 4
+#define RT_WAITING_FOREVER -1
+#define __UTA_IBIT__ 64
+#define __int8_t_defined 1
+#define SCNdMAX __SCNMAX(d)
+#define LWIP_ND6_NUM_NEIGHBORS 10
+#define TIOCM_LOOP 0x8000
+#define __FLT64_HAS_QUIET_NAN__ 1
+#define TF_ACK_DELAY 0x01U
+#define N_HCI 15
+#define RT_DEVICE_FLAG_WRONLY 0x002
+#define _FDIRECT 0x80000
+#define TIOCPKT_DATA 0
+#define LWIP_ICMP 1
+#define DEFAULT_THREAD_NAME "lwIP"
+#define SIOCGIFDSTADDR 0x8917
+#define IP4_ADDR_BROADCAST (ip_2_ip4(&ip_addr_broadcast))
+#define tcp_ack(pcb) do { if((pcb)->flags & TF_ACK_DELAY) { (pcb)->flags &= ~TF_ACK_DELAY; (pcb)->flags |= TF_ACK_NOW; } else { (pcb)->flags |= TF_ACK_DELAY; } } while (0)
+#define SOCKETS_DEBUG LWIP_DBG_OFF
+#define SCNuFAST32 __SCN32FAST(u)
+#define PACK_STRUCT_STRUCT __attribute__((packed))
+#define RT_LWIP_RAW 
+#define __FLT32_MIN_10_EXP__ (-37)
+#define LWIP_DHCP_MAX_NTP_SERVERS 1
+#define IPH_TTL(hdr) ((hdr)->_ttl)
+#define __FLT32X_DIG__ 15
+#define SCNuFAST16 __SCN16FAST(u)
+#define TCP_REG(pcbs,npcb) do { (npcb)->next = *pcbs; *(pcbs) = (npcb); tcp_timer_needed(); } while (0)
+#define RT_USING_POSIX_TIMER 
+#define __UINT16_C(c) c
+#define _SIGNAL_H_ 
+#define VFP_DATA_NR 64
+#define TIOCM_SR 0x010
+#define RT_ETIMEOUT ETIMEDOUT
+#define __PTRDIFF_WIDTH__ 32
+#define __builtin_align_down(x,align) ((__typeof__(x))((x)&(~((align)-1))))
+#define ip4_addr_set_zero(ipaddr) ((ipaddr)->addr = 0)
+#define LWIP_AUTOIP 0
+#define __BEGIN_DECLS 
+#define __LDBL_MANT_DIG__ 53
+#define _LDBL_EQ_DBL 1
+#define tcp_nagle_disabled(pcb) (((pcb)->flags & TF_NODELAY) != 0)
+#define __SCN32FAST(x) __FAST32 __STRINGIFY(x)
+#define __SFRACT_FBIT__ 7
+#define PRIXLEAST8 __PRI8LEAST(X)
+#define ENAMETOOLONG 91
+#define __END_DECLS 
+#define LWIP_ND6_DELAY_FIRST_PROBE_TIME 5000
+#define SIOCSRARP 0x8962
+#define __SACCUM_MIN__ (-0X1P7HK-0X1P7HK)
+#define RT_CONFIG_H__ 
+#define __FLT64_HAS_INFINITY__ 1
+#define RT_USING_POSIX_CLOCK 
+#define PRIuLEAST8 __PRI8LEAST(u)
+#define RT_THREAD_STAT_SIGNAL_MASK 0xf0
+#define IP_MULTICAST(a) IP_CLASSD(a)
+#define IP6_FRAG_STATS 0
+#define __GNUC_VA_LIST 
+#define MEM_STATS_INC_USED(x,y) 
+#define ___int32_t_defined 1
+#define RT_USING_HOOK 
+#define __SIG_ATOMIC_MIN__ (-__SIG_ATOMIC_MAX__ - 1)
+#define TCP_EVENT_RECV(pcb,p,err,ret) do { if((pcb)->recv != NULL) { (ret) = (pcb)->recv((pcb)->callback_arg,(pcb),(p),(err)); } else { (ret) = tcp_recv_null(NULL, (pcb), (p), (err)); } } while (0)
+#define IP_OPTIONS_SEND (LWIP_IPV4 && LWIP_IGMP)
+#define TCP_QLEN_DEBUG LWIP_DBG_OFF
+#define X16_F PRIx16
+#define RT_USING_POSIX_POLL 
+#define _SPIN_LOCK_DEBUG_CRITICAL(lock) RT_UNUSED(lock)
+#define SIOCPROTOPRIVATE 0x89E0
+#define __lock_acquire_recursive(lock) ((void) 0)
+#define icmp_port_unreach(isipv6,pbuf) icmp_dest_unreach(pbuf, ICMP_DUR_PORT)
+#define TCP_SEQ_BETWEEN(a,b,c) (TCP_SEQ_GEQ(a,b) && TCP_SEQ_LEQ(a,c))
+#define stats_init() 
+#define RT_DEVICE_FLAG_STREAM 0x040
+#define PKG_NETUTILS_IPERF 
+#define _SYS__PTHREADTYPES_H_ 
+#define RT_THREAD_CTRL_RESET_PRIORITY 0x05
+#define TIOCSIG 0x40045436
+#define memp_malloc_pool(d) memp_malloc_pool_fn((d), __FILE__, __LINE__)
+#define RT_SUBVERSION RT_VERSION_MINOR
+#define IP_CLASSA_NSHIFT 24
+#define __INTPTR_TYPE__ int
+#define __UINT16_TYPE__ short unsigned int
+#define __WCHAR_TYPE__ unsigned int
+#define CLOCK_ALLOWED 1
+#define __SIZEOF_FLOAT__ 4
+#define ip_output(p,src,dest,ttl,tos,proto) ip4_output(p, src, dest, ttl, tos, proto)
+#define __TQ_FBIT__ 127
+#define IP_PROTO_ICMP 1
+#define PRIiPTR __PRIPTR(i)
+#define ip4_addr_isany(addr1) ((addr1) == NULL || ip4_addr_isany_val(*(addr1)))
+#define LWIP_HDR_PROT_IP4_H 
+#define PRIoMAX __PRIMAX(o)
+#define RT_USING_FINSH 
+#define TIOCSERCONFIG 0x5453
+#define INIT_BOARD_EXPORT(fn) INIT_EXPORT(fn, "1")
+#define _REENT_CHECK_SIGNAL_BUF(ptr) 
+#define TCP_FAST_INTERVAL TCP_TMR_INTERVAL
+#define RT_UINT8_MAX UINT8_MAX
+#define RT_LWIP_NETIF_NAMESIZE 6
+#define PBUF_FLAG_PUSH 0x01U
+#define S_ISBLK(m) (((m)&_IFMT) == _IFBLK)
+#define __USQ_FBIT__ 32
+#define __UINTPTR_MAX__ 0xffffffffU
+#define _FSBLKCNT_T_DECLARED 
+#define RT_USING_I2C_BITOPS 
+#define FINSH_USING_HISTORY 
+#define __INT_FAST64_WIDTH__ 64
+#define __volatile volatile
+#define RT_THREAD_LIST_NODE_ENTRY(node) rt_container_of( rt_list_entry((node), struct rt_sched_thread_ctx, thread_list_node), struct rt_thread, sched_thread_ctx)
+#define TCP_STATS_INC(x) 
+#define INT_FAST16_MAX __INT_FAST16_MAX__
+#define SCNxPTR __SCNPTR(x)
+#define ICMP_TS 13
+#define __ARM_FEATURE_UNALIGNED 1
+#define TCP_CALCULATE_EFF_SEND_MSS 1
+#define INT_LEAST64_MIN (-INT_LEAST64_MAX - 1)
+#define SIOCGIFINDEX 0x8933
+#define SI_ASYNCIO 0x04
+#define LWIP_DNS_SECURE_NO_MULTIPLE_OUTSTANDING 2
+#define __NEWLIB_H__ 1
+#define LWIP_STATS 0
+#define __ULLACCUM_IBIT__ 32
+#define IP_EXPERIMENTAL(a) (((u32_t)(a) & 0xf0000000UL) == 0xf0000000UL)
+#define __FLT32_DECIMAL_DIG__ 9
+#define SIOCGIFENCAP 0x8925
+#define RT_TIMER_THREAD_PRIO 4
+#define __GNUCLIKE_MATH_BUILTIN_CONSTANTS 
+#define __FLOAT_TYPE float
+#define __INT_FAST64_MAX__ 0x7fffffffffffffffLL
+#define __GCC_ATOMIC_TEST_AND_SET_TRUEVAL 1
+#define __FLT_NORM_MAX__ 3.4028234663852886e+38F
+#define IPH_CHKSUM_SET(hdr,chksum) (hdr)->_chksum = (chksum)
+#define LWIP_MEM_ALIGN_BUFFER(size) (((size) + MEM_ALIGNMENT - 1U))
+#define INT_FAST32_MAX __INT_FAST32_MAX__
+#define __GNUCLIKE_BUILTIN_MEMCPY 1
+#define _UINT32_T_DECLARED 
+#define LWIP_MAKEU32(a,b,c,d) (((u32_t)((a) & 0xff) << 24) | ((u32_t)((b) & 0xff) << 16) | ((u32_t)((c) & 0xff) << 8) | (u32_t)((d) & 0xff))
+#define IP_SET_TYPE_VAL(ipaddr,iptype) 
+#define _WCHAR_T_DECLARED 
+#define __UINT_FAST64_TYPE__ long long unsigned int
+#define RT_MQ_BUF_SIZE(msg_size,max_msgs) ((RT_ALIGN((msg_size), RT_ALIGN_SIZE) + sizeof(struct rt_mq_message)) * (max_msgs))
+#define RT_ENOENT ENOENT
+#define TIOCSPTLCK 0x40045431
+#define RT_EFULL ENOSPC
+#define SCNxMAX __SCNMAX(x)
+#define PRIXFAST8 __PRI8FAST(X)
+#define TCPWND_MIN16(x) x
+#define _MACHINE__DEFAULT_TYPES_H 
+#define RT_STATIC_ASSERT(name,expn) typedef char _static_assert_ ##name[(expn)?1:-1]
+#define MEMP_NUM_REASSDATA 5
+#define _USE_GDTOA 
+#define MEMP_OVERFLOW_CHECK 1
+#define SIGURG 16
+#define _REENT_INIT_RESERVED_1 
+#define __INT_MAX__ 0x7fffffff
+#define S_IXUSR 0000100
+#define tcp_debug_print_state(s) 
+#define _READ_WRITE_RETURN_TYPE int
+#define CHECKSUM_CHECK_ICMP6 1
+#define SCNoFAST16 __SCN16FAST(o)
+#define RT_USING_SERIAL_V1 
+#define S_IWOTH 0000002
+#define TCP_CHECKSUM_ON_COPY (LWIP_CHECKSUM_ON_COPY && CHECKSUM_GEN_TCP)
+#define __weak_reference(sym,alias) __asm__(".weak " #alias); __asm__(".equ " #alias ", " #sym)
+#define RT_TIMER_CTRL_SET_PERIODIC 0x3
+#define INIT_APP_EXPORT(fn) INIT_EXPORT(fn, "6")
+#define _FWRITE 0x0002
+#define __LACCUM_FBIT__ 31
+#define RT_LWIP_UDP_PCB_NUM 4
+#define PRIXMAX __PRIMAX(X)
+#define TCSETXF 0x5434
+#define UINT_MAX (INT_MAX * 2U + 1U)
+#define TIOCGWINSZ 0x5413
+#define _T_SIZE_ 
+#define IP_HDR_GET_VERSION(ptr) ((*(u8_t*)(ptr)) >> 4)
+#define LWIP_HDR_ICMP_H 
+#define LLONG_MAX __LONG_LONG_MAX__
+#define ENOTRECOVERABLE 141
+#define UINT_FAST8_MAX __UINT_FAST8_MAX__
+#define __USACCUM_MIN__ 0.0UHK
+#define TCP_PCB_REMOVE_ACTIVE(pcb) do { tcp_pcb_remove(&tcp_active_pcbs, pcb); tcp_active_pcbs_changed = 1; } while (0)
+#define IPFRAG_STATS_DISPLAY() 
+#define SCNoFAST32 __SCN32FAST(o)
+#define __UHA_IBIT__ 8
+#define __lock_try_acquire_recursive(lock) ((void) 0)
+#define IP_CLASSB_HOST (0xffffffff & ~IP_CLASSB_NET)
+#define __PRI64LEAST(x) __LEAST64 __STRINGIFY(x)
+#define __ATFILE_VISIBLE 0
+#define __INT64_TYPE__ long long int
+#define IPADDR_NONE ((u32_t)0xffffffffUL)
+#define SCNuMAX __SCNMAX(u)
+#define EIO 5
+#define __FLT_MAX_EXP__ 128
+#define TIOCSSOFTCAR 0x541A
+#define SIOCGIFNETMASK 0x891b
+#define CLOCK_PROCESS_CPUTIME_ID CLOCK_CPUTIME_ID
+#define _REENT_SIG_FUNC(_ptr) ((_ptr)->_sig_func)
+#define _INT32_EQ_LONG 
+#define __UTQ_IBIT__ 0
+#define TIOCPKT_FLUSHWRITE 2
+#define RT_CONSOLEBUF_SIZE 256
+#define ENETUNREACH 114
+#define EXDEV 18
+#define SIOCGIFHWADDR 0x8927
+#define __alloc_size2(n,x) __attribute__((__alloc_size__(n, x)))
+#define S_IRGRP 0000040
+#define UINT32_C(c) __UINT32_C(c)
+#define S_IFLNK _IFLNK
+#define TIOCPKT 0x5420
+#define LWIP_NO_UNISTD_H 0
+#define T_Bit (1<<5)
+#define RT_TIMER_SKIP_LIST_MASK 0x3
+#define RT_TIMER_SKIP_LIST_LEVEL 1
+#define _FVWRITE_IN_STREAMIO 1
+#define __ptr_t void *
+#define RT_WEAK rt_weak
+#define __DBL_MANT_DIG__ 53
+#define ___int_size_t_h 
+#define RT_TIMER_FLAG_HARD_TIMER 0x0
+#define memp_malloc(t) memp_malloc_fn((t), __FILE__, __LINE__)
+#define _SYS_TIMESPEC_H_ 
+#define _SYS__TIMESPEC_H_ 
+#define RT_LWIP_TCP_SND_QUEUELEN 44
+#define __INT_LEAST64_MAX__ 0x7fffffffffffffffLL
+#define __GCC_ATOMIC_CHAR16_T_LOCK_FREE 2
+#define TCSETAF 0x5408
+#define _HAVE_LONG_DOUBLE 1
+#define UINT_FAST64_MAX __UINT_FAST64_MAX__
+#define __clock_t_defined 
+#define __STDINT_EXP(x) __ ##x ##__
+#define INT_FAST32_MIN (-INT_FAST32_MAX - 1)
+#define RT_SERIAL_RB_BUFSZ 256
+#define __WINT_TYPE__ unsigned int
+#define __UINT_LEAST32_TYPE__ long unsigned int
+#define _FNOINHERIT 0x40000
+#define __SIZEOF_SHORT__ 2
+#define __ULLFRACT_IBIT__ 0
+#define SIOCSIFNAME 0x8923
+#define __FLT32_NORM_MAX__ 3.4028234663852886e+38F32
+#define PBUF_POOL_SIZE RT_LWIP_PBUF_NUM
+#define SCNu16 __SCN16(u)
+#define ___int8_t_defined 1
+#define RT_UINT16_MAX UINT16_MAX
+#define CLOCK_BOOTTIME 7
+#define __RTTHREAD__ 1
+#define _RT_OBJECT_HOOK_CALL(func,argv) __ON_HOOK_ARGS(func, argv)
+#define RT_LWIP_TCP_WND 2048
+#define TCP_REG_ACTIVE(npcb) do { TCP_REG(&tcp_active_pcbs, npcb); tcp_active_pcbs_changed = 1; } while (0)
+#define RT_USING_DFS_DEVFS 
+#define __LDBL_MIN_EXP__ (-1021)
+#define LWIP_NO_LIMITS_H 0
+#define ARCH_ARM 
+#define MEMP_SANITY_REGION_BEFORE_ALIGNED LWIP_MEM_ALIGN_SIZE(MEMP_SANITY_REGION_BEFORE)
+#define FIONCLEX 0x5450
+#define _SYS__DEFAULT_FCNTL_H_ 
+#define IP_DEFAULT_TTL 255
+#define _IFBLK 0060000
+#define IPH_HL(hdr) ((hdr)->_v_hl & 0x0f)
+#define __lock_try_acquire(lock) ((void) 0)
+#define __arm__ 1
+#define PKG_USING_NETUTILS 
+#define RT_KERNEL_REALLOC(ptr,size) rt_realloc(ptr, size)
+#define __FLT64_MAX__ 1.7976931348623157e+308F64
+#define ___int_least32_t_defined 1
+#define _END_STD_C 
+#define UINT16_MAX __UINT16_MAX__
+#define __UDA_IBIT__ 32
+#define SCNu32 __SCN32(u)
+#define ENOSPC 28
+#define IPH_ID(hdr) ((hdr)->_id)
+#define ENOEXEC 8
+#define LWIP_ND6_QUEUEING (LWIP_IPV6)
+#define __WINT_WIDTH__ 32
+#define __SCN64LEAST(x) __LEAST64 __STRINGIFY(x)
+#define __sym_compat(sym,impl,verid) __asm__(".symver " #impl ", " #sym "@" #verid)
+#define __INT_LEAST8_MAX__ 0x7f
+#define rt_section(x) __attribute__((section(x)))
+#define rt_atomic_or(ptr,v) rt_hw_atomic_or(ptr, v)
+#define RT_DEVICE_CTRL_RESUME 0x01
+#define _SPIN_LOCK_DEBUG_OWNER(lock) RT_UNUSED(lock)
+#define __INT_LEAST64_WIDTH__ 64
+#define RT_DEBUG_IN_THREAD_CONTEXT do { if (rt_thread_self() == RT_NULL) { rt_kprintf("Function[%s] shall not be used before scheduler start\n", __FUNCTION__); RT_ASSERT(0) } RT_DEBUG_NOT_IN_INTERRUPT; } while (0)
+#define _IOC_READ 2U
+#define TCP_SEQ_LT(a,b) ((s32_t)((u32_t)(a) - (u32_t)(b)) < 0)
+#define TCSBRKP 0x5425
+#define __FLT32X_MAX_10_EXP__ 308
+#define SIOCRTMSG 0x890D
+#define LLONG_MIN (-LLONG_MAX - 1LL)
+#define ip4_addr_debug_print_parts(debug,a,b,c,d) LWIP_DEBUGF(debug, ("%" U16_F ".%" U16_F ".%" U16_F ".%" U16_F, a, b, c, d))
+#define FIOCLEX 0x5451
+#define IP_PCB ip_addr_t local_ip; ip_addr_t remote_ip; u8_t so_options; u8_t tos; u8_t ttl IP_PCB_ADDRHINT
+#define _REENT_CHECK_TM(ptr) 
+#define TIOCM_CD TIOCM_CAR
+#define TCP_STATS_DISPLAY() 
+#define rt_hw_local_irq_enable rt_hw_interrupt_enable
+#define LWIP_IGMP 1
+#define tcp_debug_print_flags(flags) 
+#define IP_REASS_MAX_PBUFS 10
+#define SIGTSTP 18
+#define RT_SIGNAL_KILL_WAKEUP_MASK 0x01
+#define FOLD_U32T(u) (((u) >> 16) + ((u) & 0x0000ffffUL))
+#define F_Bit (1<<6)
+#define N_MOUSE 2
+#define __LFRACT_FBIT__ 31
+#define PRIXLEAST32 __PRI32LEAST(X)
+#define RT_THREAD_STAT_YIELD_MASK RT_THREAD_STAT_YIELD
+#define RT_TICK_MAX RT_UINT32_MAX
+#define SIOCGIFMTU 0x8921
+#define __ARM_ARCH_7A__ 1
+#define _IFLNK 0120000
+#define __LDBL_MAX_10_EXP__ 308
+#define RT_USING_MESSAGEQUEUE_PRIORITY 
+#define __ATOMIC_RELAXED 0
+#define __signed signed
+#define DHCP_DEBUG LWIP_DBG_OFF
+#define TIOCOUTQ 0x5411
+#define _UID_T_DECLARED 
+#define __DBL_EPSILON__ ((double)2.2204460492503131e-16L)
+#define EMSGSIZE 122
+#define RT_USING_NETDEV 
+#define RT_DFS_ELM_REENTRANT 
+#define __INT_LEAST32_TYPE__ long int
+#define __SCN64FAST(x) __FAST64 __STRINGIFY(x)
+#define __EXPORT 
+#define EFTYPE 79
+#define MEMP_NUM_SOCKET_SETGETSOCKOPT_DATA MEMP_NUM_TCPIP_MSG_API
+#define _SIZET_ 
+#define __ARM_FEATURE_SIMD32 1
+#define RT_OBJECT_HOOKLIST_DEFINE_NODE(hookname,nodename,hooker_handler) 
+#define SIOCSIFBR 0x8941
+#define RAW_DEBUG LWIP_DBG_OFF
+#define ENOSTR 60
+#define IPADDR4_INIT(u32val) { u32val }
+#define RT_USING_BLK 
+#define SIGEMT 7
+#define RTM_EXPORT(symbol) 
+#define __UINT8_C(c) c
+#define IF__NETIF_CHECKSUM_ENABLED(netif,chksumflag) 
+#define INIT_FS_EXPORT(fn) INIT_EXPORT(fn, "6.0")
+#define EFBIG 27
+#define TCP_RST 0x04U
+#define __FLT64_MAX_EXP__ 1024
+#define MSH_CMD_EXPORT_ALIAS(...) __MSH_GET_EXPORT_MACRO(__VA_ARGS__, _MSH_FUNCTION_EXPORT_CMD3_OPT, _MSH_FUNCTION_EXPORT_CMD3)(__VA_ARGS__)
+#define RT_DFS_ELM_USE_LFN_3 
+#define SIGKILL 9
+#define netif_set_hostname(netif,name) do { if((netif) != NULL) { (netif)->hostname = name; }}while(0)
+#define FINSH_FUNCTION_EXPORT_ALIAS(name,alias,desc) 
+#define _UINT16_T_DECLARED 
+#define ESRCH 3
+#define LWIP_MEMPOOL_DECLARE_STATS_INSTANCE(name) 
+#define RT_THREAD_STAT_SIGNAL_PENDING 0x40
+#define EHOSTDOWN 117
+#define LWIP_CHECKSUM_CTRL_PER_NETIF 0
+#define SIOCDRARP 0x8960
+#define __wchar_t__ 
+#define SIOCGIFCONF 0x8912
+#define __SIZEOF_WCHAR_T__ 4
+#define LWIP_HDR_TCP_H 
+#define __UINT64_TYPE__ long long unsigned int
+#define ip4_addr_ismulticast(addr1) (((addr1)->addr & PP_HTONL(0xf0000000UL)) == PP_HTONL(0xe0000000UL))
+#define TCP_SEQ_LEQ(a,b) ((s32_t)((u32_t)(a) - (u32_t)(b)) <= 0)
+#define RT_REVISION RT_VERSION_PATCH
+#define netif_set_client_data(netif,id,data) netif_get_client_data(netif, id) = (data)
+#define __has_feature(x) 0
+#define _MSH_FUNCTION_EXPORT_CMD3(a0,a1,a2) MSH_FUNCTION_EXPORT_CMD(a0, a1, a2, 0)
+#define ETH_PAD_SIZE 0
+#define _READ_WRITE_BUFSIZE_TYPE int
+#define ENOLCK 46
+#define ENFILE 23
+#define LWIP_NETCONN_SEM_PER_THREAD 0
+#define IPFRAG_STATS_INC(x) 
+#define ARCH_MM_MMU 
+#define LWP_IS_USER_MODE(t) (0)
+#define F_SETLKW 9
+#define TIOCM_OUT1 0x2000
+#define TIOCM_OUT2 0x4000
+#define ETHARP_DEBUG LWIP_DBG_OFF
+#define RT_THREAD_PRIORITY_MAX 256
+#define __LLFRACT_MAX__ 0X7FFFFFFFFFFFFFFFP-63LLR
+#define TCP_SYNMAXRTX 4
+#define _REENT_STDOUT(_ptr) ((_ptr)->_stdout)
+#define TCP_SNDLOWAT (TCP_SND_BUF/2)
+#define IPH_V(hdr) ((hdr)->_v_hl >> 4)
+#define TCP_ECE 0x40U
+#define ip_addr_set_zero(ipaddr) ip4_addr_set_zero(ipaddr)
+#define _STDDEF_H_ 
+#define MSH_OPT_DUMP(fun) msh_opt_list_dump((void*) fun ##_msh_options)
+#define TCP_OVERSIZE TCP_MSS
+#define _ID_T_DECLARED 
+#define _FNOCTTY 0x8000
+#define RT_USING_DFS_TMPFS 
+#define __INT16 "h"
+#define SCNiFAST32 __SCN32FAST(i)
+#define __FLT64_NORM_MAX__ 1.7976931348623157e+308F64
+#define SIGXCPU 24
+#define _UNBUF_STREAM_OPT 1
+#define O_TRUNC _FTRUNC
+#define _INT64_T_DECLARED 
+#define TCSBRK 0x5409
+#define RT_DEVICE_CTRL_GET_INT 0x08
+#define IP_PROTO_IGMP 2
+#define __INTMAX_MAX__ 0x7fffffffffffffffLL
+#define ___int_least8_t_defined 1
+#define __CC_SUPPORTS___INLINE__ 1
+#define LWIP_HDR_ARCH_H 
+#define ICMP_DUR 3
+#define LWIP_DBG_MASK_LEVEL 0x03
+#define TIOCSERGWILD 0x5454
+#define TCP_FIN 0x01U
+#define RT_ESCHEDISR 253
+#define __INT_FAST8_TYPE__ int
+#define LWIP_HDR_PROT_TCP_H 
+#define SIGILL 4
+#define EOPNOTSUPP 95
+#define __fastcall __attribute__((__fastcall__))
+#define __ULLACCUM_EPSILON__ 0x1P-32ULLK
+#define TIOCM_LE 0x001
+#define TCP_WND_MAX(pcb) TCP_WND
+#define __USACCUM_MAX__ 0XFFFFP-8UHK
+#define RT_THREAD_RUNNING 0x03
+#define RT_USING_MEMHEAP 
+#define __DEQUALIFY(type,var) ((type)(__uintptr_t)(const volatile void *)(var))
+#define va_arg(v,l) __builtin_va_arg(v,l)
+#define UDP_TTL 255
+#define _REENT_MBRTOWC_STATE(ptr) ((ptr)->_new._reent._mbrtowc_state)
+#define PP_NTOHL(x) PP_HTONL(x)
+#define SO_REUSE 1
+#define MICROSECOND_PER_SECOND 1000000UL
+#define __UHQ_IBIT__ 0
+#define __RT_SERVICE_H__ 
+#define __ARM_FEATURE_COPROC 15
+#define API_LIB_DEBUG LWIP_DBG_OFF
+#define __LLACCUM_IBIT__ 32
+#define SOF_BROADCAST 0x20U
+#define TCP_RTO_DEBUG LWIP_DBG_OFF
+#define tcp_accepted(pcb) 
+#define RT_USING_SOFT_RTC 
+#define SIGLOST 29
+#define ip_addr_isbroadcast(addr,netif) ip4_addr_isbroadcast(addr, netif)
+#define __attribute_pure__ 
+#define RT_TIMER_CTRL_SET_FUNC 0x7
+#define __FLT64_HAS_DENORM__ 1
+#define RT_MUTEX_VALUE_MAX RT_UINT16_MAX
+#define __FLT32_EPSILON__ 1.1920928955078125e-7F32
+#define ip_output_if_src(p,src,dest,ttl,tos,proto,netif) ip4_output_if_src(p, src, dest, ttl, tos, proto, netif)
+#define INTMAX_MAX __INTMAX_MAX__
+#define RT_DFS_ELM_MUTEX_TIMEOUT 3000
+#define LWIP_DNS_SECURE (LWIP_DNS_SECURE_RAND_XID | LWIP_DNS_SECURE_NO_MULTIPLE_OUTSTANDING | LWIP_DNS_SECURE_RAND_SRC_PORT)
+#define INT_FAST8_MAX __INT_FAST8_MAX__
+#define __STRINGIFY(a) #a
+#define __packed __attribute__((__packed__))
+#define __DBL_DECIMAL_DIG__ 17
+#define __STDC_UTF_32__ 1
+#define __INT_FAST8_WIDTH__ 32
+#define LWIP_DBG_LEVEL_SERIOUS 0x02
+#define MSH_OPT_ID_GET(fun) msh_cmd_opt_id_get(argc, argv, (void*) fun ##_msh_options)
+#define TCP_CWND_DEBUG LWIP_DBG_OFF
+#define TIOCPKT_DOSTOP 32
+#define RT_USING_MSH 
+#define _REENT_L64A_BUF(ptr) ((ptr)->_new._reent._l64a_buf)
+#define __CC_SUPPORTS___INLINE 1
+#define _SIZE_T 
+#define RT_LWIP_GWADDR "192.168.10.1"
+#define TCPWND_CHECK16(x) 
+#define _MACHTIME_H_ 
+#define __FLT32X_MAX__ 1.7976931348623157e+308F32x
+#define SIGEV_SIGNAL 0
+#define PRIxFAST8 __PRI8FAST(x)
+#define PBUF_TRANSPORT_HLEN 20
+#define __TA_FBIT__ 63
+#define TIOCSERSETMULTI 0x545B
+#define __DBL_NORM_MAX__ ((double)1.7976931348623157e+308L)
+#define RT_THREAD_STAT_SIGNAL_READY (RT_THREAD_STAT_SIGNAL | RT_THREAD_READY)
+#define BSP_USING_UART0 
+#define PRIX16 __PRI16(X)
+#define LWIP_ARP 1
+#define PRIuLEAST16 __PRI16LEAST(u)
+#define FINSH_USING_SYMTAB 
+#define RT_UNUSED(x) ((void)(x))
+#define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
+#define TCPIP_THREAD_STACKSIZE RT_LWIP_TCPTHREAD_STACKSIZE
+#define TIOCGPTN 0x80045430
+#define SIOCADDRT 0x890B
+#define API_MSG_DEBUG LWIP_DBG_OFF
+#define ip_next_header_ptr() ((const void*)((const u8_t*)ip4_current_header() + ip_current_header_tot_len()))
+#define __SYS_TIME_H__ 
+#define TIOCM_RI TIOCM_RNG
+#define RT_ALIGN_SIZE 8
+#define RT_STRINGIFY(x...) __RT_STRINGIFY(x)
+#define __GCC_DESTRUCTIVE_SIZE 64
+#define TCGETA 0x5405
+#define __UDQ_IBIT__ 0
+#define __RT_TYPES_H__ 
+#define TIOCM_ST 0x008
+#define __INTMAX_WIDTH__ 64
+#define rt_list_for_each_entry_safe(pos,n,head,member) for (pos = rt_list_entry((head)->next, rt_typeof(*pos), member), n = rt_list_entry(pos->member.next, rt_typeof(*pos), member); &pos->member != (head); pos = n, n = rt_list_entry(n->member.next, rt_typeof(*n), member))
+#define __null_sentinel __attribute__((__sentinel__))
+#define PBUF_CHECK_FREE_OOSEQ() 
+#define RT_USING_DFS_ROMFS 
+#define MEMP_NUM_IGMP_GROUP 8
+#define _STRING_H_ 
+#define RT_IPC_CMD_GET_STATE 0x02
+#define RT_BLK_PARTITION_EFI 
+#define _GCC_SIZE_T 
+#define CHECKSUM_CHECK_IP 1
+#define _NEWLIB_ALLOCA_H 
+#define _ATEXIT_INIT {_NULL, 0, {_NULL}, {{_NULL}, {_NULL}, 0, 0}}
+#define __ORDER_BIG_ENDIAN__ 4321
+#define TIOCINQ FIONREAD
+#define __ARM_FEATURE_DSP 1
+#define NETIF_SET_HWADDRHINT(netif,hint) 
+#define __FLT32_DIG__ 6
+#define __alloc_align(x) __attribute__((__alloc_align__(x)))
+#define TCP_FLAGS 0x3fU
+#define RT_USING_DFS_V2 
+#define __ACCUM_EPSILON__ 0x1P-15K
+#define __UINT32_C(c) c ## UL
+#define PRIdFAST32 __PRI32FAST(d)
+#define EISCONN 127
+#define netif_is_link_up(netif) (((netif)->flags & NETIF_FLAG_LINK_UP) ? (u8_t)1 : (u8_t)0)
+#define E_Bit (1<<9)
+#define __GNUCLIKE_BUILTIN_VAALIST 1
+#define __size_t__ 
+#define CHECKSUM_CHECK_UDP 1
+#define LWIP_DECLARE_MEMORY_ALIGNED(variable_name,size) u8_t variable_name[LWIP_MEM_ALIGN_BUFFER(size)]
+#define MEMP_NUM_UDP_PCB RT_LWIP_UDP_PCB_NUM
+#define __FLT_DENORM_MIN__ 1.4012984643248171e-45F
+#define SCNiMAX __SCNMAX(i)
+#define _GCC_STDINT_H 
+#define _RAND48_SEED_1 (0xabcd)
+#define tcp_nagle_enable(pcb) ((pcb)->flags = (tcpflags_t)((pcb)->flags & ~TF_NODELAY))
+#define TIOCMBIC 0x5417
+#define RT_LWIP_TCPTHREAD_PRIORITY 10
+#define TCP_DEBUG_PCB_LISTS 0
+#define TIOCMBIS 0x5416
+#define rt_weak __attribute__((weak))
+#define RT_SFUD_SPI_MAX_HZ 50000000
+#define _BLKSIZE_T_DECLARED 
+#define TCPH_SET_FLAG(phdr,flags) (phdr)->_hdrlen_rsvd_flags = ((phdr)->_hdrlen_rsvd_flags | lwip_htons(flags))
+#define RT_TICK_PER_SECOND 100
+#define _STDLIB_H_ 
+#define RT_ALIGN(size,align) (((size) + (align) - 1) & ~((align) - 1))
+#define IDLE_THREAD_STACK_SIZE 4096
+#define ip_addr_ismulticast(ipaddr) ip4_addr_ismulticast(ipaddr)
+#define __LLFRACT_IBIT__ 0
+#define _VA_LIST_T_H 
+#define __INT8_MAX__ 0x7f
+#define __LONG_WIDTH__ 32
+#define TCPIP_DEBUG LWIP_DBG_OFF
+#define _UINTPTR_T_DECLARED 
+#define ENSRNOTFOUND 163
+#define MEM_STATS_DISPLAY() 
+#define __UINT_FAST32_TYPE__ unsigned int
+#define LWIP_NO_STDDEF_H 0
+#define O_NOFOLLOW 0x100000
+#define RT_ETRAP 254
+#define RT_DEVICE_CTRL_CONFIG 0x03
+#define __GNUCLIKE___TYPEOF 1
+#define __RCSID(s) struct __hack
+#define IP_OPTIONS_ALLOWED 1
+#define TF_INFR 0x04U
+#define __FLT32X_NORM_MAX__ 1.7976931348623157e+308F32x
+#define __CHAR32_TYPE__ long unsigned int
+#define ENOPROTOOPT 109
+#define LWIP_DBG_MIN_LEVEL LWIP_DBG_LEVEL_ALL
+#define RT_DEBUGING_COLOR 
+#define __is_aligned(x,y) __builtin_is_aligned(x, y)
+#define TIOCCONS 0x541D
+#define tcp_do_output_nagle(tpcb) ((((tpcb)->unacked == NULL) || ((tpcb)->flags & (TF_NODELAY | TF_INFR)) || (((tpcb)->unsent != NULL) && (((tpcb)->unsent->next != NULL) || ((tpcb)->unsent->len >= (tpcb)->mss))) || ((tcp_sndbuf(tpcb) == 0) || (tcp_sndqueuelen(tpcb) >= TCP_SND_QUEUELEN)) ) ? 1 : 0)
+#define LWIP_NUM_NETIF_CLIENT_DATA 0
+#define RT_IPC_FLAG_FIFO 0x00
+#define _REENT_MP_RESULT(ptr) ((ptr)->_result)
+#define __FLT_MAX__ 3.4028234663852886e+38F
+#define __FAST16 
+#define __exported __attribute__((__visibility__("default")))
+#define _VA_LIST 
+#define EPROTONOSUPPORT 123
+#define __NEWLIB__ 4
+#define FIONREAD _IOR('f', 127, int)
+#define UINT_LEAST32_MAX __UINT_LEAST32_MAX__
+#define EMFILE 24
+#define RT_USING_LWIP 
+#define UNDEFMODE 0x1b
+#define PBUF_POOL_BUFSIZE LWIP_MEM_ALIGN_SIZE(TCP_MSS+40+PBUF_LINK_ENCAPSULATION_HLEN+PBUF_LINK_HLEN)
+#define __va_list__ 
+#define LWIP_CHECKSUM_ON_COPY 0
+#define IP4_ADDR(ipaddr,a,b,c,d) (ipaddr)->addr = PP_HTONL(LWIP_MAKEU32(a,b,c,d))
+#define LWIP_CONST_CAST(target_type,val) ((target_type)((ptrdiff_t)val))
+#define NETIF_FLAG_UP 0x01U
+#define ELOOP 92
+#define RT_MUTEX_HOLD_MAX RT_UINT8_MAX
+#define RT_MM_PAGE_BITS 12
+#define __FAST32 
+#define PRIo64 __PRI64(o)
+#define S32_F PRId32
+#define __USACCUM_FBIT__ 8
+#define TCP_EVENT_ERR(last_state,errf,arg,err) do { LWIP_UNUSED_ARG(last_state); if((errf) != NULL) (errf)((arg),(err)); } while (0)
+#define __caddr_t_defined 
+#define RT_EOK 0
+#define RT_USING_KTIME 
+#define RT_SPIN_UNLOCK_DEBUG(lock,critical) do { _SPIN_UNLOCK_DEBUG_OWNER(lock); _SPIN_UNLOCK_DEBUG_CRITICAL(lock, critical); } while (0)
+#define __INT32_TYPE__ long int
+#define TCGETS 0x5401
+#define ENOBUFS 105
+#define __SIZEOF_DOUBLE__ 8
+#define NETIF_FLAG_LINK_UP 0x04U
+#define __FLT_MIN_10_EXP__ (-37)
+#define LWIP_IPV6_NUM_ADDRESSES 3
+#define __time_t_defined 
+#define SIOCGIFNAME 0x8910
+#define __UFRACT_EPSILON__ 0x1P-16UR
+#define TIOCGLCKTRMIOS 0x5456
+#define __FLT64_MIN__ 2.2250738585072014e-308F64
+#define RT_USING_POSIX_SOCKET 
+#define PACK_STRUCT_FIELD(x) x
+#define __INT_LEAST32_WIDTH__ 32
+#define va_start(v,l) __builtin_va_start(v,l)
+#define ip_get_option(pcb,opt) ((pcb)->so_options & (opt))
+#define TIOCGSOFTCAR 0x5419
+#define IP_CLASSA(a) ((((u32_t)(a)) & 0x80000000UL) == 0)
+#define RT_ENOBUFS ENOBUFS
+#define __INTMAX_TYPE__ long long int
+#define IP_CLASSB(a) ((((u32_t)(a)) & 0xc0000000UL) == 0x80000000UL)
+#define RT_DEVICE_FLAG_DMA_RX 0x200
+#define _REENT_MBTOWC_STATE(ptr) ((ptr)->_new._reent._mbtowc_state)
+#define SIGINT 2
+#define _SYS_ERRNO_H_ 
+#define RT_THREAD_CTRL_STARTUP 0x00
+#define O_DIRECTORY 0x200000
+#define _FSHLOCK 0x0080
+#define TIOCSCTTY 0x540E
+#define __FAST64 "ll"
+#define TCP_LISTEN_BACKLOG 0
+#define TCPWND_MAX 0xFFFFU
+#define sigemptyset(what) (*(what) = 0, 0)
+#define SCNiFAST16 __SCN16FAST(i)
+#define IPADDR_STRLEN_MAX IP4ADDR_STRLEN_MAX
+#define LWIP_TCP_OPT_EOL 0
+#define TIOCSER_TEMT 0x01
+#define _T_SIZE 
+#define SIGIOT 6
+#define UINT8_C(c) __UINT8_C(c)
+#define __requires_unlocked(...) __lock_annotate(locks_excluded(__VA_ARGS__))
+#define EWOULDBLOCK EAGAIN
+#define MEM_LIBC_MALLOC 0
+#define PRIdFAST8 __PRI8FAST(d)
+#define ARCH_ARM_MMU 
+#define S_IXGRP 0000010
+#define ip_current_header_proto() IPH_PROTO(ip4_current_header())
+#define __FLT32X_HAS_QUIET_NAN__ 1
+#define __ATOMIC_CONSUME 1
+#define RT_SCHED_DEBUG_IS_UNLOCKED 
+#define _REENT_WCSRTOMBS_STATE(ptr) ((ptr)->_new._reent._wcsrtombs_state)
+#define _TIMER_T_ unsigned long
+#define LWIP_SOCKET 1
+#define __GNUC_MINOR__ 2
+#define TIOCVHANGUP 0x5437
+#define __INT_FAST16_WIDTH__ 32
+#define __UINTMAX_MAX__ 0xffffffffffffffffULL
+#define LWIP_MULTICAST_PING 0
+#define PACK_STRUCT_FLD_S(x) PACK_STRUCT_FIELD(x)
+#define LITTLE_ENDIAN 1234
+#define PRIoPTR __PRIPTR(o)
+#define __FLT32X_DENORM_MIN__ 4.9406564584124654e-324F32x
+#define __lock_close_recursive(lock) ((void) 0)
+#define RT_THREAD_STAT_MASK 0x07
+#define __SYS_LOCK_H__ 
+#define __HA_FBIT__ 7
+#define INTMAX_C(c) __INTMAX_C(c)
+#define INIT_SUBSYS_EXPORT(fn) INIT_EXPORT(fn, "1.1")
+#define LWIP_SO_LINGER 0
+#define __CONCAT1(x,y) x ## y
+#define TCP_OUTPUT_DEBUG LWIP_DBG_OFF
+#define ECONNREFUSED 111
+#define INT_FAST64_MIN (-INT_FAST64_MAX - 1)
+#define LWIP_HDR_TCP_PRIV_H 
+#define RT_USING_HEAP 
+#define EAGAIN 11
+#define SIOCSIFADDR 0x8916
+#define rt_list_first_entry(ptr,type,member) rt_list_entry((ptr)->next, type, member)
+#define __DBL_MAX_10_EXP__ 308
+#define __hidden __attribute__((__visibility__("hidden")))
+#define RT_USING_CPU_FFS 
+#define __const const
+#define RT_USING_SERIAL 
+#define __LDBL_DENORM_MIN__ 4.9406564584124654e-324L
+#define __aligned(x) __attribute__((__aligned__(x)))
+#define ICMP_AM 17
+#define IGMP_STATS_INC(x) 
+#define S_ISUID 0004000
+#define TCFLSH 0x540B
+#define CMD_OPTIONS_NODE_END {0},};
+#define __INT16_C(c) c
+#define _REENT_INIT(var) { 0, &__sf[0], &__sf[1], &__sf[2], 0, "", _REENT_INIT_RESERVED_1 _NULL, _REENT_INIT_RESERVED_0 _NULL, _NULL, 0, _NULL, _NULL, 0, _NULL, { { _REENT_INIT_RESERVED_2 _NULL, "", {0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 1, { {_RAND48_SEED_0, _RAND48_SEED_1, _RAND48_SEED_2}, {_RAND48_MULT_0, _RAND48_MULT_1, _RAND48_MULT_2}, _RAND48_ADD }, {0, {0}}, {0, {0}}, {0, {0}}, "", "", 0, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}}, {0, {0}} } }, _REENT_INIT_RESERVED_6_7 _NULL }
+#define RT_SPIN_LOCK_DEBUG(lock) do { _SPIN_LOCK_DEBUG_OWNER(lock); _SPIN_LOCK_DEBUG_CRITICAL(lock); } while (0)
+#define CLOCK_DISALLOWED 0
+#define __SCN16FAST(x) __FAST16 __STRINGIFY(x)
+#define NETDEV_USING_NETSTAT 
+#define __FCNTL_H__ 
+#define SIOCSIFHWBROADCAST 0x8937
+#define __STDC__ 1
+#define LWIP_HDR_IP4_ADDR_H 
+#define TCP_WRITE_FLAG_MORE 0x02
+#define _REENT_MP_P5S(ptr) ((ptr)->_p5s)
+#define TIOCGEXCL 0x80045440
+#define LWIP_HAVE_LOOPIF 0
+#define FIOQSIZE 0x5460
+#define __PTRDIFF_TYPE__ int
+#define RT_IPC_FLAG_PRIO 0x01
+#define __have_long32 1
+#define __GNUCLIKE_MATH_BUILTIN_RELOPS 
+#define LWIP_ND6_RDNSS_MAX_DNS_SERVERS 0
+#define errno (*__errno())
+#define __LLFRACT_MIN__ (-0.5LLR-0.5LLR)
+#define LWIP_HDR_PROT_IP_H 
+#define LWIP_LOOPBACK_MAX_PBUFS 0
+#define __clockid_t_defined 
+#define ICMPH_TYPE_SET(hdr,t) ((hdr)->type = (t))
+#define ICMP_TE 11
+#define U16_F PRIu16
+#define UDP_STATS_INC(x) 
+#define SYS_STATS_INC_USED(x) 
+#define ICMP_TTL 255
+#define MEMP_NUM_MLD6_GROUP 4
+#define __DA_FBIT__ 31
+#define __weak_symbol __attribute__((__weak__))
+#define LWIP_MEM_ALIGN_SIZE(size) (((size) + MEM_ALIGNMENT - 1U) & ~(MEM_ALIGNMENT-1U))
+#define _SYS__INTSUP_H 
+#define LWIP_ICMP6_DATASIZE 8
+#define tcp_output_nagle(tpcb) (tcp_do_output_nagle(tpcb) ? tcp_output(tpcb) : ERR_OK)
+#define _REENT_MBSRTOWCS_STATE(ptr) ((ptr)->_new._reent._mbsrtowcs_state)
+#define TIOCMIWAIT 0x545C
+#define RT_THREAD_READY 0x02
+#define ENOENT 2
+#define RT_SECTION rt_section
+#define _REENT_STDIN(_ptr) ((_ptr)->_stdin)
+#define TF_SEG_OPTS_MSS (u8_t)0x01U
+#define IP_ADDR_BROADCAST (&ip_addr_broadcast)
+#define LWIP_DNS_SECURE_RAND_SRC_PORT 4
+#define __UINT32_TYPE__ long unsigned int
+#define __FLT32X_MIN_10_EXP__ (-307)
+#define SZT_F PRIuPTR
+#define RT_SCHEDULER_STACK_CHECK(thr) rt_scheduler_stack_check(thr)
+#define FD_CLOEXEC 1
+#define __UINTPTR_TYPE__ unsigned int
+#define rt_atomic_flag_clear(ptr) rt_hw_atomic_flag_clear(ptr)
+#define __USA_IBIT__ 16
+#define _REENT_CVTLEN(_ptr) ((_ptr)->_cvtlen)
+#define ipaddr_ntoa_r(ipaddr,buf,buflen) ip4addr_ntoa_r(ipaddr, buf, buflen)
+#define SIOGIFINDEX SIOCGIFINDEX
+#define SIGTERM 15
+#define LWIP_NETIF_API 1
+#define ip_addr_isloopback(ipaddr) ip4_addr_isloopback(ipaddr)
+#define __ARM_EABI__ 1
+#define __SCNPTR(x) __STRINGIFY(x)
+#define TCP_BUILD_MSS_OPTION(mss) lwip_htonl(0x02040000 | ((mss) & 0xFFFF))
+#define AUTOIP_DEBUG LWIP_DBG_OFF
+#define __LDBL_MIN_10_EXP__ (-307)
+#define TCP_MAXIDLE TCP_KEEPCNT_DEFAULT * TCP_KEEPINTVL_DEFAULT
+#define __requires_exclusive(...) __lock_annotate(exclusive_locks_required(__VA_ARGS__))
+#define __nonnull_all __attribute__((__nonnull__))
+#define ip4_current_src_addr() (&ip_data.current_iphdr_src)
+#define RT_TIMER_FLAG_SOFT_TIMER 0x4
+#define __CC_SUPPORTS___FUNC__ 1
+#define PRId32 __PRI32(d)
+#define __lock_close(lock) ((void) 0)
+#define NETIF_FLAG_IGMP 0x20U
+#define ___int16_t_defined 1
+#define TIOCGDEV 0x80045432
+#define N_SYNC_PPP 14
+#define TCP_DATA_COPY2(dst,src,len,chksum,chksum_swapped) MEMCPY(dst, src, len)
+#define RT_MTD_NAND_DEBUG 
+#define __GNUCLIKE_CTOR_SECTION_HANDLING 1
+#define IP_CLASSD_HOST 0x0fffffff
+#define RT_USING_MESSAGEQUEUE 
+#define rt_atomic_and(ptr,v) rt_hw_atomic_and(ptr, v)
+#define RT_VERSION RT_VERSION_MAJOR
+#define SIG_SETMASK 0
+#define __SIZEOF_LONG_LONG__ 8
+#define __ULACCUM_EPSILON__ 0x1P-32ULK
+#define RT_USING_EVENT 
+#define _Thread_local __thread
+#define MLD6_STATS_INC(x) 
+#define LWIP_PLATFORM_ASSERT(x) do {rt_kprintf(x); sys_arch_assert(__FILE__, __LINE__);}while(0)
+#define RT_EPERM EPERM
+#define RT_SIGNAL_COMMON_WAKEUP_MASK 0x02
+#define PRIo16 __PRI16(o)
+#define SIOCSARP 0x8955
+#define RT_VERSION_CHECK(major,minor,revise) ((major * 10000U) + (minor * 100U) + revise)
+#define U32_F PRIu32
+#define TF_SEG_OPTS_TS (u8_t)0x02U
+#define netif_get_igmp_mac_filter(netif) (((netif) != NULL) ? ((netif)->igmp_mac_filter) : NULL)
+#define __SACCUM_IBIT__ 8
+#define INTMAX_MIN (-INTMAX_MAX - 1)
+#define SIOCADDMULTI 0x8931
+#define IP_STATS 0
+#define __RCSID_SOURCE(s) struct __hack
+#define __GCC_ATOMIC_LLONG_LOCK_FREE 2
+#define __MISC_VISIBLE 0
+#define LWIP_SOCKET_SET_ERRNO 1
+#define TIOCNOTTY 0x5422
+#define __ARCH_CC_H__ 
+#define __RT_COMPILER_H__ 
+#define PTRDIFF_MAX __PTRDIFF_MAX__
+#define MEMP_NUM_SYS_TIMEOUT (LWIP_TCP + IP_REASSEMBLY + LWIP_ARP + (2*LWIP_DHCP) + LWIP_AUTOIP + LWIP_IGMP + LWIP_DNS + PPP_SUPPORT + (LWIP_IPV6 ? (1 + (2*LWIP_IPV6)) : 0))
+#define _POINTER_INT long
+#define _STDARG_H 
+#define _REENT_SMALL_CHECK_INIT(ptr) 
+#define __FLT_DECIMAL_DIG__ 9
+#define __UINT_FAST16_MAX__ 0xffffffffU
+#define LWIP_DBG_LEVEL_WARNING 0x01
+#define PRIo32 __PRI32(o)
+#define S_IROTH 0000004
+#define RT_USING_POSIX_MESSAGE_QUEUE 
+#define RT_LIBC_TZ_DEFAULT_SEC 0
+#define ABORTMODE 0x17
+#define ___int_ptrdiff_t_h 
+#define __LDBL_NORM_MAX__ 1.7976931348623157e+308L
+#define __PRI8LEAST(x) __LEAST8 __STRINGIFY(x)
+#define ICMP_AMR 18
+#define _NLINK_T_DECLARED 
+#define ip4_addr4_16(ipaddr) ((u16_t)ip4_addr4(ipaddr))
+#define ipaddr_aton(cp,addr) ip4addr_aton(cp, addr)
+#define __GCC_ATOMIC_SHORT_LOCK_FREE 2
+#define ip_addr_isany_val(ipaddr) ip4_addr_isany_val(ipaddr)
+#define SIOCSIFTXQLEN 0x8943
+#define RT_DEVICE_OFLAG_MASK 0xf0f
+#define pbuf_init() 
+#define O_BINARY 0x10000
+#define SCNd32 __SCN32(d)
+#define MB_LEN_MAX 1
+#define SIGHUP 1
+#define TCP_TMR_INTERVAL 250
+#define SIG_IGN ((_sig_func_ptr)1)
+#define LWIP_IPV6_FORWARD 0
+#define PRIoFAST8 __PRI8FAST(o)
+#define INT_LEAST16_MAX __INT_LEAST16_MAX__
+#define FINSH_DESC(cmd,desc) __fsym_ ##cmd ##_desc,
+#define PRIoLEAST8 __PRI8LEAST(o)
+#define __ULLFRACT_MAX__ 0XFFFFFFFFFFFFFFFFP-64ULLR
+#define __UINT_FAST8_TYPE__ unsigned int
+#define IP_CLASSC_NET 0xffffff00
+#define SCNuLEAST32 __SCN32LEAST(u)
+#define LWIP_MEMPOOL_INIT(name) memp_init_pool(&memp_ ## name)
+#define _IFCHR 0020000
+#define __USFRACT_EPSILON__ 0x1P-8UHR
+#define __ULACCUM_FBIT__ 32
+#define __P(protos) protos
+#define _NULL 0
+#define __QQ_IBIT__ 0
+#define RT_SLIST_OBJECT_INIT(object) { RT_NULL }
+#define LWIP_NETIF_LINK_CALLBACK 1
+#define MEM_STATS_AVAIL(x,y) 
+#define PRIXFAST16 __PRI16FAST(X)
+#define _NOINLINE __attribute__ ((__noinline__))
+#define IP_DEBUG LWIP_DBG_OFF
+#define __ATOMIC_ACQ_REL 4
+#define S_IFIFO _IFIFO
+#define __WCHAR_T 
+#define __ATOMIC_RELEASE 3
+#define LWIP_TCP_OPT_MSS 2
+#define TCPH_HDRLEN_SET(phdr,len) (phdr)->_hdrlen_rsvd_flags = lwip_htons(((len) << 12) | TCPH_FLAGS(phdr))
+#define MEMP_SANITY_REGION_AFTER_ALIGNED LWIP_MEM_ALIGN_SIZE(MEMP_SANITY_REGION_AFTER)
+#define __Long long
+#define ip4_addr_islinklocal(addr1) (((addr1)->addr & PP_HTONL(0xffff0000UL)) == PP_HTONL(0xa9fe0000UL))
