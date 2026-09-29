@@ -1,0 +1,29 @@
+# 00 — Project State Snapshot
+
+Snapshot date: 2026-09-29. This records the design **as it currently stands**, not the history of how it got here (see `02_experiment_history.md` for that).
+
+| Item | Value | Status |
+|---|---|---|
+| Research question | Effect of sender-side TCP resource configuration (`TCP_SND_BUF`, `TCP_SND_QUEUELEN`, `MEMP_NUM_TCP_SEG`) on RT-Thread/lwIP bulk TCP throughput, across a range of fixed one-sided RTTs | DESIGN DECISION |
+| System under test | RT-Thread 5.3.0 on QEMU `vexpress-a9`, lwIP 2.0.3, `bsp/qemu-vexpress-a9` | VERIFIED |
+| RT-Thread version | 5.3.0 (`include/rtdef.h`: `RT_VERSION_MAJOR=5 MINOR=3 PATCH=0`; matches live boot banner) | VERIFIED |
+| lwIP version | 2.0.3 (`rtconfig.h`: `RT_USING_LWIP203`; compiled objects under `components/net/lwip/lwip-2.0.3/`) | VERIFIED |
+| QEMU target | `vexpress-a9`, TAP networking (`qemu-system-arm -M vexpress-a9 -net nic -net tap,ifname=tap0,...`) | VERIFIED |
+| Host/tap0 IP | 192.168.10.1/24 | VERIFIED |
+| RT-Thread IP | 192.168.10.2/24, static, DHCP disabled (`rtconfig.h:293-294`, `# CONFIG_RT_LWIP_DHCP is not set`) | VERIFIED |
+| Final intended bulk-data direction | **RT-Thread → Ubuntu** (RT-Thread = netutils-iperf client/sender, Ubuntu = GNU iperf 2.1.9 server/receiver) | DESIGN DECISION |
+| Rationale for direction | `TCP_SND_BUF`/`TCP_SND_QUEUELEN`/`MEMP_NUM_TCP_SEG` are sender-side resources; RT-Thread must be the sender to make this a sender-resource experiment | DESIGN DECISION |
+| Benchmark tool | RT-Thread `netutils` `iperf` (commit `b77ba3f80f7ab48f7ec22685d495daa7bbffeb44`, `packages/netutils-latest/iperf/iperf.c`) talking iperf2-compatible raw-stream protocol to GNU `iperf` 2.1.9 on the host — **not** iperf3, **not** lwIP's own `lwiperf` | VERIFIED |
+| Current baseline TCP config | `TCP_MSS=1460`, `TCP_SND_BUF=8196`, `TCP_SND_QUEUELEN=22`, `MEMP_NUM_TCP_SEG=40`, `TCP_WND=2048` | VERIFIED (`bsp/qemu-vexpress-a9/rtconfig.h:305-308`, confirmed by live preprocessor macro dump, see `01_verified_facts.md`) |
+| `TCP_SND_BUF` ladder (frozen, current) | BASE=8196, B1=16384 (max tested; 32768 rejected — see below) | DESIGN DECISION, partially TO VERIFY (only BASE and B1 built/passed; nothing above B1 is in the accepted ladder) |
+| Max theoretically buildable `TCP_SND_BUF` with `TCP_SND_QUEUELEN=22` fixed | 17519 (computed, not independently rebuilt this session) | TO VERIFY (arithmetic re-derivable from source constants any time) |
+| `TCP_SND_BUF=65536` | Compiles (no `#error`), but GCC emits `-Woverflow`: value truncates to runtime `0` in `pcb->snd_buf` (`u16_t`) — **excluded from the ladder**, not a candidate point | VERIFIED (type chain + build success) / SESSION-DERIVED — NOT YET ARCHIVED (the exact warning text was only observed in conversation output, never redirected to a saved log) |
+| Phase 0 structure | P0-A: source/config verification (largely done). P0-B: instrumentation build/verify (done this session). P0-C: preliminary/pilot throughput runs (partial, ad hoc, pre-dates the frozen instrumentation) | DESIGN DECISION / TO VERIFY which sub-phase labels were ever formally assigned before this session — no prior doc used "P0-A/B/C" labels explicitly; this mapping is inferred from work content, not from an explicit phase plan found in the repo |
+| Phase 1 symbolic matrix | 6 unique TCP configs (BASE, B1=16384/22/40, C1=8196/30/40, C2=8196/40/40, D1=8196/22/60, D2=8196/22/80) × 4 RTT points (50/100/200/500 ms) × 5 repetitions = 120 planned runs. **Zero runs executed under this matrix.** | DESIGN DECISION (recorded in `bsp/qemu-vexpress-a9/experiment/manifest.yaml` and `run_matrix.csv`, all cells `status=pending`) |
+| Instrumentation architecture | Boot banner (`INIT_APP_EXPORT`) + PCB access via 3-level fd translation (`fd_get`→`vnode->data`→`sal_get_socket`→`user_data`→`lwip_get_tcp_pcb`, new minimal accessor in `sockets.c`) + `tcp_poll`-chained sampler (does NOT replace lwIP's own `poll_tcp`) + fixed-width accumulators + `instr_reset`/`instr_dump` msh commands, JSON split across 5 `rt_kprintf()` calls to fit `RT_CONSOLEBUF_SIZE=256` | VERIFIED (built, linked, boot-tested; see `01_verified_facts.md` and `03_phase0_results.md`) |
+| **Known limitation of the sampler** | `tcp_poll`'s countdown (`pcb->polltmr`) resets to 0 on every processed ACK (`tcp_in.c:1203`). During a continuous, actively-ACKed bulk transfer, the poll callback essentially never fires. Empirically confirmed: 30 s live transfer → `sample_count=0`. | VERIFIED |
+| Current Git HEAD | `fc586d5` "adding new shit before P0C", on branch `clean-benchmark`, parent `2663d80` "initial condition". **This commit was not made visibly within this session's tool calls** — it consolidates the `TCP_SND_QUEUELEN` decoupling, `IPERF_THREAD_STACK_SIZE=2048` fix, and Kconfig addition that earlier parts of this session made as uncommitted edits. | VERIFIED (commit exists, contents confirmed by `git show`) / open question: who/when it was committed is SESSION-DERIVED speculation only |
+| Modified (uncommitted) files right now | `components/net/lwip/lwip-2.0.3/src/api/sockets.c` (+21), `components/net/lwip/lwip-2.0.3/src/include/lwip/sockets.h` (+2) — the `lwip_get_tcp_pcb()` accessor | VERIFIED (`git status`/`git diff --stat`, checked fresh this task) |
+| Untracked files right now | `bsp/qemu-vexpress-a9/applications/instr.c` (350 lines), `bsp/qemu-vexpress-a9/applications/instr.h` (13 lines) | VERIFIED |
+| `tcp.c` (lwIP core) | Confirmed byte-identical to HEAD — a temporary debug line used to diagnose the `polltmr` behaviour was added and then fully reverted; `git diff` on this file is empty | VERIFIED |
+| Current stage of work | Instrumentation (Task: "Build and verify the instrumentation only") complete and verified; **no formal Phase 1 run has been executed**; this archival task is now consolidating the session before a new session begins thesis writing | VERIFIED |
