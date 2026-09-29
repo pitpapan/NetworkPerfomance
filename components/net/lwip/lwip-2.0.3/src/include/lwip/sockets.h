@@ -501,6 +501,8 @@ int lwip_sendmsg(int s, const struct msghdr *message, int flags);
 int lwip_sendto(int s, const void *dataptr, size_t size, int flags,
     const struct sockaddr *to, socklen_t tolen);
 int lwip_socket(int domain, int type, int protocol);
+struct tcp_pcb;
+struct tcp_pcb *lwip_get_tcp_pcb(int s);
 int lwip_write(int s, const void *dataptr, size_t size);
 int lwip_writev(int s, const struct iovec *iov, int iovcnt);
 int lwip_select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset,

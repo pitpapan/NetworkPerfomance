@@ -399,6 +399,27 @@ tryget_socket(int s)
 }
 
 /**
+ * Return the tcp_pcb backing a TCP socket, or NULL. Added for external
+ * read-only instrumentation (see bsp applications/instr.c); does not
+ * change any socket, netconn or pcb state.
+ *
+ * @param s externally used socket index (lwIP's own, not a SAL fd)
+ * @return struct tcp_pcb * for the socket, or NULL if not found / not TCP
+ */
+struct tcp_pcb *
+lwip_get_tcp_pcb(int s)
+{
+  struct lwip_sock *sock = tryget_socket(s);
+  if (sock == NULL || sock->conn == NULL) {
+    return NULL;
+  }
+  if (NETCONNTYPE_GROUP(netconn_type(sock->conn)) != NETCONN_TCP) {
+    return NULL;
+  }
+  return sock->conn->pcb.tcp;
+}
+
+/**
  * Same as tryget_socket but a global routine.
  *
  * @param s externally used socket index
