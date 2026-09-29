@@ -55,8 +55,8 @@ This is a reconstruction from this session's own record of tool calls, source re
 **Prior belief:** unknown whether 16384 was a safe, buildable value.
 **Evidence:** compile-time constraint arithmetic (`02_experiment_history.md` Event 8) plus an actual build: `TCP_SND_BUF=16384`, `TCP_SND_QUEUELEN=22`, `MEMP_NUM_TCP_SEG=40` — this is exactly the boundary case where `min_queue = 2*(16384//1460) = 22`, equal to the current `TCP_SND_QUEUELEN`.
 **Result:** Build **passed** at exactly this boundary (`22 >= 22`). Macro dump confirmed `TCP_SND_BUF=16384` with `TCP_SND_QUEUELEN`/`MEMP_NUM_TCP_SEG` unchanged.
-**Consequence:** `16384` was accepted as the ladder's upper point (`B1`) under the frozen matrix; no throughput data exists yet at this configuration (build-only, no runtime test was run at `16384` specifically).
-**Current status:** VERIFIED (build-time) / TO VERIFY (no runtime throughput data exists for this configuration).
+**Consequence:** `16384` was accepted as a ladder point; no throughput data exists yet at this configuration (build-only).
+**Current status:** VERIFIED (build-time). **Label superseded:** this point is now **`L1`**, and it is built at the pinned `QUEUELEN/SEG = 44/44`, not at `22/40` — see `raw_logs/build_L1.log`. The `22/40` build recorded in this event remains historically valid but is not a Phase 1 configuration. Still TO VERIFY: no runtime throughput data exists at any ladder point.
 
 ---
 
@@ -89,13 +89,16 @@ This is a reconstruction from this session's own record of tool calls, source re
 
 ## Event 10 — Derivation of the `TCP_SND_BUF` ladder ("L0/L1/L2")
 **Prior belief:** n/a.
-**Note on terminology:** this session's own record does not contain the labels "L0/L1/L2" verbatim; the ladder as built and frozen uses the labels `BASE` (8196) and `B1` (16384). If "L0/L1/L2" was used in an earlier part of this conversation that is no longer visible (automatic context compaction is possible in very long sessions), the mapping cannot be confirmed here and should be treated as `SESSION-DERIVED — NOT YET ARCHIVED` pending clarification. What **is** established with file/build evidence:
-- **BASE = 8196** — current committed baseline.
-- **B1 = 16384** — accepted upper point (Event 6), exact boundary of the `TCP_SND_QUEUELEN=22`-fixed constraint.
-- **32768** — computed and build-tested as `B2_rejected` (`min_queue=44 > 22`), confirmed to fail with the exact `#error` from `init.c:307`. Explicitly recorded as excluded in `experiment/manifest.yaml`'s `rejected_points`.
-- **65536** — excluded per Event 9 (compiles, but proven-wrong at runtime by type width, not by a build failure).
-- **17519** — the arithmetic maximum `TCP_SND_BUF` buildable with `TCP_SND_QUEUELEN=22` fixed; not separately proposed as a ladder point, just the computed ceiling.
-**Current status:** VERIFIED for BASE/B1/32768-rejected; TO VERIFY whether "L0/L1/L2" is the same thing under different names from an earlier, now-invisible part of this conversation.
+**Note on terminology — RESOLVED.** When this event was written, the archive contained only the labels `BASE` (8196) and `B1` (16384), and it flagged "L0/L1/L2" as an unconfirmable mapping. That is now settled: **L0/L1/L2 are the adopted labels**, and the ladder has three points, not two. The mapping is `L0` = 8196 (was `BASE`), `L1` = 16384 (was `B1`), `L2` = 32768 (was `B2_rejected`). All three are built at the pinned `QUEUELEN/SEG = 44/44`.
+
+What the historical record established at the time, and what changed:
+- **8196** — the shipped baseline. Now `L0`, rebuilt at 44/44.
+- **16384** — accepted upper point (Event 6), exact boundary of the `TCP_SND_QUEUELEN=22`-fixed constraint. Now `L1`, rebuilt at 44/44 where it is no longer a boundary case.
+- **32768** — was build-tested as `B2_rejected` (`min_queue=44 > 22`) and confirmed to fail with the `#error` at `init.c:307`. **That rejection is superseded.** The failure was caused by holding `TCP_SND_QUEUELEN` at 22, not by the value. At the pinned 44/44 it builds cleanly and is ladder point **`L2`** (`raw_logs/build_L2.log`, `raw_logs/macro_dump_L2.txt`).
+- **65536** — still excluded per Event 9 (compiles, but proven wrong at runtime by type width, not by a build failure).
+- **17519** — was the arithmetic maximum with `TCP_SND_QUEUELEN=22` fixed. **Superseded and explicitly not a ladder point**: pinning at 44 raises the reachable range to the `u16_t` ceiling, and a 17519-vs-16384 step is ~7% and carries no information. Recorded in `experiment/manifest.yaml` `rejected_points` with that reason.
+
+**Current status:** VERIFIED. Three-point ladder, all points built and archived. The "L0/L1/L2 vs BASE/B1" question is closed.
 
 ---
 

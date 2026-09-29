@@ -55,11 +55,22 @@ msh> instr_reset <run_id>     # zero accumulators, store run_id
 msh> instr_dump               # print one JSON line (split across 5 rt_kprintf calls internally)
 ```
 
-## Expected boot banner (VERIFIED, current baseline)
+## Expected boot banner
+
+The banner prints the macros directly, so it differs per configuration. Appears once at boot, after `[I/FileSystem] file system initialization done!` and before the `[W/kernel.service] rt_hw_us_delay()...` warnings (those warnings are pre-existing/harmless, unrelated to this project's changes).
+
+**`STOCK` (OBSERVED — this is the one that was actually captured):**
 ```
 INSTR_CFG TCP_MSS=1460 TCP_SND_BUF=8196 TCP_SND_QUEUELEN=22 MEMP_NUM_TCP_SEG=40 TCP_WND=2048 TCP_OVERSIZE=1460 TCP_SNDLOWAT=4098 TCP_SNDQUEUELOWAT=11 LWIP_WND_SCALE=0
 ```
-Appears once at boot, after `[I/FileSystem] file system initialization done!` and before the `[W/kernel.service] rt_hw_us_delay()...` warnings (those warnings are pre-existing/harmless, unrelated to this project's changes).
+
+**`L0` (PREDICTED from the archived `macro_dump_L0.txt`, not yet captured at boot):**
+```
+INSTR_CFG TCP_MSS=1460 TCP_SND_BUF=8196 TCP_SND_QUEUELEN=44 MEMP_NUM_TCP_SEG=44 TCP_WND=2048 TCP_OVERSIZE=1460 TCP_SNDLOWAT=4098 TCP_SNDQUEUELOWAT=22 LWIP_WND_SCALE=0
+```
+`L1` and `L2` differ only in `TCP_SND_BUF` (16384 / 32768) and `TCP_SNDLOWAT` (8192 / 16384).
+
+> No boot-banner console output has ever been saved to a file — the `STOCK` line above is a transcription. Capture one per configuration on the first Phase 1 boot; it is the cheapest possible per-run proof that the firmware under test is the firmware intended.
 
 ## Current known-good baseline config
 **`L0` = `TCP_SND_BUF=8196`, `TCP_SND_QUEUELEN=44`, `MEMP_NUM_TCP_SEG=44`, `TCP_WND=2048`** — the pinned anchor of the ladder. Set via `bsp/qemu-vexpress-a9/experiment/scripts/set_config.sh L0`, which edits `rtconfig.h` **and** `.config` together, rebuilds, verifies the effective values via the compiler's own preprocessor, checks `iperf` is linked exactly once, and archives the build log plus full macro dump under `docs/tfg_evidence/raw_logs/`. VERIFIED 2026-09-29.
@@ -82,4 +93,5 @@ Other named, build-verified configurations available the same way: `set_config.s
 - `docs/tfg_evidence/raw_logs/host_iperf_server_instr_verify.log` — a host-side `iperf -s` session log from the instrumentation-verification period; **UNKNOWN — NOT RECORDED** whether this corresponds byte-for-byte to any specific quoted Mbps figure in `04_historical_measurements.md` — treat as representative context, not as proof of a specific number.
 - `bsp/qemu-vexpress-a9/experiment/manifest.yaml`, `run_matrix.csv` — formal Phase 1 design, all cells pending.
 - `bsp/qemu-vexpress-a9/experiment/results.csv` — **does not exist yet.** This is where `collect_run_meta.sh` would append formal run data; it must be created by the first actual formal run.
-- Everything else referenced during this session (individual macro dumps for B1/C1/C2/D1/D2, `-Woverflow` warning text, `polltmr` debug trace output) — `UNKNOWN — NOT RECORDED` as a saved file; exists only as conversation output, reconstructed in `01_verified_facts.md`/`02_experiment_history.md` with explicit `SESSION-DERIVED` labels where applicable.
+- Per-configuration macro dumps are now archived for every Phase 1 configuration (`macro_dump_{L0,L1,L2,STOCK}.txt`). The old `B1/C1/C2/D1/D2` dumps were never saved and are moot — those configurations are superseded.
+- Still `UNKNOWN — NOT RECORDED` as a saved file: the `-Woverflow` warning text for `TCP_SND_BUF=65536`, the `polltmr` debug trace output, and any boot-banner console capture. These exist only as conversation output, reconstructed in `01_verified_facts.md`/`02_experiment_history.md` with explicit `SESSION-DERIVED` labels. Re-capture the `-Woverflow` text before quoting it verbatim in the thesis.
