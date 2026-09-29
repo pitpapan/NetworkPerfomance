@@ -1,0 +1,52 @@
+------------------------------------------------------------
+Server listening on TCP port 5001
+TCP window size:  128 KByte (default)
+------------------------------------------------------------
+[  1] local 192.168.10.1 port 5001 connected with 192.168.10.2 port 49153 (icwnd/mss/irtt=10/1024/52783)
+[ ID] Interval       Transfer     Bandwidth
+[  1] 0.0000-5.0000 sec   764 KBytes  1.25 Mbits/sec
+[  1] 5.0000-10.0000 sec   760 KBytes  1.25 Mbits/sec
+[  1] 10.0000-15.0000 sec   763 KBytes  1.25 Mbits/sec
+[  1] 15.0000-20.0000 sec   756 KBytes  1.24 Mbits/sec
+[  1] 20.0000-21.9125 sec   292 KBytes  1.25 Mbits/sec
+[  1] 0.0000-21.9125 sec  3.26 MBytes  1.25 Mbits/sec
+[  2] local 192.168.10.1 port 5001 connected with 192.168.10.2 port 49154 (icwnd/mss/irtt=10/1024/51837)
+[ ID] Interval       Transfer     Bandwidth
+[  2] 0.0000-5.0000 sec   764 KBytes  1.25 Mbits/sec
+[  2] 5.0000-10.0000 sec   760 KBytes  1.25 Mbits/sec
+[  2] 10.0000-15.0000 sec   763 KBytes  1.25 Mbits/sec
+[  2] 15.0000-20.0000 sec   733 KBytes  1.20 Mbits/sec
+[  2] 20.0000-21.9684 sec   303 KBytes  1.26 Mbits/sec
+[  2] 0.0000-21.9684 sec  3.25 MBytes  1.24 Mbits/sec
+[  3] local 192.168.10.1 port 5001 connected with 192.168.10.2 port 49155 (icwnd/mss/irtt=10/1024/51269)
+[ ID] Interval       Transfer     Bandwidth
+[  3] 0.0000-5.0000 sec   764 KBytes  1.25 Mbits/sec
+[  3] 5.0000-10.0000 sec   764 KBytes  1.25 Mbits/sec
+[  3] 10.0000-15.0000 sec   757 KBytes  1.24 Mbits/sec
+[  3] 15.0000-20.0000 sec   759 KBytes  1.24 Mbits/sec
+[  3] 20.0000-21.9916 sec   300 KBytes  1.23 Mbits/sec
+[  3] 0.0000-21.9916 sec  3.27 MBytes  1.25 Mbits/sec
+[  4] local 192.168.10.1 port 5001 connected with 192.168.10.2 port 49156 (icwnd/mss/irtt=10/1024/51284)
+[ ID] Interval       Transfer     Bandwidth
+[  4] 0.0000-5.0000 sec   764 KBytes  1.25 Mbits/sec
+[  4] 5.0000-10.0000 sec   760 KBytes  1.25 Mbits/sec
+[  4] 10.0000-15.0000 sec   760 KBytes  1.25 Mbits/sec
+[  4] 15.0000-20.0000 sec   767 KBytes  1.26 Mbits/sec
+[  4] 20.0000-21.9703 sec   300 KBytes  1.25 Mbits/sec
+[  4] 0.0000-21.9703 sec  3.27 MBytes  1.25 Mbits/sec
+[  5] local 192.168.10.1 port 5001 connected with 192.168.10.2 port 49157 (icwnd/mss/irtt=10/1024/51991)
+[ ID] Interval       Transfer     Bandwidth
+[  5] 0.0000-5.0000 sec   764 KBytes  1.25 Mbits/sec
+[  5] 5.0000-10.0000 sec   752 KBytes  1.23 Mbits/sec
+[  5] 10.0000-15.0000 sec   760 KBytes  1.25 Mbits/sec
+[  5] 15.0000-20.0000 sec   767 KBytes  1.26 Mbits/sec
+[  5] 20.0000-21.9981 sec   300 KBytes  1.23 Mbits/sec
+[  5] 0.0000-21.9981 sec  3.27 MBytes  1.25 Mbits/sec
+[  6] local 192.168.10.1 port 5001 connected with 192.168.10.2 port 49158 (icwnd/mss/irtt=10/1024/51538)
+[ ID] Interval       Transfer     Bandwidth
+[  6] 0.0000-5.0000 sec   768 KBytes  1.26 Mbits/sec
+[  6] 5.0000-10.0000 sec   760 KBytes  1.25 Mbits/sec
+[  6] 10.0000-15.0000 sec   760 KBytes  1.25 Mbits/sec
+[  6] 15.0000-20.0000 sec   760 KBytes  1.25 Mbits/sec
+[  6] 20.0000-21.9813 sec   303 KBytes  1.25 Mbits/sec
+[  6] 0.0000-21.9813 sec  3.27 MBytes  1.25 Mbits/sec

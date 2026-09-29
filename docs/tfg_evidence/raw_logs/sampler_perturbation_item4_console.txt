@@ -1,0 +1,230 @@
+########## RUN 1 : cycle=1 tier=off ##########
+ \ | /
+- RT -     Thread Operating System
+ / | \     5.3.0 build Sep 29 2026 21:12:46
+ 2006 - 2024 Copyright by RT-Thread team
+lwIP-2.0.3 initialized!
+[I/sal.skt] Socket Abstraction Layer initialize success.
+[I/SDIO] SD card capacity 65536 KB.
+[I/SDIO] SD card switch to High Speed / SDR25 mode
+[I/FileSystem] file system initialization done!
+INSTR_CFG TCP_MSS=1460 TCP_SND_BUF=8196 TCP_SND_QUEUELEN=44 MEMP_NUM_TCP_SEG=44 TCP_WND=2048 TCP_OVERSIZE=1460 TCP_SNDLOWAT=4098 TCP_SNDQUEUELOWAT=22 LWIP_WND_SCALE=0
+[W/kernel.service] rt_hw_us_delay() doesn't support for this board.Please consider implementing rt_hw_us_delay() in another file.
+[W/kernel.service] rt_hw_us_delay() doesn't support for this board.Please consider implementing rt_hw_us_delay() in another file.
+[W/kernel.service] rt_hw_us_delay() doesn't support for this board.Please consider implementing rt_hw_us_delay() in another file.
+Hello RT-Thread!
+msh />clear
+msh />instr_tier off
+instr: tier=off
+msh />instr_reset p4_1_off
+instr: accumulators reset, run_id=p4_1_off
+msh />iperf -c 192.168.10.1 -p 5001
+msh />[I/iperf] Connect to iperf server successful!
+instr: tier=off, timer NOT started (fd=4)
+[I/iperf] iperfc01: 1.2550 Mbps!
+[I/iperf] iperfc01: 1.2510 Mbps!
+[I/iperf] iperfc01: 1.2440 Mbps!
+[I/iperf] iperfc01: 1.2450 Mbps!
+iperf --stop
+msh />[W/iperf] Disconnected, iperf server shut down!
+instr_dump
+{"run_id":"p4_1_off","cfg":{"TCP_MSS":1460,"TCP_SND_BUF":8196,"TCP_SND_QUEUELEN":44,"MEMP_NUM_TCP_SEG":44,"TCP_WND":2048,"TCP_OVERSIZE":1460,"TCP_SNDLOWAT":4098,"TCP_SNDQUEUELOWAT":22,"LWIP_WND_SCALE":0},"sampler":{"kind
+":"soft_timer_periodic","interval_ms":100,"tier":0,"walk_compiled":1,"tick_per_second":100},"sample_count":0,"stale_count":0,"first_sample_tick":0,"last_sample_tick":0,"sample_span_ticks":0,"snd_buf_min":0,"snd_buf_max":
+0,"snd_buf_low_count":0,"snd_buf_low_threshold":1024,"snd_queuelen_max":0,"cwnd_min":0,"cwnd_max":0,"cwnd_mean_x1000":0,"snd_wnd_min":0,"snd_wnd_max":0,"snd_wnd_mean_x1000":0,"inflight_min":0,"inflight_max":0,"inflight_m
+ean_x1000":0,"unsent_nonempty_count":0,"unsent_bytes_max":0,"walk_segment_lists":1}
+msh />
+########## RUN 2 : cycle=1 tier=floor ##########
+msh />instr_tier off
+instr: tier=off
+msh />instr_reset p4_1_off
+instr: accumulators reset, run_id=p4_1_off
+msh />iperf -c 192.168.10.1 -p 5001
+msh />[I/iperf] Connect to iperf server successful!
+instr: tier=off, timer NOT started (fd=4)
+[I/iperf] iperfc01: 1.2550 Mbps!
+[I/iperf] iperfc01: 1.2510 Mbps!
+[I/iperf] iperfc01: 1.2440 Mbps!
+[I/iperf] iperfc01: 1.2450 Mbps!
+iperf --stop
+msh />[W/iperf] Disconnected, iperf server shut down!
+instr_dump
+{"run_id":"p4_1_off","cfg":{"TCP_MSS":1460,"TCP_SND_BUF":8196,"TCP_SND_QUEUELEN":44,"MEMP_NUM_TCP_SEG":44,"TCP_WND":2048,"TCP_OVERSIZE":1460,"TCP_SNDLOWAT":4098,"TCP_SNDQUEUELOWAT":22,"LWIP_WND_SCALE":0},"sampler":{"kind
+":"soft_timer_periodic","interval_ms":100,"tier":0,"walk_compiled":1,"tick_per_second":100},"sample_count":0,"stale_count":0,"first_sample_tick":0,"last_sample_tick":0,"sample_span_ticks":0,"snd_buf_min":0,"snd_buf_max":
+0,"snd_buf_low_count":0,"snd_buf_low_threshold":1024,"snd_queuelen_max":0,"cwnd_min":0,"cwnd_max":0,"cwnd_mean_x1000":0,"snd_wnd_min":0,"snd_wnd_max":0,"snd_wnd_mean_x1000":0,"inflight_min":0,"inflight_max":0,"inflight_m
+ean_x1000":0,"unsent_nonempty_count":0,"unsent_bytes_max":0,"walk_segment_lists":1}
+msh />clear
+msh />instr_tier floor
+instr: tier=floor
+msh />instr_reset p4_1_floor
+instr: accumulators reset, run_id=p4_1_floor
+msh />iperf -c 192.168.10.1 -p 5001
+msh />[I/iperf] Connect to iperf server successful!
+instr: sampler armed on fd=4 interval=100ms (10 ticks) tier=1
+[I/iperf] iperfc01: 1.2550 Mbps!
+[I/iperf] iperfc01: 1.2420 Mbps!
+[I/iperf] iperfc01: 1.2530 Mbps!
+[I/iperf] iperfc01: 1.2480 Mbps!
+iperf --stop
+msh />[W/iperf] Disconnected, iperf server shut down!
+instr_dump
+{"run_id":"p4_1_floor","cfg":{"TCP_MSS":1460,"TCP_SND_BUF":8196,"TCP_SND_QUEUELEN":44,"MEMP_NUM_TCP_SEG":44,"TCP_WND":2048,"TCP_OVERSIZE":1460,"TCP_SNDLOWAT":4098,"TCP_SNDQUEUELOWAT":22,"LWIP_WND_SCALE":0},"sampler":{"ki
+nd":"soft_timer_periodic","interval_ms":100,"tier":1,"walk_compiled":1,"tick_per_second":100},"sample_count":217,"stale_count":0,"first_sample_tick":5158,"last_sample_tick":7318,"sample_span_ticks":2160,"snd_buf_min":0,"
+snd_buf_max":100,"snd_buf_low_count":217,"snd_buf_low_threshold":1024,"snd_queuelen_max":11,"cwnd_min":8760,"cwnd_max":65505,"cwnd_mean_x1000":59080152,"snd_wnd_min":65535,"snd_wnd_max":65535,"snd_wnd_mean_x1000":6553500
+0,"inflight_min":8096,"inflight_max":8196,"inflight_mean_x1000":8195447,"unsent_nonempty_count":0,"unsent_bytes_max":0,"walk_segment_lists":1}
+msh />
+########## RUN 3 : cycle=1 tier=full ##########
+msh />instr_tier floor
+instr: tier=floor
+msh />instr_reset p4_1_floor
+instr: accumulators reset, run_id=p4_1_floor
+msh />iperf -c 192.168.10.1 -p 5001
+msh />[I/iperf] Connect to iperf server successful!
+instr: sampler armed on fd=4 interval=100ms (10 ticks) tier=1
+[I/iperf] iperfc01: 1.2550 Mbps!
+[I/iperf] iperfc01: 1.2420 Mbps!
+[I/iperf] iperfc01: 1.2530 Mbps!
+[I/iperf] iperfc01: 1.2480 Mbps!
+iperf --stop
+msh />[W/iperf] Disconnected, iperf server shut down!
+instr_dump
+{"run_id":"p4_1_floor","cfg":{"TCP_MSS":1460,"TCP_SND_BUF":8196,"TCP_SND_QUEUELEN":44,"MEMP_NUM_TCP_SEG":44,"TCP_WND":2048,"TCP_OVERSIZE":1460,"TCP_SNDLOWAT":4098,"TCP_SNDQUEUELOWAT":22,"LWIP_WND_SCALE":0},"sampler":{"ki
+nd":"soft_timer_periodic","interval_ms":100,"tier":1,"walk_compiled":1,"tick_per_second":100},"sample_count":217,"stale_count":0,"first_sample_tick":5158,"last_sample_tick":7318,"sample_span_ticks":2160,"snd_buf_min":0,"
+snd_buf_max":100,"snd_buf_low_count":217,"snd_buf_low_threshold":1024,"snd_queuelen_max":11,"cwnd_min":8760,"cwnd_max":65505,"cwnd_mean_x1000":59080152,"snd_wnd_min":65535,"snd_wnd_max":65535,"snd_wnd_mean_x1000":6553500
+0,"inflight_min":8096,"inflight_max":8196,"inflight_mean_x1000":8195447,"unsent_nonempty_count":0,"unsent_bytes_max":0,"walk_segment_lists":1}
+msh />clear
+msh />instr_tier full
+instr: tier=full
+msh />instr_reset p4_1_full
+instr: accumulators reset, run_id=p4_1_full
+msh />iperf -c 192.168.10.1 -p 5001
+msh />[I/iperf] Connect to iperf server successful!
+instr: sampler armed on fd=4 interval=100ms (10 ticks) tier=2
+[I/iperf] iperfc01: 1.2580 Mbps!
+[I/iperf] iperfc01: 1.2450 Mbps!
+[I/iperf] iperfc01: 1.2400 Mbps!
+[I/iperf] iperfc01: 1.2420 Mbps!
+iperf --stop
+msh />[W/iperf] Disconnected, iperf server shut down!
+instr_dump
+{"run_id":"p4_1_full","cfg":{"TCP_MSS":1460,"TCP_SND_BUF":8196,"TCP_SND_QUEUELEN":44,"MEMP_NUM_TCP_SEG":44,"TCP_WND":2048,"TCP_OVERSIZE":1460,"TCP_SNDLOWAT":4098,"TCP_SNDQUEUELOWAT":22,"LWIP_WND_SCALE":0},"sampler":{"kin
+d":"soft_timer_periodic","interval_ms":100,"tier":2,"walk_compiled":1,"tick_per_second":100},"sample_count":219,"stale_count":0,"first_sample_tick":8348,"last_sample_tick":10528,"sample_span_ticks":2180,"snd_buf_min":0,"
+snd_buf_max":1460,"snd_buf_low_count":218,"snd_buf_low_threshold":1024,"snd_queuelen_max":12,"cwnd_min":8760,"cwnd_max":65505,"cwnd_mean_x1000":59447292,"snd_wnd_min":65535,"snd_wnd_max":65535,"snd_wnd_mean_x1000":655350
+00,"inflight_min":6736,"inflight_max":8196,"inflight_mean_x1000":8185479,"unsent_nonempty_count":0,"unsent_bytes_max":0,"walk_segment_lists":1}
+msh />
+########## RUN 4 : cycle=2 tier=off ##########
+msh />instr_tier full
+instr: tier=full
+msh />instr_reset p4_1_full
+instr: accumulators reset, run_id=p4_1_full
+msh />iperf -c 192.168.10.1 -p 5001
+msh />[I/iperf] Connect to iperf server successful!
+instr: sampler armed on fd=4 interval=100ms (10 ticks) tier=2
+[I/iperf] iperfc01: 1.2580 Mbps!
+[I/iperf] iperfc01: 1.2450 Mbps!
+[I/iperf] iperfc01: 1.2400 Mbps!
+[I/iperf] iperfc01: 1.2420 Mbps!
+iperf --stop
+msh />[W/iperf] Disconnected, iperf server shut down!
+instr_dump
+{"run_id":"p4_1_full","cfg":{"TCP_MSS":1460,"TCP_SND_BUF":8196,"TCP_SND_QUEUELEN":44,"MEMP_NUM_TCP_SEG":44,"TCP_WND":2048,"TCP_OVERSIZE":1460,"TCP_SNDLOWAT":4098,"TCP_SNDQUEUELOWAT":22,"LWIP_WND_SCALE":0},"sampler":{"kin
+d":"soft_timer_periodic","interval_ms":100,"tier":2,"walk_compiled":1,"tick_per_second":100},"sample_count":219,"stale_count":0,"first_sample_tick":8348,"last_sample_tick":10528,"sample_span_ticks":2180,"snd_buf_min":0,"
+snd_buf_max":1460,"snd_buf_low_count":218,"snd_buf_low_threshold":1024,"snd_queuelen_max":12,"cwnd_min":8760,"cwnd_max":65505,"cwnd_mean_x1000":59447292,"snd_wnd_min":65535,"snd_wnd_max":65535,"snd_wnd_mean_x1000":655350
+00,"inflight_min":6736,"inflight_max":8196,"inflight_mean_x1000":8185479,"unsent_nonempty_count":0,"unsent_bytes_max":0,"walk_segment_lists":1}
+msh />clear
+msh />instr_tier off
+instr: tier=off
+msh />instr_reset p4_2_off
+instr: accumulators reset, run_id=p4_2_off
+msh />iperf -c 192.168.10.1 -p 5001
+msh />[I/iperf] Connect to iperf server successful!
+instr: tier=off, timer NOT started (fd=4)
+[I/iperf] iperfc01: 1.2530 Mbps!
+[I/iperf] iperfc01: 1.2480 Mbps!
+[I/iperf] iperfc01: 1.2450 Mbps!
+[I/iperf] iperfc01: 1.2550 Mbps!
+iperf --stop
+msh />[W/iperf] Disconnected, iperf server shut down!
+instr_dump
+{"run_id":"p4_2_off","cfg":{"TCP_MSS":1460,"TCP_SND_BUF":8196,"TCP_SND_QUEUELEN":44,"MEMP_NUM_TCP_SEG":44,"TCP_WND":2048,"TCP_OVERSIZE":1460,"TCP_SNDLOWAT":4098,"TCP_SNDQUEUELOWAT":22,"LWIP_WND_SCALE":0},"sampler":{"kind
+":"soft_timer_periodic","interval_ms":100,"tier":0,"walk_compiled":1,"tick_per_second":100},"sample_count":0,"stale_count":0,"first_sample_tick":0,"last_sample_tick":0,"sample_span_ticks":0,"snd_buf_min":0,"snd_buf_max":
+0,"snd_buf_low_count":0,"snd_buf_low_threshold":1024,"snd_queuelen_max":0,"cwnd_min":0,"cwnd_max":0,"cwnd_mean_x1000":0,"snd_wnd_min":0,"snd_wnd_max":0,"snd_wnd_mean_x1000":0,"inflight_min":0,"inflight_max":0,"inflight_m
+ean_x1000":0,"unsent_nonempty_count":0,"unsent_bytes_max":0,"walk_segment_lists":1}
+msh />
+########## RUN 5 : cycle=2 tier=floor ##########
+msh />instr_tier off
+instr: tier=off
+msh />instr_reset p4_2_off
+instr: accumulators reset, run_id=p4_2_off
+msh />iperf -c 192.168.10.1 -p 5001
+msh />[I/iperf] Connect to iperf server successful!
+instr: tier=off, timer NOT started (fd=4)
+[I/iperf] iperfc01: 1.2530 Mbps!
+[I/iperf] iperfc01: 1.2480 Mbps!
+[I/iperf] iperfc01: 1.2450 Mbps!
+[I/iperf] iperfc01: 1.2550 Mbps!
+iperf --stop
+msh />[W/iperf] Disconnected, iperf server shut down!
+instr_dump
+{"run_id":"p4_2_off","cfg":{"TCP_MSS":1460,"TCP_SND_BUF":8196,"TCP_SND_QUEUELEN":44,"MEMP_NUM_TCP_SEG":44,"TCP_WND":2048,"TCP_OVERSIZE":1460,"TCP_SNDLOWAT":4098,"TCP_SNDQUEUELOWAT":22,"LWIP_WND_SCALE":0},"sampler":{"kind
+":"soft_timer_periodic","interval_ms":100,"tier":0,"walk_compiled":1,"tick_per_second":100},"sample_count":0,"stale_count":0,"first_sample_tick":0,"last_sample_tick":0,"sample_span_ticks":0,"snd_buf_min":0,"snd_buf_max":
+0,"snd_buf_low_count":0,"snd_buf_low_threshold":1024,"snd_queuelen_max":0,"cwnd_min":0,"cwnd_max":0,"cwnd_mean_x1000":0,"snd_wnd_min":0,"snd_wnd_max":0,"snd_wnd_mean_x1000":0,"inflight_min":0,"inflight_max":0,"inflight_m
+ean_x1000":0,"unsent_nonempty_count":0,"unsent_bytes_max":0,"walk_segment_lists":1}
+msh />clear
+msh />instr_tier floor
+instr: tier=floor
+msh />instr_reset p4_2_floor
+instr: accumulators reset, run_id=p4_2_floor
+msh />iperf -c 192.168.10.1 -p 5001
+msh />[I/iperf] Connect to iperf server successful!
+instr: sampler armed on fd=4 interval=100ms (10 ticks) tier=1
+[I/iperf] iperfc01: 1.2500 Mbps!
+[I/iperf] iperfc01: 1.2450 Mbps!
+[I/iperf] iperfc01: 1.2480 Mbps!
+[I/iperf] iperfc01: 1.2500 Mbps!
+iperf --stop
+msh />[W/iperf] Disconnected, iperf server shut down!
+instr_dump
+{"run_id":"p4_2_floor","cfg":{"TCP_MSS":1460,"TCP_SND_BUF":8196,"TCP_SND_QUEUELEN":44,"MEMP_NUM_TCP_SEG":44,"TCP_WND":2048,"TCP_OVERSIZE":1460,"TCP_SNDLOWAT":4098,"TCP_SNDQUEUELOWAT":22,"LWIP_WND_SCALE":0},"sampler":{"ki
+nd":"soft_timer_periodic","interval_ms":100,"tier":1,"walk_compiled":1,"tick_per_second":100},"sample_count":219,"stale_count":0,"first_sample_tick":14764,"last_sample_tick":16944,"sample_span_ticks":2180,"snd_buf_min":0
+,"snd_buf_max":396,"snd_buf_low_count":219,"snd_buf_low_threshold":1024,"snd_queuelen_max":11,"cwnd_min":8760,"cwnd_max":65505,"cwnd_mean_x1000":58748273,"snd_wnd_min":65535,"snd_wnd_max":65535,"snd_wnd_mean_x1000":65535
+000,"inflight_min":7800,"inflight_max":8196,"inflight_mean_x1000":8193534,"unsent_nonempty_count":0,"unsent_bytes_max":0,"walk_segment_lists":1}
+msh />
+########## RUN 6 : cycle=2 tier=full ##########
+msh />instr_tier floor
+instr: tier=floor
+msh />instr_reset p4_2_floor
+instr: accumulators reset, run_id=p4_2_floor
+msh />iperf -c 192.168.10.1 -p 5001
+msh />[I/iperf] Connect to iperf server successful!
+instr: sampler armed on fd=4 interval=100ms (10 ticks) tier=1
+[I/iperf] iperfc01: 1.2500 Mbps!
+[I/iperf] iperfc01: 1.2450 Mbps!
+[I/iperf] iperfc01: 1.2480 Mbps!
+[I/iperf] iperfc01: 1.2500 Mbps!
+iperf --stop
+msh />[W/iperf] Disconnected, iperf server shut down!
+instr_dump
+{"run_id":"p4_2_floor","cfg":{"TCP_MSS":1460,"TCP_SND_BUF":8196,"TCP_SND_QUEUELEN":44,"MEMP_NUM_TCP_SEG":44,"TCP_WND":2048,"TCP_OVERSIZE":1460,"TCP_SNDLOWAT":4098,"TCP_SNDQUEUELOWAT":22,"LWIP_WND_SCALE":0},"sampler":{"ki
+nd":"soft_timer_periodic","interval_ms":100,"tier":1,"walk_compiled":1,"tick_per_second":100},"sample_count":219,"stale_count":0,"first_sample_tick":14764,"last_sample_tick":16944,"sample_span_ticks":2180,"snd_buf_min":0
+,"snd_buf_max":396,"snd_buf_low_count":219,"snd_buf_low_threshold":1024,"snd_queuelen_max":11,"cwnd_min":8760,"cwnd_max":65505,"cwnd_mean_x1000":58748273,"snd_wnd_min":65535,"snd_wnd_max":65535,"snd_wnd_mean_x1000":65535
+000,"inflight_min":7800,"inflight_max":8196,"inflight_mean_x1000":8193534,"unsent_nonempty_count":0,"unsent_bytes_max":0,"walk_segment_lists":1}
+msh />clear
+msh />instr_tier full
+instr: tier=full
+msh />instr_reset p4_2_full
+instr: accumulators reset, run_id=p4_2_full
+msh />iperf -c 192.168.10.1 -p 5001
+msh />[I/iperf] Connect to iperf server successful!
+instr: sampler armed on fd=4 interval=100ms (10 ticks) tier=2
+[I/iperf] iperfc01: 1.2640 Mbps!
+[I/iperf] iperfc01: 1.2400 Mbps!
+[I/iperf] iperfc01: 1.2450 Mbps!
+[I/iperf] iperfc01: 1.2490 Mbps!
+iperf --stop
+msh />[W/iperf] Disconnected, iperf server shut down!
+instr_dump
+{"run_id":"p4_2_full","cfg":{"TCP_MSS":1460,"TCP_SND_BUF":8196,"TCP_SND_QUEUELEN":44,"MEMP_NUM_TCP_SEG":44,"TCP_WND":2048,"TCP_OVERSIZE":1460,"TCP_SNDLOWAT":4098,"TCP_SNDQUEUELOWAT":22,"LWIP_WND_SCALE":0},"sampler":{"kin
+d":"soft_timer_periodic","interval_ms":100,"tier":2,"walk_compiled":1,"tick_per_second":100},"sample_count":219,"stale_count":0,"first_sample_tick":17968,"last_sample_tick":20148,"sample_span_ticks":2180,"snd_buf_min":0,
+"snd_buf_max":1248,"snd_buf_low_count":218,"snd_buf_low_threshold":1024,"snd_queuelen_max":11,"cwnd_min":8760,"cwnd_max":65505,"cwnd_mean_x1000":58846831,"snd_wnd_min":65535,"snd_wnd_max":65535,"snd_wnd_mean_x1000":65535
+000,"inflight_min":6948,"inflight_max":8196,"inflight_mean_x1000":8183031,"unsent_nonempty_count":0,"unsent_bytes_max":0,"walk_segment_lists":1}
+msh />
