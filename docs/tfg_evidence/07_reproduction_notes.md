@@ -1,22 +1,64 @@
 # 07 — Reproduction Notes
 
 ## Git state
+
 - Repository: `~/NetworkPerfomance`
-- Branch: `clean-benchmark`
-- HEAD commit: `1204b4b` ("reading logs"). Ancestry: `fc586d5` (experiment scaffolding) → `9b4178f` ("testing pcb") → `1204b4b` (evidence archive).
-- **The instrumentation is COMMITTED**, not uncommitted. `9b4178f` contains all four files, at exactly the line counts earlier drafts of this document listed as pending:
-  - `components/net/lwip/lwip-2.0.3/src/api/sockets.c` (+21 lines: `lwip_get_tcp_pcb()`)
-  - `components/net/lwip/lwip-2.0.3/src/include/lwip/sockets.h` (+2 lines: forward decl + prototype)
-  - `bsp/qemu-vexpress-a9/applications/instr.c` (350 lines)
-  - `bsp/qemu-vexpress-a9/applications/instr.h` (13 lines)
-- The only artefact still at risk is `bsp/qemu-vexpress-a9/packages/netutils-latest/iperf/iperf.c` (+4 lines: `#include "instr.h"` at :24, `instr_attach_client_socket(sock)` at :244, `instr_detach_client_socket(sock)` at :286) — **this file lives under a gitignored path (`packages/`) and is NOT tracked by git at all.** It must be manually re-applied if `packages/netutils-latest/` is ever re-cloned.
+- Branch: `clean-benchmark` (default branch is `main`; the experiment work lives on `clean-benchmark`)
+
+**This document does not record a HEAD commit hash, deliberately.** Two earlier
+revisions each named one (`fc586d5`, then `1204b4b`) and both were stale within a
+day — a hash written into prose is wrong as soon as the next commit lands, and a
+stale hash is worse than none because it reads as authoritative. Obtain it instead:
+
+```
+cd ~/NetworkPerfomance
+git log --oneline -5          # HEAD and recent ancestry
+git status --short            # anything uncommitted
+```
+
+The same applies to file line counts and build-size figures: they were previously
+written here and went stale for the same reason. Read them from the tree.
+
+### What is and is not under version control
+
+- **Tracked and committed:** the lwIP accessor
+  (`components/net/lwip/lwip-2.0.3/src/api/sockets.c`,
+  `.../src/include/lwip/sockets.h` — `lwip_get_tcp_pcb()`), and the instrumentation
+  (`bsp/qemu-vexpress-a9/applications/instr.c`, `instr.h`).
+- **NOT tracked, and the one artefact genuinely at risk:**
+  `bsp/qemu-vexpress-a9/packages/netutils-latest/iperf/iperf.c`. It lives under the
+  gitignored `packages/` path, so git does not see it at all. It carries three
+  hand-applied edits — an `#include "instr.h"`, an `instr_attach_client_socket(sock)`
+  immediately after the successful `connect()`, and an
+  `instr_detach_client_socket(sock)` immediately before `closesocket()`. **These must
+  be re-applied by hand if `packages/netutils-latest/` is ever re-cloned.** Verify
+  with:
+
+```
+grep -n instr bsp/qemu-vexpress-a9/packages/netutils-latest/iperf/iperf.c
+```
+
+  Three hits is correct. Zero hits means the hooks are gone and the sampler will
+  never arm, which presents as `sample_count=0` — indistinguishable at a glance from
+  the old `tcp_poll` failure, so check this first if samples go missing.
 
 ## Build command
 ```
 cd ~/NetworkPerfomance/bsp/qemu-vexpress-a9
 scons -j2
 ```
-Expected clean-baseline result (VERIFIED, this session): `text=762015 data=34248 bss=114284`, zero warnings, `arm-none-eabi-nm rtthread.elf | grep -c '^[0-9a-f]* T iperf$'` → `1`.
+Expected result: zero warnings, and `iperf` exported exactly once:
+
+```
+arm-none-eabi-nm rtthread.elf | grep -c '^[0-9a-f]* T iperf$'    # must print 1
+arm-none-eabi-size rtthread.elf                                   # record, do not compare to a number in this file
+```
+
+No `text`/`data`/`bss` figures are quoted here. They move with every instrumentation
+change, and earlier revisions of this document quoted figures that were stale within
+a day. The per-configuration build logs under `raw_logs/` are the record; compare a
+new build against the log for the *same* configuration and instrumentation revision,
+not against prose.
 
 ## QEMU invocation
 VERIFIED — used repeatedly and successfully this session:

@@ -95,6 +95,17 @@
 #define INSTR_DEFAULT_INTERVAL_MS  100u    /* msh-settable at runtime */
 #endif
 
+#ifndef INSTR_TRACE_SLOTS
+/* Per-sample time-series ring buffer, for transient / steady-state work.
+ * This is a CAPACITY, not an experimental parameter: it bounds how much
+ * history `instr_trace` can print, and nothing else. Oldest samples are
+ * overwritten once it is full; instr_dump's accumulators are unaffected
+ * and always cover the whole run. 1024 slots x 16 bytes = 16 KiB of BSS
+ * against a ~64 MB heap region. At a 100 ms interval that is 102.4 s of
+ * history, which covers every run length used in Phase 0. */
+#define INSTR_TRACE_SLOTS 1024u
+#endif
+
 #define INSTR_RUN_ID_MAX 32
 
 /* Sampling tiers. OFF and FLOOR are always reachable; FULL requires
@@ -146,9 +157,24 @@ typedef struct
     rt_uint32_t  first_sample_tick;   /* rt_tick_get() at first valid sample */
     rt_uint32_t  last_sample_tick;    /* rt_tick_get() at last valid sample */
 
+    /* Timing self-check: extrema of the gap between consecutive valid
+     * samples, in ticks. With a nominal interval of N ticks a perfect
+     * clock gives gap_min == gap_max == N. These are the instrument for
+     * choosing a drift tolerance; no tolerance is applied here. */
+    rt_uint32_t  gap_min_ticks;
+    rt_uint32_t  gap_max_ticks;
+
     rt_uint32_t  snd_buf_min;
     rt_uint32_t  snd_buf_max;
+    rt_uint64_t  snd_buf_sum;         /* -> mean free snd_buf */
     rt_uint32_t  snd_buf_low_count;   /* samples with snd_buf < threshold */
+
+    /* Retransmission activity, from pcb->nrtx (u8_t, "number of
+     * retransmissions" for the segment currently being retried; it is
+     * reset on forward progress, so this is an ACTIVITY INDICATOR, not a
+     * cumulative retransmitted-segment count -- see 10's notes). */
+    rt_uint32_t  nrtx_max;
+    rt_uint32_t  nrtx_nonzero_count;
 
     rt_uint16_t  snd_queuelen_max;
 
@@ -166,7 +192,25 @@ typedef struct
 
     rt_uint32_t  unsent_nonempty_count;
     rt_uint32_t  unsent_bytes_max;
+    rt_uint32_t  unacked_nonempty_count;
+    rt_uint32_t  unacked_bytes_max;
 } instr_accum_t;
+
+/* One time-series slot. 16 bytes; deliberately narrow so the ring can be
+ * long. tick is absolute rt_tick_get(); the reader differences it. */
+typedef struct
+{
+    rt_uint32_t  tick;
+    rt_uint16_t  snd_buf;
+    rt_uint16_t  cwnd;
+    rt_uint16_t  snd_wnd;
+    rt_uint16_t  queuelen;
+    rt_uint16_t  unsent_kb16;    /* unsent bytes, saturating at 65535 */
+    rt_uint16_t  inflight_kb16;  /* inflight bytes, saturating at 65535 */
+} instr_trace_slot_t;
+
+static instr_trace_slot_t g_trace[INSTR_TRACE_SLOTS];
+static rt_uint32_t        g_trace_written;   /* total ever written this run */
 
 static instr_accum_t g_accum;
 
@@ -177,10 +221,12 @@ static void instr_accum_reset(const char *run_id)
     {
         rt_strncpy(g_accum.run_id, run_id, INSTR_RUN_ID_MAX - 1);
     }
-    g_accum.snd_buf_min  = 0xFFFFFFFFu;
-    g_accum.cwnd_min     = 0xFFFFu;
-    g_accum.snd_wnd_min  = 0xFFFFu;
-    g_accum.inflight_min = 0xFFFFFFFFu;
+    g_accum.snd_buf_min   = 0xFFFFFFFFu;
+    g_accum.cwnd_min      = 0xFFFFu;
+    g_accum.snd_wnd_min   = 0xFFFFu;
+    g_accum.inflight_min  = 0xFFFFFFFFu;
+    g_accum.gap_min_ticks = 0xFFFFFFFFu;
+    g_trace_written = 0;
 }
 
 #if INSTR_WALK_SEGMENT_LISTS
@@ -214,6 +260,9 @@ static void instr_timer_cb(void *parameter)
     rt_uint32_t  l_lastack    = 0;
     int          l_unsent_set = 0;
     rt_uint32_t  l_unsent_len = 0;
+    int          l_unacked_set = 0;
+    rt_uint32_t  l_unacked_len = 0;
+    rt_uint32_t  l_nrtx        = 0;
     rt_uint32_t  l_tick;
 
     (void)parameter;
@@ -259,12 +308,15 @@ static void instr_timer_cb(void *parameter)
                 l_snd_wnd  = (rt_uint16_t)target->snd_wnd;
                 l_snd_nxt  = target->snd_nxt;
                 l_lastack  = target->lastack;
+                l_nrtx     = (rt_uint32_t)target->nrtx;
 
-                l_unsent_set = (target->unsent != RT_NULL) ? 1 : 0;
+                l_unsent_set  = (target->unsent  != RT_NULL) ? 1 : 0;
+                l_unacked_set = (target->unacked != RT_NULL) ? 1 : 0;
 #if INSTR_WALK_SEGMENT_LISTS
-                if (l_unsent_set && g_instr_tier == INSTR_TIER_FULL)
+                if (g_instr_tier == INSTR_TIER_FULL)
                 {
-                    l_unsent_len = instr_sum_seg_len(target->unsent);
+                    if (l_unsent_set)  { l_unsent_len  = instr_sum_seg_len(target->unsent);  }
+                    if (l_unacked_set) { l_unacked_len = instr_sum_seg_len(target->unacked); }
                 }
 #endif
             }
@@ -286,12 +338,22 @@ static void instr_timer_cb(void *parameter)
     {
         g_accum.first_sample_tick = l_tick;
     }
+    else
+    {
+        rt_uint32_t gap = l_tick - g_accum.last_sample_tick;
+        if (gap < g_accum.gap_min_ticks) { g_accum.gap_min_ticks = gap; }
+        if (gap > g_accum.gap_max_ticks) { g_accum.gap_max_ticks = gap; }
+    }
     g_accum.last_sample_tick = l_tick;
     g_accum.sample_count++;
 
     if (l_snd_buf < g_accum.snd_buf_min) { g_accum.snd_buf_min = l_snd_buf; }
     if (l_snd_buf > g_accum.snd_buf_max) { g_accum.snd_buf_max = l_snd_buf; }
+    g_accum.snd_buf_sum += l_snd_buf;
     if (l_snd_buf < INSTR_SNDBUF_LOW_THRESHOLD) { g_accum.snd_buf_low_count++; }
+
+    if (l_nrtx > g_accum.nrtx_max) { g_accum.nrtx_max = l_nrtx; }
+    if (l_nrtx > 0) { g_accum.nrtx_nonzero_count++; }
 
     if (l_queuelen > g_accum.snd_queuelen_max) { g_accum.snd_queuelen_max = l_queuelen; }
 
@@ -321,6 +383,29 @@ static void instr_timer_cb(void *parameter)
         {
             g_accum.unsent_bytes_max = l_unsent_len;
         }
+    }
+    if (l_unacked_set)
+    {
+        g_accum.unacked_nonempty_count++;
+        if (l_unacked_len > g_accum.unacked_bytes_max)
+        {
+            g_accum.unacked_bytes_max = l_unacked_len;
+        }
+    }
+
+    /* Time series. Ring, oldest overwritten; the accumulators above stay
+     * complete regardless of how much history the ring holds. */
+    {
+        instr_trace_slot_t *t = &g_trace[g_trace_written % INSTR_TRACE_SLOTS];
+        rt_uint32_t inflight = l_snd_nxt - l_lastack;
+        t->tick         = l_tick;
+        t->snd_buf      = (rt_uint16_t)l_snd_buf;
+        t->cwnd         = l_cwnd;
+        t->snd_wnd      = l_snd_wnd;
+        t->queuelen     = l_queuelen;
+        t->unsent_kb16   = (l_unsent_len > 0xFFFFu) ? 0xFFFFu : (rt_uint16_t)l_unsent_len;
+        t->inflight_kb16 = (inflight     > 0xFFFFu) ? 0xFFFFu : (rt_uint16_t)inflight;
+        g_trace_written++;
     }
 }
 
@@ -542,10 +627,52 @@ static int instr_tier(int argc, char **argv)
     return 0;
 }
 
+/* Print the per-sample time series as CSV, oldest retained first.
+ * Usage: instr_trace [stride]   (stride defaults to 1)
+ * One rt_kprintf per row, well under RT_CONSOLEBUF_SIZE. */
+static int instr_trace(int argc, char **argv)
+{
+    rt_uint32_t stride = 1;
+    rt_uint32_t total, start, i;
+
+    if (argc >= 2)
+    {
+        stride = (rt_uint32_t)atoi(argv[1]);
+        if (stride == 0) { stride = 1; }
+    }
+
+    total = g_trace_written;
+    if (total == 0)
+    {
+        rt_kprintf("INSTR_TRACE run_id=%s rows=0 (no samples)\n", g_accum.run_id);
+        return 0;
+    }
+
+    /* If the ring wrapped, the oldest retained sample is total-SLOTS. */
+    start = (total > INSTR_TRACE_SLOTS) ? (total - INSTR_TRACE_SLOTS) : 0u;
+
+    rt_kprintf("INSTR_TRACE_BEGIN run_id=%s written=%u retained_from=%u stride=%u\n",
+               g_accum.run_id, total, start, stride);
+    rt_kprintf("n,tick,snd_buf,cwnd,snd_wnd,queuelen,unsent,inflight\n");
+
+    for (i = start; i < total; i += stride)
+    {
+        instr_trace_slot_t *t = &g_trace[i % INSTR_TRACE_SLOTS];
+        rt_kprintf("%u,%u,%u,%u,%u,%u,%u,%u\n",
+                   i, t->tick, (rt_uint32_t)t->snd_buf, (rt_uint32_t)t->cwnd,
+                   (rt_uint32_t)t->snd_wnd, (rt_uint32_t)t->queuelen,
+                   (rt_uint32_t)t->unsent_kb16, (rt_uint32_t)t->inflight_kb16);
+    }
+    rt_kprintf("INSTR_TRACE_END run_id=%s\n", g_accum.run_id);
+    return 0;
+}
+
 static int instr_dump(int argc, char **argv)
 {
     rt_uint32_t cwnd_mean_x1000 = 0, snd_wnd_mean_x1000 = 0, inflight_mean_x1000 = 0;
+    rt_uint32_t snd_buf_mean_x1000 = 0;
     rt_uint32_t span_ticks = 0;
+    rt_uint32_t gap_min = 0;
 
     (void)argc;
     (void)argv;
@@ -555,7 +682,9 @@ static int instr_dump(int argc, char **argv)
         cwnd_mean_x1000     = (rt_uint32_t)((g_accum.cwnd_sum     * 1000u) / g_accum.sample_count);
         snd_wnd_mean_x1000  = (rt_uint32_t)((g_accum.snd_wnd_sum  * 1000u) / g_accum.sample_count);
         inflight_mean_x1000 = (rt_uint32_t)((g_accum.inflight_sum * 1000u) / g_accum.sample_count);
+        snd_buf_mean_x1000  = (rt_uint32_t)((g_accum.snd_buf_sum  * 1000u) / g_accum.sample_count);
         span_ticks          = g_accum.last_sample_tick - g_accum.first_sample_tick;
+        gap_min = (g_accum.gap_min_ticks == 0xFFFFFFFFu) ? 0u : g_accum.gap_min_ticks;
     }
 
     /* RT_CONSOLEBUF_SIZE is 256 bytes in this build (src/kservice.c:
@@ -584,10 +713,15 @@ static int instr_dump(int argc, char **argv)
         g_accum.sample_count, g_accum.stale_count,
         g_accum.first_sample_tick, g_accum.last_sample_tick, span_ticks);
 
-    rt_kprintf("\"snd_buf_min\":%u,\"snd_buf_max\":%u,\"snd_buf_low_count\":%u,"
-               "\"snd_buf_low_threshold\":%u,\"snd_queuelen_max\":%u,",
+    rt_kprintf("\"gap_min_ticks\":%u,\"gap_max_ticks\":%u,\"trace_written\":%u,"
+               "\"trace_slots\":%u,\"nrtx_max\":%u,\"nrtx_nonzero_count\":%u,",
+        gap_min, g_accum.gap_max_ticks, g_trace_written,
+        (rt_uint32_t)INSTR_TRACE_SLOTS, g_accum.nrtx_max, g_accum.nrtx_nonzero_count);
+
+    rt_kprintf("\"snd_buf_min\":%u,\"snd_buf_max\":%u,\"snd_buf_mean_x1000\":%u,"
+               "\"snd_buf_low_count\":%u,\"snd_buf_low_threshold\":%u,\"snd_queuelen_max\":%u,",
         g_accum.sample_count ? g_accum.snd_buf_min : 0u, g_accum.snd_buf_max,
-        g_accum.snd_buf_low_count,
+        snd_buf_mean_x1000, g_accum.snd_buf_low_count,
         (rt_uint32_t)INSTR_SNDBUF_LOW_THRESHOLD, (rt_uint32_t)g_accum.snd_queuelen_max);
 
     rt_kprintf("\"cwnd_min\":%u,\"cwnd_max\":%u,\"cwnd_mean_x1000\":%u,"
@@ -597,11 +731,15 @@ static int instr_dump(int argc, char **argv)
         g_accum.sample_count ? (rt_uint32_t)g_accum.snd_wnd_min : 0u,
         (rt_uint32_t)g_accum.snd_wnd_max, snd_wnd_mean_x1000);
 
-    rt_kprintf("\"inflight_min\":%u,\"inflight_max\":%u,\"inflight_mean_x1000\":%u,"
-               "\"unsent_nonempty_count\":%u,\"unsent_bytes_max\":%u,\"walk_segment_lists\":%d}\n",
+    rt_kprintf("\"inflight_min\":%u,\"inflight_max\":%u,\"inflight_mean_x1000\":%u,",
         g_accum.sample_count ? g_accum.inflight_min : 0u, g_accum.inflight_max,
-        inflight_mean_x1000,
+        inflight_mean_x1000);
+
+    rt_kprintf("\"unsent_nonempty_count\":%u,\"unsent_bytes_max\":%u,"
+               "\"unacked_nonempty_count\":%u,\"unacked_bytes_max\":%u,"
+               "\"walk_segment_lists\":%d}\n",
         g_accum.unsent_nonempty_count, g_accum.unsent_bytes_max,
+        g_accum.unacked_nonempty_count, g_accum.unacked_bytes_max,
         (int)INSTR_WALK_SEGMENT_LISTS);
 
     return 0;
@@ -613,4 +751,5 @@ MSH_CMD_EXPORT(instr_reset, zero instrumentation accumulators and store a run id
 MSH_CMD_EXPORT(instr_dump, print one JSON line with run config and accumulators);
 MSH_CMD_EXPORT(instr_interval, get or set the periodic sampler interval in ms);
 MSH_CMD_EXPORT(instr_tier, get or set the sampling tier off floor or full);
+MSH_CMD_EXPORT(instr_trace, print the per-sample time series as CSV with optional stride);
 #endif /* FINSH_USING_MSH */

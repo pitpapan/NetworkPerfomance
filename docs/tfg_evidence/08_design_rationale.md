@@ -146,6 +146,187 @@ There is no mechanism by which it could affect the measurement.
 clamping lwIP's own opt.h:1221 default applies; at every ladder point
 the two happen to agree, so this is a portability note, not a defect.)
 
+## The sampling instrument: why a periodic soft timer
+
+This section exists because it was missing. The sampler was designed and
+built against a specification that lived only in a chat message and was
+recorded nowhere in the repository, while `02_experiment_history.md`
+Event 18 simultaneously stated that no periodic sampler had been
+designed. A future session reading 08 would have found the single point
+of failure named in this document's last paragraph with no design behind
+it. The validated design follows. Implementation:
+`bsp/qemu-vexpress-a9/applications/instr.c`; de-risking evidence:
+`09_sampler_derisk.md`.
+
+Under mechanism attribution the sampler is not instrumentation attached
+to the experiment, it IS the experiment: the joint state of snd_buf /
+unsent / cwnd / snd_wnd is the primary evidence and nothing else
+produces it. So the trigger has to satisfy one hard requirement that an
+ordinary debug hook does not: **the sampling instants must be
+independent of the process being measured.** Every rejection below
+follows from that.
+
+### Why tcp_poll was rejected: it produces zero samples under load
+
+DISPROVEN EMPIRICALLY AND FROM SOURCE. `pcb->polltmr` is reset to 0 on
+every processed ACK (`core/tcp_in.c:1203`, inside `tcp_receive()`'s
+forward-progress handling). The poll callback fires only when `polltmr`
+reaches `pcb->pollinterval`, so a continuously-ACKed bulk transfer never
+lets it accumulate. A 30 s live transfer produced `sample_count=0`; a
+temporary trace inside `tcp_slowtmr()` showed `polltmr` pinned at 1
+forever. `tcp_poll` is an idle-connection callback by design, not a
+clock. Full account: `02_experiment_history.md` Events 14-17,
+`01_verified_facts.md` F27-F28.
+
+### Why tcp_sent was rejected: rate-correlated, phase-biased sampling
+
+This is the more instructive rejection, because `tcp_sent` *does* fire
+during a bulk transfer — it looks like a working sampler and is not one.
+Two independent defects, both source-verified:
+
+1. **Sampling rate is proportional to the measured quantity.**
+   `TCP_EVENT_SENT` is invoked at `core/tcp_in.c:402`, inside ACK
+   processing, and only when `recv_acked > 0`. Its firing rate is
+   therefore the ACK arrival rate, which is the throughput. A
+   high-throughput cell would be sampled many times more densely than a
+   low-throughput one, so every per-cell mean would be weighted by the
+   very variable the experiment varies (RTT, via throughput). Sample
+   counts would also stop being a validity check, because the expected
+   count would no longer be derivable from duration and interval.
+
+2. **Samples land at a privileged phase of the buffer cycle.**
+   `pcb->snd_buf += recv_acked` executes at `core/tcp_in.c:1248` inside
+   `tcp_receive()`, which returns *before* `tcp_input()` reaches the
+   `TCP_EVENT_SENT` call at line 402. The callback therefore always
+   observes `snd_buf` immediately after it was replenished — the
+   emptiest-buffer moment of each cycle is systematically excluded. For
+   a study whose question is literally "is the send buffer
+   under-occupied", sampling only the post-refill phase would bias the
+   headline statistic in the direction of the answer.
+
+Separately, `pcb->sent` is a single slot already occupied by
+`api_msg.c`'s `sent_tcp`, which drives `lwip_netconn_do_writemore()` —
+the blocking-write continuation. Instrumentation there sits directly in
+the write path.
+
+### Why a soft timer, and why not a hard timer
+
+`RT_TIMER_FLAG_SOFT_TIMER | RT_TIMER_FLAG_PERIODIC`. The timer's phase is
+set by `rt_timer_start()` and advances on the system tick
+(`RT_TICK_PER_SECOND` = 100, so 10 ms resolution), with no dependency on
+packet arrivals, ACKs, lwIP's TCP timers, or the application's write
+loop. That is the independence requirement, met structurally rather than
+argued.
+
+A **hard** timer was rejected: its callback runs in tick ISR context,
+where blocking on `lock_tcpip_core` is not permitted, and the callback
+cannot safely read pcb state without that lock. A soft timer runs on
+RT-Thread's timer thread (priority 4, 4096-byte stack,
+`rtconfig.h:77-78`), which may block. That thread is higher priority than
+`tcpip_thread` (10) and the iperf thread (20); RT-Thread mutexes
+implement priority inheritance (`src/ipc.c`), so a lower-priority lock
+holder is boosted rather than starved.
+
+The timer object is created once at `INIT_APP_EXPORT` time and only
+started and stopped thereafter, so arming and disarming never allocate
+and cannot fail partway.
+
+### Why the pcb->poll chaining was removed rather than ported
+
+The `tcp_poll` design chained: save `pcb->poll`, install the sampler,
+call the saved callback through. With the timer there is no reason to
+touch `pcb->poll` at all, and not touching it is a strictly stronger
+"do not modify the data path" guarantee than chaining. It also deletes a
+real latent bug: the chaining `instr_detach_client_socket()` re-resolved
+fd to pcb and **returned early when that failed**, leaving
+instrumentation installed in `pcb->poll` — and resolution fails exactly
+when the socket is being torn down abruptly, which is precisely when
+detach matters.
+
+### Why pointer validation needs the port pair, not just list membership
+
+The timer thread holds a `struct tcp_pcb *` captured at attach, and the
+connection can be closed and its pcb freed between two firings. The
+callback therefore validates before dereferencing, under the core lock:
+
+- **Membership in `tcp_active_pcbs`** establishes that the pointer is
+  live *right now*. lwIP removes a pcb from that list
+  (`TCP_RMV_ACTIVE` / `tcp_pcb_remove`) before returning its memory, so
+  a pointer found in the list is safe to read while the lock is held.
+- **Membership alone is insufficient**, and this is the non-obvious
+  part. pcbs come from a fixed memp pool. A freed block can be handed
+  straight back out for a *different* connection, which is then itself
+  registered in `tcp_active_pcbs`. The stale pointer would pass the
+  membership test and the sampler would silently accumulate another
+  connection's state into this run's totals — a wrong number with no
+  error, which is the worst failure mode available. Comparing
+  `local_port` and `remote_port` against the pair recorded at attach
+  makes that case detectable, because the replacement connection cannot
+  reuse both ports.
+
+Note what this does and does not prove. In every de-risking run
+`stale_count` was 0 (`09_sampler_derisk.md`), so the guard has never
+fired. It is UNEXERCISED, not shown unnecessary; the argument for it is
+structural, not empirical.
+
+### Lock discipline
+
+In order: `LOCK_TCPIP_CORE()`; validate; copy the wanted fields into
+plain locals, including the `unsent` walk, which is a pcb dereference and
+so must happen inside the lock; `UNLOCK_TCPIP_CORE()`; then all
+accumulator arithmetic. The invariant is two-sided and both halves
+matter: **no pcb memory is dereferenced outside the lock** (correctness),
+and **no accumulator arithmetic runs inside it** (the lock is held for a
+bounded handful of loads, so the sampler cannot become a source of
+contention that perturbs the thing it measures).
+
+### The FLOOR/FULL switch and the runtime-tier deviation
+
+`INSTR_WALK_SEGMENT_LISTS` remains the FLOOR/FULL switch. It gates
+whether the `unsent`-list walk — the only part of a sample whose cost is
+O(list length) rather than O(1) — is compiled in at all.
+
+DESIGN DECISION, deviating from the original compile-time-only
+specification: within a `=1` build, a runtime `instr_tier
+<off|floor|full>` selects the tier. The reason is a confound, not
+convenience. Comparing tiers by rebuilding means each tier is measured
+in a different boot, so a tier difference is inseparable from
+boot-to-boot differences in heap layout, ARP/route state, host-side
+socket and port reuse, and QEMU/host load. The perturbation question
+being asked — does sampling change the throughput it measures — is a
+small-effect question, so a confound of unknown size sitting on top of it
+is not acceptable. The runtime tier makes OFF/FLOOR/FULL interleavable
+within one boot, which is the standard way to handle this and matches the
+`run_ordering.randomize_within_block` discipline already in
+`manifest.yaml`.
+
+`off` **does not start the timer at all**, rather than starting it and
+returning early from the callback. Otherwise the OFF arm would still
+carry soft-timer thread wakeups and scheduler activity, and would measure
+the marginal cost of the lock-and-copy instead of the cost of sampling.
+The compile-time `=0` build is retained on top of this: it is the only
+way to show the walk's *code* is absent, for a claim that does not rest
+on trusting a runtime flag.
+
+### The timing self-check
+
+The sampler records `first_sample_tick`, `last_sample_tick` and
+`sample_count`, and reports `sample_span_ticks`. Because the interval is
+known and tick-quantised, the expected sample count is
+`sample_span_ticks / interval_ticks + 1` exactly, so every run carries
+its own arithmetic proof that the clock did not drift or stall — a
+property `tcp_poll` and `tcp_sent` could not offer even in principle
+(under `tcp_sent` the expected count is unknown; under `tcp_poll` it was
+zero). At L0 / 50 ms this check was exact: 319 observed against 319
+expected. `stale_count` separates "the timer did not fire" from "the
+timer fired and the target was not valid", which are different faults
+with different causes.
+
+The tolerance that turns this self-check into an INVALID gate is
+**TBD FROM PILOT** and is not set here. Per-sample gap extrema are
+recorded so the tolerance can be chosen from measured jitter rather than
+assumed.
+
 ## Excluded, with reasons
 
     Bottleneck-migration hypothesis  — premise foreclosed (above)
