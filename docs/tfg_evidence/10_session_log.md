@@ -75,7 +75,7 @@ Still unknown after this session:
 ---
 
 ### 2026-09-30 — Complete Phase 0 measurement; decide nothing
-Commits: `ea1963c`, `43c59ad`, `a1d73ef`
+Commits: `ea1963c`, `43c59ad`, `5719b39` (plus the follow-up that corrected this line)
 Done:
   - **G1 archive integrity.** `05` rows 6 and 7 rewritten to point at
     `manifest.yaml` / `run_matrix.csv` instead of restating values, with a
