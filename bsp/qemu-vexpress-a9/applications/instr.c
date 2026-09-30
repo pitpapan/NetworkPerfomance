@@ -88,7 +88,20 @@
 #endif
 
 #ifndef INSTR_SNDBUF_LOW_THRESHOLD
+/* LEGACY, RETAINED DELIBERATELY. Measured useless as a discriminator: it read
+ * 318/319 at L0/50ms and 647/647 at L0/500ms, i.e. ~1.00 at every cell, because
+ * snd_buf sits at 0 essentially always at L0. Kept unchanged so earlier runs
+ * stay comparable; superseded for analysis by the mechanism classification
+ * below. Its replacement (if any) is TBD FROM PILOT -- not set here. */
 #define INSTR_SNDBUF_LOW_THRESHOLD 1024u   /* bytes; configurable at compile time */
+#endif
+
+#ifndef INSTR_APP_WRITE_BYTES
+/* The application's fixed write size, IPERF_BUFSZ = 4*1024 (verified fact F14,
+ * packages/netutils-latest/iperf/iperf.c). This is a WORKLOAD CONSTANT of the
+ * benchmark, not a tunable threshold: "could the application have issued another
+ * whole send() at this instant?" is a question with one correct denominator. */
+#define INSTR_APP_WRITE_BYTES 4096u
 #endif
 
 #ifndef INSTR_DEFAULT_INTERVAL_MS
@@ -167,7 +180,27 @@ typedef struct
     rt_uint32_t  snd_buf_min;
     rt_uint32_t  snd_buf_max;
     rt_uint64_t  snd_buf_sum;         /* -> mean free snd_buf */
-    rt_uint32_t  snd_buf_low_count;   /* samples with snd_buf < threshold */
+    rt_uint32_t  snd_buf_low_count;   /* samples with snd_buf < threshold (legacy) */
+    rt_uint32_t  snd_buf_zero_count;  /* samples with snd_buf EXACTLY 0 */
+    rt_uint32_t  snd_buf_ge_write_count; /* samples with snd_buf >= one app write */
+
+    /* Mechanism classification. Mutually exclusive and exhaustive: the three
+     * counters sum to sample_count. They map one-to-one onto the three
+     * alternatives the research question names (00_project_state.md row 1):
+     *   app_limited    snd_buf > 0            -- buffer under-occupied; the
+     *                                            application had room and had
+     *                                            not filled it
+     *   unsent_pending snd_buf == 0, unsent   -- buffer full AND data is queued
+     *                                            but not yet transmitted
+     *   ack_pending    snd_buf == 0, !unsent  -- buffer full and everything in
+     *                                            it is transmitted, awaiting ACKs
+     * Parameter-free: the only comparisons are against exact zero and against a
+     * null pointer. Note these need the CHEAP unsent boolean only, so the
+     * classification is available in the FLOOR tier; FULL adds the byte
+     * magnitudes, not the category. */
+    rt_uint32_t  mech_app_limited;
+    rt_uint32_t  mech_unsent_pending;
+    rt_uint32_t  mech_ack_pending;
 
     /* Retransmission activity, from pcb->nrtx (u8_t, "number of
      * retransmissions" for the segment currently being retried; it is
@@ -351,6 +384,12 @@ static void instr_timer_cb(void *parameter)
     if (l_snd_buf > g_accum.snd_buf_max) { g_accum.snd_buf_max = l_snd_buf; }
     g_accum.snd_buf_sum += l_snd_buf;
     if (l_snd_buf < INSTR_SNDBUF_LOW_THRESHOLD) { g_accum.snd_buf_low_count++; }
+    if (l_snd_buf == 0) { g_accum.snd_buf_zero_count++; }
+    if (l_snd_buf >= INSTR_APP_WRITE_BYTES) { g_accum.snd_buf_ge_write_count++; }
+
+    if (l_snd_buf > 0)      { g_accum.mech_app_limited++;    }
+    else if (l_unsent_set)  { g_accum.mech_unsent_pending++; }
+    else                    { g_accum.mech_ack_pending++;    }
 
     if (l_nrtx > g_accum.nrtx_max) { g_accum.nrtx_max = l_nrtx; }
     if (l_nrtx > 0) { g_accum.nrtx_nonzero_count++; }
@@ -734,6 +773,13 @@ static int instr_dump(int argc, char **argv)
     rt_kprintf("\"inflight_min\":%u,\"inflight_max\":%u,\"inflight_mean_x1000\":%u,",
         g_accum.sample_count ? g_accum.inflight_min : 0u, g_accum.inflight_max,
         inflight_mean_x1000);
+
+    rt_kprintf("\"snd_buf_zero_count\":%u,\"snd_buf_ge_write_count\":%u,"
+               "\"app_write_bytes\":%u,\"mech_app_limited\":%u,"
+               "\"mech_unsent_pending\":%u,\"mech_ack_pending\":%u,",
+        g_accum.snd_buf_zero_count, g_accum.snd_buf_ge_write_count,
+        (rt_uint32_t)INSTR_APP_WRITE_BYTES, g_accum.mech_app_limited,
+        g_accum.mech_unsent_pending, g_accum.mech_ack_pending);
 
     rt_kprintf("\"unsent_nonempty_count\":%u,\"unsent_bytes_max\":%u,"
                "\"unacked_nonempty_count\":%u,\"unacked_bytes_max\":%u,"

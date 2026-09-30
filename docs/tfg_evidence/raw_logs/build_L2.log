@@ -193,7 +193,7 @@ Memory region         Used Size  Region Size  %age Used
 arm-none-eabi-objcopy -O binary rtthread.elf rtthread.bin
 arm-none-eabi-size rtthread.elf
    text	   data	    bss	    dec	    hex	filename
- 762015	  34248	 114284	 910547	  de4d3	rtthread.elf
+ 766595	  34272	 130716	 931583	  e36ff	rtthread.elf
 scons: done building targets.
    text	   data	    bss	    dec	    hex	filename
- 762015	  34248	 114284	 910547	  de4d3	rtthread.elf
+ 766595	  34272	 130716	 931583	  e36ff	rtthread.elf

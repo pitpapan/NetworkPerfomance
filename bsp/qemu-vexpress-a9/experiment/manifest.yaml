@@ -58,8 +58,16 @@ coupled_not_operative:
     returning ERR_MEM, not by TCP_SNDLOWAT, and netutils-iperf never calls
     select(). No fixed-TCP_SNDLOWAT arm is required."
 
+# Proposals with measurements, defensible ranges and reasoning are in
+# docs/tfg_evidence/12_phase0_measurements.md ("Proposals for the fenced
+# tbd_from_pilot slots"). They are PROPOSALS. Every value below stays null
+# until the user decides; null means undecided, not zero and not "pick
+# something sensible". Note also that four of these depend on how the
+# sporadic throughput collapses (11_open_problems.md item B1) are classified,
+# and that there is currently no validity gate that can even see them (N8).
 tbd_from_pilot:
-  repetitions: null            # from noisiest pilot cell
+  repetitions: null            # from noisiest pilot cell -- measured to be the
+                               # 50 ms cell, not the 500 ms cell (11 item R11)
   run_duration_s: null         # from transient characterization
   discard_interval_s: null     # from transient characterization
   sampling_interval_ms: null   # from perturbation pilot
