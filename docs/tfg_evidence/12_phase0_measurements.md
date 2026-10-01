@@ -574,3 +574,136 @@ Flagged rather than filled, per the standing rule.
   so this affects only trace-based analysis. Either raise `INSTR_TRACE_SLOTS` (each
   slot is 16 bytes; 4096 slots costs 64 KiB of BSS against a ~64 MB heap) or accept
   partial traces. Not set here.
+
+---
+
+## B1 — the sporadic collapses: CLASSIFICATION `SUPPORTED_PLATFORM_STALL`
+
+Run budget declared before starting: **10 × 90 s runs at L0/200 ms** (the cell with
+the highest previously observed collapse rate), split into a 5-run IDLE arm and a
+5-run LOADED arm. Budget was sufficient; no extension was needed.
+
+### The measurement host is itself a virtual machine — the archive did not know this
+
+`systemd-detect-virt` returns **`oracle`**; `/proc/cpuinfo` carries the
+`hypervisor` flag and `lscpu` reports `Hypervisor vendor: KVM`. The Ubuntu machine
+that hosts QEMU is a **VirtualBox guest with 2 vCPUs**, on an AMD Ryzen 7 5800H.
+**VERIFIED.**
+
+So the stack is: physical host → VirtualBox VM (2 vCPU) → QEMU `vexpress-a9` →
+RT-Thread. Two levels of virtualization, and only two CPUs for QEMU's three
+threads plus the host `iperf` server plus everything else. Even fully idle, QEMU
+accumulates runqueue wait continuously: `qemu_rundelay` p50 = **10.7 ms per
+second**, p99 = 55 ms, max 174 ms over 736 idle monitor-seconds. **VERIFIED.**
+
+### Host telemetry added
+
+`experiment/scripts/hostmon.py`, one process sampling `/proc` at 1 Hz, timestamped
+`YYYYMMDDHHMMSS` to share the iperf `-y C` CSV's time base. Per second it records
+`/proc/stat` CPU jiffie deltas (including `steal`), `ctxt`, `procs_running`,
+`procs_blocked`, `loadavg`, and — summed over **all threads** of QEMU and of the
+host `iperf` — `sum_exec_runtime`, `run_delay` and timeslice count from
+`/proc/<pid>/task/*/schedstat`.
+
+`run_delay` is the decisive field: nanoseconds the task was **runnable but not
+running**. Measured overhead: **0.05 s CPU per 5 s wall, ~1 % of one core.**
+**VERIFIED.**
+
+### Result
+
+| Arm | runs | intervals | dip seconds (< 80 % of that run's median, t ≥ 2 s) |
+|---|---|---|---|
+| **IDLE** (agent issued no commands during the arm) | 5 | 92 each = 460 | **none, in any run** |
+| **LOADED** (2 CPU spinners for 10 s, starting at guest t ≈ 17 s) | 5 | — | run1 `17,18,39,40` · run2 `17,18,54,55` · run3 `18,19,20,44,45` · run4 `16,…` · run5 `16,17,18,24,25,…` |
+
+**VERIFIED.** Zero collapses in 460 idle intervals at the cell that previously
+produced 13 in a single 90 s run; collapses in **5 of 5** loaded runs, with the
+first cluster landing in the declared spinner window in every one.
+
+The reproduced collapses match the archived ones in shape *and in value*: the
+loaded runs produced 0, 11 680, 23 360, 39 531, 65 568 and 131 136 bit/s against a
+steady 327 840 — and **11 680 bit/s (3.6 %) is the exact value of the worst
+archived collapse**, at the same cell.
+
+### Telemetry at the collapse second
+
+`b1_load_1`, steady seconds versus the dip second:
+
+| | `procs_running` | `cpu_idle` (jiffies) | `qemu_exec_ms` | `qemu_slices` | `ctxt` |
+|---|---|---|---|---|---|
+| steady | 1 – 5 | 144 – 155 | 62 – 90 | 239 – 277 | ~1600 |
+| **dip second** | **16** | **0** | **10.3** | **18** | **119** |
+
+QEMU received **~8× less CPU time** and was scheduled **~14× less often**, with the
+host fully saturated and 16 runnable processes. **VERIFIED, and consistent across
+all five loaded runs.**
+
+`tc -s qdisc` before and after every loaded run: **0 dropped, 0 overlimits,
+0 requeues** throughout. The network path was clean; the sender simply was not
+running. **VERIFIED.**
+
+### The expected sharp discriminator turned out to be the wrong one
+
+The working hypothesis proposed guest-side timer slip (`gap_max` > nominal
+concurrent with a collapse) as "the single sharpest discriminator available",
+based on `g3a_6_full` carrying `gap_max = 11` alongside its collapse. **That
+inference does not hold.** VERIFIED both ways:
+
+- In all 5 LOADED runs — severe, reproduced collapses — `gap_max` was exactly
+  **10 ticks, i.e. nominal. No guest timer slip at all.**
+- In IDLE run 3 — a completely clean run — `gap_max` was **11**, a one-tick slip
+  with no throughput dip anywhere.
+
+So guest timer slip and throughput collapse are **independent**, and
+`g3a_6_full`'s coincidence was exactly that. The mechanism is unsurprising in
+hindsight: QEMU catches its virtual timer up when it is rescheduled, so guest tick
+accounting survives a host stall that the guest's throughput does not. The real
+discriminator is host-side — `qemu_slices` and `qemu_exec_ms` — not guest-side.
+**Observation (c) of the working hypothesis is retracted.**
+
+### What this establishes, and what it does not
+
+**Establishes:** host CPU contention is *sufficient* to produce collapses
+indistinguishable in shape and magnitude from the archived ones, at the same cell;
+and the same cell is completely clean across 460 intervals when the host is
+undisturbed.
+
+**Does not establish:**
+
+- That every archived collapse had this cause. The previous session ran `git`,
+  `scons`, `python3` analyses and document writes **concurrently with background
+  experiment runs** on this 2-vCPU host, which makes it the obvious candidate, but
+  no telemetry was recorded then, so this is **ASSUMED**, not verified, for the
+  historical runs.
+- That host CPU contention is the *only* mechanism. `NO_PLATFORM_SIGNAL` would
+  only ever apply to signals actually measured; here a signal was found, but TAP
+  scheduling, QEMU's internal timer/IO paths, and the **VirtualBox layer** were not
+  independently instrumented. `cpu_steal` read 0 throughout, which is weak
+  evidence about the VirtualBox layer since VirtualBox does not reliably report
+  steal time. **TO VERIFY.**
+- The second dip cluster in each loaded run (t ≈ 39–55) is **not** explained. It
+  carries a different signature — high `ctxt` (1700–2200) and high `qemu_slices`
+  (213–258) *with* CPU idle available — unlike the first cluster. **TO VERIFY.**
+
+### Two limitations of the monitor, for whoever uses it next
+
+1. **It loses samples during exactly the events it is measuring.** In
+   `b1_load_1` the timestamps jump 18:42:58 → 18:43:20, a 22 s hole: the monitor
+   was itself starved. Sample loss is therefore a *symptom* to read, not only a
+   defect — but it means dip-second correlation fails for the worst events, which
+   is why several dip rows above show `?`.
+2. **`iperf_rundelay_ms` can go negative.** iperf2 spawns a thread per connection;
+   when one exits, the sum over `task/*/schedstat` drops. QEMU's thread count is
+   fixed at 3, so `qemu_*` fields are unaffected. Treat the iperf columns as
+   indicative only.
+
+### Consequence: the remedy is operational, not statistical
+
+B1 is a property of how the host is used during a run, not of the system under
+test. That changes the protocol: **nothing else may run on the measurement host
+during a Phase 1 run** — no builds, no analysis, no commits, no interactive
+shells. Under that rule the collapse rate at the worst cell went from 13 per 90 s
+run to 0 in 5 runs.
+
+This also reclassifies N8. A per-interval gate is no longer the primary defence
+against B1; it is a **detector that proves the operational rule was followed**.

@@ -116,7 +116,7 @@
  * and always cover the whole run. 1024 slots x 16 bytes = 16 KiB of BSS
  * against a ~64 MB heap region. At a 100 ms interval that is 102.4 s of
  * history, which covers every run length used in Phase 0. */
-#define INSTR_TRACE_SLOTS 1024u
+#define INSTR_TRACE_SLOTS 8192u
 #endif
 
 #define INSTR_RUN_ID_MAX 32
