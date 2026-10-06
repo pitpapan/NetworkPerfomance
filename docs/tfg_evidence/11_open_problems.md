@@ -7,7 +7,7 @@ items stay, they are not deleted.
 
 | # | Problem | Blocks | Owner | Status |
 |---|---|---|---|---|
-| B2 | `experiment/scripts/collect_run_meta.sh` has never been executed end to end, and `experiment/results.csv` does not exist. Confirmed this session: the field list it parses has **19** scalar fields missing against the current `instr_dump` schema (28 top-level fields, the script's `INSTR_FIELDS` has 15), it has no timing-drift gate, no N8 interval gate, and no COMPLETE-file / resume-safety semantics. | Recording any Phase 1 run at all. | this session, in progress | OPEN |
+| B2 | `experiment/scripts/collect_run_meta.sh` has never been executed end to end, and `experiment/results.csv` does not exist. A rewrite addressing the field-list gap, timing-drift gate, N8 interval-gate integration (PROPOSAL parameters, env-overridable), `--boot-banner` cross-check, and COMPLETE-file/resume-safety semantics exists **uncommitted in the working tree** (as of 2026-10-06) but has not been run against a real `instr_dump`/host-CSV pair and has not been reviewed. | Recording any Phase 1 run at all. | uncommitted draft exists, unreviewed/unrun | OPEN |
 
 ## Non-blocking, known
 

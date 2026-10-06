@@ -203,3 +203,70 @@ Still unknown after this session (so far):
   - The unexplained second dip cluster in every loaded run (t≈39–55 s), which
     carries a different telemetry signature than the first.
   - B2 and N3, not yet started as of this entry.
+
+---
+
+### 2026-10-06 — Bootstrap persistent orchestration workflow (no new measurements)
+Commits: (pending, this entry)
+Done:
+  - Reconstructed current state from the repository rather than from any
+    prior conversation: HEAD `83e2c1f` on `clean-benchmark`, 7 commits ahead
+    of `origin/clean-benchmark`, one pre-existing uncommitted modification
+    (`experiment/scripts/collect_run_meta.sh`, +315/-71, see below).
+  - Confirmed `08_design_rationale.md`, `00_project_state.md`,
+    `manifest.yaml`, `run_matrix.csv` and `HANDOFF.md` agree on the current
+    mechanism-attribution framing, the 19-cell matrix (12 main + 3 platform
+    + 4 pinctl), and that every `tbd_from_pilot` field (`repetitions`,
+    `run_duration_s`, `discard_interval_s`, `sampling_interval_ms`,
+    `snd_buf_low_threshold`) is still `null`. No conflict found between
+    these files; none resolved, none invented.
+  - Verified model-routing capability for the requested agent roster on the
+    installed Claude Code 2.1.285: `claude-sonnet-5`, `claude-sonnet-4-5`
+    and `claude-opus-5-5` are all selectable (`--model <id>`, confirmed via
+    `--output-format json` → `modelUsage`/`canonicalModel` echoing the
+    requested id unchanged for all three). The `--effort` flag and a
+    per-model `effortLevel` key in `~/.claude/settings.json` both exist as
+    real mechanisms; whether per-agent `effort:` frontmatter inside
+    `.claude/agents/*.md` is actually honored per-invocation was **not**
+    independently verified and is recorded as such in the new `CLAUDE.md`.
+  - Installed `.claude/agents/{experiment-engineer,campaign-runner,
+    evidence-auditor,thesis-writer}.md` (none existed before) and a new
+    root `CLAUDE.md` indexing the source-of-truth files, model routing,
+    role boundaries, measurement-resource discipline, and Git/thesis rules.
+    Did not touch `~/.claude/settings.json` (account-wide, out of scope).
+Found (not sought):
+  - `experiment/scripts/collect_run_meta.sh` has an uncommitted, syntactically
+    valid (`bash -n` clean) rewrite already sitting in the working tree —
+    resume-safety (`.complete` markers, `--force`), a `--host-csv`/N8
+    interval-gate integration (`GATE_DRIFT_FRAC`/`GATE_GAP_FACTOR`/`N8_*`
+    env-overridable PROPOSAL constants), and a `--boot-banner` compiled-config
+    cross-check. This directly addresses blocking item B2 in `11`, but the
+    most recent session-log entry above (2026-10-01/06) still says "B2 ...
+    not yet started as of this entry." The work is real but was never
+    logged, never committed, and its N8 parameters are explicitly marked
+    PROPOSAL in its own header comment — it has **not** been run end to end
+    (`experiment/results.csv` still does not exist) and is not claimed
+    complete by this entry. Left exactly as found; not reviewed line-by-line
+    and not committed, per this session's bootstrap-only scope.
+  - Open problem N5 (gitignored hand-applied hooks in
+    `packages/netutils-latest/iperf/iperf.c`) is still live: confirmed via
+    `git check-ignore` that the file is ignored
+    (`bsp/qemu-vexpress-a9/.gitignore:16`) and a repo-wide search found no
+    tracked patch/diff/overlay reconstructing it. No tracked reconstruction
+    mechanism exists yet.
+Failed / blocked: none.
+Decisions taken:
+  - Did not resume, review, or commit the uncommitted `collect_run_meta.sh`
+    B2 work, and did not act on N8's PROPOSAL parameters or N3 (L1 runtime
+    data), N9 (trace-ring size), or any other open problem, because this
+    invocation is scoped to workflow bootstrap only (no new measurements,
+    instrumentation changes, or freeze decisions) and the prior session's
+    work on it is incomplete and unreviewed.
+  - Committed the orchestration files separately from the pending
+    experimental-code change, so the experimental diff's review and the
+    workflow bootstrap are not conflated in one commit.
+Still unknown after this session:
+  - Whether the uncommitted `collect_run_meta.sh` rewrite actually works end
+    to end against a real `instr_dump`/host-CSV pair — it has never been
+    run. Whether N8's proposed gate parameters (`discard=3 bin=5 band=0.80
+    allow=0`) should be frozen. Everything already listed as open in `11`.
