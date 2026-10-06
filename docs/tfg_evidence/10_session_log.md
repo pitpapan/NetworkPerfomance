@@ -149,3 +149,57 @@ Decisions taken:
 Still unknown after this session:
   - Everything in `11`, in particular the cause of the sporadic collapses, which
     is now the largest threat to the Phase 1 dataset.
+
+---
+
+### 2026-10-01/06 — De-risk Phase 1: B1 cause, N8 gate, B2 pipeline, N3 ladder (in progress)
+Commits: `4ab87bf` (B1 capture + N8 draft, prior stage), plus this session's commits
+Done so far:
+  - **B1 investigated and CLASSIFIED `SUPPORTED_PLATFORM_STALL`.** Discovered the
+    measurement host is itself a 2-vCPU VirtualBox VM. Added `hostmon.py`
+    (1 Hz `/proc` sampler, ~1 % overhead) and ran a pre-declared 10-run budget
+    (5 IDLE + 5 LOADED) at L0/200 ms. Zero collapses in 460 idle intervals;
+    collapses in 5/5 loaded runs, reproducing the archived shape and magnitude
+    exactly. Full write-up in `12`.
+  - **N8: a defensible per-interval gate designed, tested, and documented.**
+    `interval_gate.py`. Perfect separation on the only intervention-labelled data
+    (B1's own arms); 1.1 % flag rate on the rest of the archive with no
+    disproportionate flagging by RTT or ladder point.
+Found (not sought):
+  - The working hypothesis's sharpest proposed discriminator — guest timer slip
+    (`gap_max` > nominal) concurrent with a collapse — does **not** hold. All 5
+    loaded runs had exactly nominal `gap_max`; a clean idle run had a 1-tick slip
+    with zero throughput effect. Guest timer slip and throughput collapse are
+    independent; retracted rather than kept.
+  - A flat per-second band for N8 is structurally wrong, not just untuned:
+    throughput is quantized in integer send-window cycles per second, so an
+    *undisturbed* 500 ms run legitimately takes values as low as 50–61 % of its
+    own median. Any band above ~50 % would be silently stricter at low-RTT cells
+    than at high-RTT ones. Fixed by binning before comparing, which removes the
+    cell-dependence structurally.
+  - `collect_run_meta.sh`'s field list is missing **19** scalar fields against the
+    current 28-field `instr_dump` schema (not "~12" as `11` previously estimated),
+    and has no timing-drift gate, no N8 integration, and no COMPLETE/resume
+    semantics. Confirmed by diff before starting B2.
+Decisions taken:
+  - Declare the B1 capture budget (10 runs, 5+5) *before* starting, per the
+    brief's stopping-condition requirement, specifically to prevent capture
+    attempts from consuming the whole session if B1 did not reproduce on demand.
+    It reproduced within budget.
+  - Retract the timer-slip discriminator rather than quietly dropping it, because
+    the brief named it as "the single sharpest discriminator available" and a
+    future session re-deriving it from `g3a_6_full` alone would repeat the same
+    wrong inference.
+  - Choose N8's band (0.80) from a sensitivity table reported in full, with the
+    quantization bound derived from clean-run structure *before* any collapse
+    label was consulted — so the binning requirement is not fitted to the
+    labels, only the final band value is chosen with them in view, and that
+    choice is shown as a table rather than collapsed to the one number used.
+Still unknown after this session (so far):
+  - Whether B1's loaded-arm mechanism explains every historical collapse (no
+    telemetry existed before this capture — ASSUMED for historical runs).
+  - Whether anything beyond host-CPU contention contributes (VirtualBox layer,
+    TAP scheduling, QEMU-internal timer/IO were not independently instrumented).
+  - The unexplained second dip cluster in every loaded run (t≈39–55 s), which
+    carries a different telemetry signature than the first.
+  - B2 and N3, not yet started as of this entry.

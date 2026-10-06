@@ -707,3 +707,125 @@ run to 0 in 5 runs.
 
 This also reclassifies N8. A per-interval gate is no longer the primary defence
 against B1; it is a **detector that proves the operational rule was followed**.
+
+---
+
+## N8 — per-interval validity gate: a defensible candidate exists
+
+Implemented in `experiment/scripts/interval_gate.py`. All four parameters
+(`discard`, `bin`, `band`, `allow`) are **PROPOSALS** — none is written to
+`manifest.yaml`. The script's own constants are commented `# PROPOSAL -- manifest
+slot stays null` so a future reader of the code sees the same caveat as a reader
+of this document.
+
+### Why a flat per-second band cannot work, and what replaces it
+
+The initial design (before this write-up) was "INVALID if any 1-second interval
+falls below `F` × the run's own median." Testing it against the archive surfaced a
+structural problem, not a tuning one: steady throughput here is
+`TCP_SND_BUF` ⁄ RTT-cycle, so a **1-second interval contains an integer number of
+send-window cycles**, and its value is quantized at `1 / cycles_per_second`.
+**VERIFIED** directly from the per-second data:
+
+| Cell | cycles / second | one lost cycle reads as |
+|---|---|---|
+| L0/50 ms | ~19 | 94.7 % of median |
+| L0/100 ms | ~10 | 90.0 % |
+| L0/200 ms | ~5 | 80.0 % |
+| L0/500 ms | **~2** | **50.0 %** |
+| L2/500 ms | **~2.6** | **60.9 %** |
+
+An undisturbed `g4_L0_r500_t100` takes *only* the values {81.1, 90.4, 100} % of its
+own median; an undisturbed `g4_L2_r500_t100` only {60.9, 100} %. **Any fixed band
+above ~50 % is a different, stricter rule at the 500 ms cells than at 50 ms**,
+which is exactly the cell-dependence the run's-own-median design was meant to
+remove — it just moved the dependence from the reference value to the band width
+instead of eliminating it.
+
+**Fix: bin before comparing.** Aggregate consecutive seconds into non-overlapping
+`B`-second bins (mean bps per bin) before taking the median and the band. Binning
+multiplies cycles-per-bin by `B` and divides the quantization step by `B`,
+removing the cell dependence structurally rather than by per-cell tuning.
+
+### The rule
+
+1. Drop the first `discard` seconds (startup transient — a **different**
+   mechanism from disturbance detection, handled separately).
+2. Bin the remainder into non-overlapping `bin`-second windows (mean bps).
+3. `M` = median of the bins (the run's own reference — scale-free across the
+   ~40× span of steady rates on the grid).
+4. Count bins below `band` × `M`.
+5. `INVALID` if that count exceeds `allow`.
+
+Deterministic, reads only the archived host CSV, never inspects which config or
+RTT produced the run, and never deletes — it only emits a verdict plus a reason
+string.
+
+### Evaluation against the full archive, `discard=3 bin=5 band=0.80 allow=0`
+
+The B1 arms are the only runs with **ground truth set by intervention**, not by
+inspecting the collapse itself — the LOAD arm was disturbed deliberately, the
+IDLE arm deliberately was not, both decided before either ran. Everything else is
+unlabelled historical data used only to check for false positives and for
+disproportionate flagging.
+
+| Corpus | n | flagged | rate |
+|---|---|---|---|
+| **B1 IDLE** (ground truth: clean) | 5 | 0 | **0 % FP** |
+| **B1 LOAD** (ground truth: disturbed) | 5 | 5 | **100 % TP** |
+| g3a (L0/50 ms, 20 s) | 24 | 0 | 0 % |
+| g3b (L0/50 ms, 20 s) | 30 | 1 | 3.3 % |
+| g4 L0 (90 s, mixed RTT) | 8 | 0 | 0 % |
+| g4 L2 (90 s, mixed RTT) | 8 | 0 | 0 % |
+| g6 (pinning control, STOCK+PINNED × 2 cycles) | 24 | 0 | 0 % |
+| **Total, excl. B1** | 94 | 1 | **1.1 %** |
+
+**VERIFIED.** Perfect separation on the only intervention-labelled data available.
+The lone historical flag, `g3b_3_full500`, has no independent ground truth — it
+cannot be confirmed as a real disturbance or a false positive — but it is
+consistent with B1: a 500 ms cell is exactly where `g4`'s own transient work
+(same session) showed larger quantization and is structurally the kind of cell
+B1's loaded arm disturbed.
+
+### Sensitivity, not just a point estimate
+
+| `band` | B1 IDLE false positives | B1 LOAD true positives | historical flag rate |
+|---|---|---|---|
+| 0.90 | 0/5 | 5/5 | 4.3 % |
+| 0.85 | 0/5 | 5/5 | 2.1 % |
+| **0.80** | **0/5** | **5/5** | **1.1 %** |
+| 0.75 | 0/5 | 4/5 | 1.1 % |
+| 0.70 | 0/5 | 4/5 | 1.1 % |
+
+0.80 is the point where sensitivity is still perfect (5/5 TP) and the historical
+flag rate has already reached its floor — loosening further below 0.75 starts
+losing true positives without reducing false positives any further. **Not chosen
+by fitting to the collapse labels**: the *quantization* bound (previous section)
+was derived from clean-run structure alone, before any label was consulted; the
+*band* was then chosen from the sensitivity table above, which is reported in
+full rather than collapsed to the one value used.
+
+### Required properties, checked explicitly
+
+- **Deterministic / scriptable**: pure function of the CSV; `interval_gate.py
+  selftest` re-derives the table above from the archived files on every run.
+- **Outcome-independent**: `gate()` takes only `[(ts, t, bps), ...]` — no config,
+  no RTT, no treatment label is in scope to leak into the decision.
+- **Uniform availability**: the per-second host CSV is produced by `iperf -y C`
+  for every run under the existing protocol; no run lacks the input this gate
+  needs.
+- **No disproportionate invalidation by cell**: g4 L0 and g4 L2 both flag 0/8
+  despite an 8-fold RTT range and a 4-fold buffer range between them; g6's STOCK
+  and PINNED arms both flag 0/12. The one flag in the whole non-B1 archive is a
+  single run at a single cell, not a pattern tied to any axis.
+
+### What remains open
+
+- `allow` was tested only at 0 in the table above; `11` item N8 is updated to
+  reflect a defensible rule exists, not that its exact parameters are decided.
+- The gate has not yet been wired into `collect_run_meta.sh` — that integration is
+  B2's work, done in the same session, see below.
+- Per the B1 finding, this gate is now understood as a **detector that the
+  operational no-concurrent-load rule was followed**, not the primary defence
+  against B1 — but it still needs to exist for exactly the case the rule is
+  violated without anyone noticing.
