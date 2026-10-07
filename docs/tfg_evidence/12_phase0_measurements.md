@@ -336,6 +336,21 @@ sampling rate. The 10 ms column is exactly 10× the 100 ms column at every RTT,
 which is what a fixed, short, periodically-recurring `unsent` episode sampled at
 10× the rate would give.
 
+> **CORRECTION (2026-10-07, 20 ms pilot audit), appended not rewritten:**
+> "periodically-recurring" is not established by this table and is now
+> contradicted by direct trace inspection. The same 10× scaling with
+> sampling rate is exactly what a **one-time, connection-start** `unsent`
+> burst of fixed duration would also produce (count ≈ duration × rate,
+> regardless of whether the duration is one contiguous burst or many
+> short recurrences) — the table cannot distinguish the two readings.
+> `13_pilot_20ms.md`'s 2026-10-07 pilot checked trace position directly
+> at 20 ms/60 s across 4 strata (not available when this row was
+> written): in every one of 24 attempts, 100% of `unsent>0` samples fall
+> in a single burst at connection start (~0.15 s at 50 ms RTT, ~1.5 s at
+> 500 ms RTT) with zero such samples at any later point in the run. The
+> correct reading is a once-per-connection event, constant in elapsed
+> time regardless of run length, not a periodically-recurring one.
+
 **So FLOOR is not sufficient**, and the earlier concern that FULL-tier runs "buy
 nothing" is resolved: they buy the `unsent` evidence, which is one of the three
 mechanism categories the research question asks about, and it is only visible at
@@ -1037,7 +1052,21 @@ Phase 0 findings), not sampling noise, and the task explicitly forbids
 treating that as proof of zero uncertainty. At 200/500 ms its sample
 variance is driven almost entirely by sample-count discreteness (a
 near-constant raw count of "2 of ~916" or "5 of ~215" every run) rather
-than by demonstrated run-to-run consistency of an underlying rate. Only
+than by demonstrated run-to-run consistency of an underlying rate.
+
+> **CORRECTION (2026-10-07, 20 ms pilot audit), appended not rewritten:**
+> "RTT too short for `unsent` to ever accumulate" is imprecise. The
+> 2026-10-07 pilot (`13_pilot_20ms.md`) directly confirmed `unsent` DOES
+> briefly accumulate at 50 ms RTT too — a ~0.15 s connection-start burst,
+> same as at every other RTT tested, just shorter. A 100 ms sampling
+> interval was simply too coarse to usually land a sample inside a burst
+> that short; this is a sampling-resolution limit, not evidence the
+> underlying event doesn't occur at 50 ms. The "structural zero" label
+> two sentences above should likewise be read as "observed zero in this
+> 100 ms-interval, no-discard-applied archive," not as an argued
+> structural impossibility.
+
+Only
 `mech_app_limited` (and its near-complement `mech_ack_pending`, which
 moves with it whenever `unsent_pending` is ~0) is used below.
 
@@ -1134,6 +1163,35 @@ file) — this section does not change either, and does not freeze them.
 > replacement — both remain unfrozen candidates, and `repetitions`
 > remains undecided. See `13_pilot_20ms.md` for full detail, per-attempt
 > data, and the within-run window-sensitivity spot-checks.
+
+> **CORRECTION (2026-10-07, post-pilot audit), appended not rewritten —
+> the update box above is preserved as originally written:** three
+> points in it need qualification, found by the evidence-auditor and
+> independently re-verified by the coordinator against the raw files.
+> (1) "ran cleanly... no N8 flag" is incomplete: 2 of the 24 attempts
+> (`pilot20_L1_r50_3`, `pilot20_L1_r50_4`) have real, confirmed
+> host-scheduling anomalies (a 1 s dip to 32% of steady throughput with a
+> matching `qemu_exec_ms` collapse in one; ~5 lost samples with
+> `gap_max_ticks=4` in the other) that N8 did not flag because its
+> 5-second bins dilute a 1-second dip below threshold — a known detector
+> limit (N16), not absence of the event. Both runs are correctly retained
+> (anomalous-but-compliant, not excluded), but "ran cleanly" overstates
+> it; see `13`'s "Audit corrections" section. (2) The `mech_unsent_pending`
+> "metric-definition distinction that may or may not explain it" is
+> **resolved, not open**: checked directly, `unsent_nonempty_count`
+> exactly equals `mech_unsent_pending` in every attempt checked, so that
+> explanation has no support — the real reconciliation is the
+> connection-start-burst-vs-discard-window account in `13`'s corrections
+> section and the correction appended above (near the `unsent_sweep`
+> table) in this file. (3) Not previously noted here: the original
+> `sampling_interval_ms=20` rationale's `unsent`-resolution argument
+> ("catches `unsent` reliably... 2-3 per 20s") only ever caught the
+> connection-start burst, which a 3 s discard window now removes before
+> any analysis sees it — that leg of the original rationale is
+> undermined, not supported, by this pilot. The separate `snd_buf`-
+> excursion (`mech_app_limited`) resolution argument is unaffected and
+> still stands; 20 ms ran cleanly for that purpose across all 4 tested
+> strata.
 
 ### Single next evidence task (identified, not executed)
 

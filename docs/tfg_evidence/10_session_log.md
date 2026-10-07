@@ -781,3 +781,60 @@ Still unknown after this session:
     neither) should inform an eventual `repetitions` freeze. The bounded
     evidence-auditor review this task's own instructions require before
     final persistence — not yet requested as of this log entry.
+
+---
+
+### 2026-10-07 — Pilot audit: PASS WITH QUALIFICATION, 3 claims corrected
+Commits: (pending, this entry)
+Done:
+  - Sent the completed 24-attempt pilot to `evidence-auditor` (Opus), per
+    the task's required Section 9 review, scoped to this pilot only (not
+    reopening B3/B4). Result: PASS WITH QUALIFICATION — raw measurements,
+    identity/configuration, and `[3,60)` arithmetic all VERIFIED; three
+    interpretive claims REJECTED.
+  - Independently re-verified both load-bearing corrections myself before
+    accepting them, not on the audit's word alone: (1) read
+    `pilot20_L2_r500_1/4.json` directly — `unsent_nonempty_count` exactly
+    equals `mech_unsent_pending` (76=76, 75=75), refuting my own
+    "narrower metric" explanation for the `mech_unsent_pending` null
+    result; (2) read `pilot20_L1_r50_3/4`'s raw `.host_iperf.csv` and
+    `.hostmon.csv` directly — confirmed a real 1 s dip to 32% of steady
+    throughput coincident with a real `qemu_exec_ms` collapse (80.3 vs. a
+    steady ~236) in one, and a ~5-sample deficit with `gap_max_ticks=4`
+    in the other — refuting my own "zero collapses, zero host-contention
+    signatures" summary.
+  - Also accepted without separate re-derivation (narrower,
+    lower-stakes, and consistent with the established pattern of this
+    audit's accuracy): the "structural zero" mislabel, the backwards
+    buffer-direction interpretation, the σ-uncertainty sensitivity
+    (n=4 at L2/50ms under a conservative SD bound), and the
+    counting-noise cross-check supporting (not resolving) the
+    100ms-vs-20ms SD-gap caution already on record.
+Found (not sought):
+  - My own two withdrawn claims were both cases of offering a plausible
+    sounding explanation without first checking fields already present
+    in the same JSON files being explained (`unsent_nonempty_count`) or
+    the same `.hostmon.csv` already captured (`qemu_exec_ms` at the dip
+    second). Worth remembering: an explanation that would resolve a
+    surprising result cleanly is exactly the kind of claim to check
+    against already-available data before writing down, not after.
+Failed / blocked: none.
+Decisions taken:
+  - Formally withdrew both claims as `05_invalid_superseded_claims.md`
+    rows #11–12, per project convention for a claim that turns out
+    wrong, rather than silently editing it out of `13`.
+  - Appended (not rewrote) corrections into `13_pilot_20ms.md` (a
+    consolidated "Audit corrections" section) and `12_phase0_measurements.md`
+    (three separate dated boxes, placed next to each claim they
+    correct) and `11`'s N18 entry — preserving each original claim's
+    text so a future reader sees both what was claimed and why it was
+    wrong, not just the corrected version.
+  - Relabelled `pilot20_L1_r50_3/4` as anomalous-but-compliant rather
+    than clean, keeping them in the L1/50ms stratum's numeric summary
+    (their `[3,60)` fractions are unaffected by the correction — only
+    the surrounding "zero collapses" narrative was wrong).
+Still unknown after this session:
+  - Whether the host-scheduling anomalies in `pilot20_L1_r50_3/4` share
+    B1/R13's platform-stall cause or are unrelated minor contention —
+    not investigated (out of this task's scope). Everything else
+    already open in `11`/`12`/`13`.

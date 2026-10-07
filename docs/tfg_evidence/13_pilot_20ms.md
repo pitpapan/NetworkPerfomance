@@ -527,3 +527,101 @@ calculation anywhere (uniform structural zero, all four strata).
 - Does not freeze `repetitions`. `12`'s candidate (n=6) and this
   pilot's own internal candidate (n=3) are both reported; neither is
   adopted as the formal count.
+
+## Audit corrections (evidence-auditor, 2026-10-07; coordinator-reverified)
+
+The bounded post-pilot audit (PASS WITH QUALIFICATION) found the raw
+measurements, identity/configuration checks, and `[3,60)` windowing
+arithmetic above all correct (independently re-derived by hand from the
+traces and matched exactly), but found three interpretive claims above
+to be wrong. All three were independently re-verified by the coordinator
+directly against the raw files before being accepted — not taken on the
+audit's word alone. The sections above are **preserved as originally
+written**; corrections are appended here, per project convention, and
+formally recorded as superseded claims #11–12 in
+`05_invalid_superseded_claims.md`.
+
+1. **The `mech_unsent_pending` "narrower metric" explanation is withdrawn
+   (`05` #11).** Checked directly: `unsent_nonempty_count` exactly equals
+   `mech_unsent_pending` in every attempt checked (`pilot20_L2_r500_1`:
+   76=76; `pilot20_L2_r500_4`: 75=75) — every `unsent>0` sample in this
+   archive also had `snd_buf<=0`, so the proposed gap between the two
+   metrics never actually occurs here. The real reconciliation with
+   `07`/`08`'s older finding: both datasets are measuring the **same
+   connection-start burst**, just differently. The older work used
+   whole-run counts with no discard; this pilot's `[3,60)` window removes
+   exactly that burst. Converting the older counts to elapsed time gives
+   ~1.5 s at L2/500 ms and ~0.15 s at L0/L2/50 ms — matching this pilot's
+   own burst durations almost exactly, and consistent with a
+   once-per-connection event (constant in elapsed time regardless of run
+   length), not a periodically-recurring one as `12`'s existing text
+   implies in one place. **`12`'s "RTT too short to ever accumulate"
+   framing for `unsent_pending` at 50 ms is also imprecise**: `unsent`
+   does accumulate briefly during the first RTT at every tested RTT
+   including 50 ms; a coarser (10/100 ms) interval was simply too slow to
+   usually catch a ~0.15 s burst, which 20 ms-sampling plus a 3 s discard
+   now resolves and then discards, respectively.
+2. **"N8 VALID on all 24 — zero collapses, zero host-contention
+   signatures" is withdrawn (`05` #12).** Two attempts have real,
+   confirmed anomalies: `pilot20_L1_r50_3` dips to 32 % of steady
+   throughput for 1 s (host interval 8–9 s = 99764 B vs. ~300 KB
+   surrounding), coincident with its own `.hostmon.csv` showing
+   `qemu_exec_ms` collapsing to 80.3 from a steady ~236 and
+   `qemu_slices` to 147 from ~450 at that exact second —
+   a real host-scheduling event, not throughput noise.
+   `pilot20_L1_r50_4` shows a milder dip (73–76 % of steady, t=3–5 s)
+   with ~5 lost guest samples (`sample_count=2989` vs. 2994 expected,
+   `gap_max_ticks=4`, twice nominal). N8 passed both only because its
+   5-second bins dilute a 1-second dip below the 0.80 band — correctly
+   behaving as a detector with known limits (N16), not evidence these
+   events didn't happen. **Both runs are correctly retained** (anomalous
+   but otherwise protocol-compliant, per this plan's own N8-separation
+   policy — this is not a reason to exclude or re-run them) and their
+   `[3,60)` fractions remain part of the L1/50 ms stratum as reported;
+   only the blanket "zero collapses" narrative is withdrawn. Relabel
+   both as anomalous-but-compliant wherever cited, not as clean.
+3. **"Structural zero" (used for `mech_unsent_pending`'s result) is
+   corrected to "OBSERVED ZERO (post-discard)".** The plan's own Section
+   7 reserves "structural" for a result backed by an independent
+   structural argument, which was not given here — the whole-run
+   `mech_unsent_pending` is non-zero at every stratum (it is only the
+   `[3,60)`-windowed value that is zero), so this is an observed
+   post-discard zero, not an argued structural one.
+4. **"Directionally consistent with a larger buffer binding less often"
+   (the L0→L1 `app_limited` comparison) is withdrawn.** `snd_buf>0` is
+   classified as `app_limited` precisely because the buffer has room
+   (is NOT full); a lower `app_limited` fraction means the buffer was
+   full (not app-limited) *more* of the time, the opposite direction
+   from what was claimed. The cross-ladder trend is also not monotone
+   once L2/50 ms is included (L0=3.310 %, L1=1.137 %, L2/50=3.989 %) —
+   no buffer-size trend is asserted.
+5. **Repetitions candidate, sensitivity added.** The audit computed an
+   upper 95 % bound on each stratum's true SD (5 df,
+   `s · sqrt(5/0.8312) ≈ 2.453·s`) and re-ran `h(n)` on that bound:
+   smallest `n` becomes 3 (L0), 3 (L1), **4** (L2/50 ms, up from the
+   point-estimate's 3), 2 (L2/500 ms) — largest **4**, not 3, under this
+   more conservative view. Reported as a sensitivity on the point
+   estimate, not a replacement for it, and not a change to the
+   pre-declared rule. Also flagged: a 2 pp *absolute* target is close to
+   trivially satisfied once the fraction itself is under ~2 % (L1,
+   L2/500 ms) — "meets 2 pp" should not be read as "precisely estimated"
+   at those two strata.
+6. **Counting-noise cross-check (new, from the audit, re-run and
+   confirmed independently)**: every stratum's observed between-run SD,
+   including the original 100 ms-interval L0/50 ms figure, is consistent
+   with pure within-run binomial counting noise at that stratum's own
+   sample count (e.g. L2/500 ms: binomial SD 0.105 pp vs. observed
+   0.086 pp; L0/100 ms archive: binomial SD 1.33 pp vs. observed
+   1.779 pp — both within the expected χ²(5) range). This directly
+   (though only approximately, ignoring within-run autocorrelation)
+   supports the repeated caution in this document that the 100 ms-vs-
+   20 ms SD gap may be substantially a sample-count artifact rather than
+   a real difference in physical variability — still not fully resolved,
+   but no longer merely asserted as a possibility.
+
+All six corrections independently re-verified by the coordinator against
+the raw files before being written here (not accepted on the audit's
+assertion alone): `unsent_nonempty_count`/`mech_unsent_pending` equality
+for both cited runs; the host-CSV dip values and the exact `hostmon.csv`
+rows for both flagged L1 attempts; `pilot20_L1_r50_4`'s sample-count
+deficit and `gap_max_ticks`.
