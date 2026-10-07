@@ -270,3 +270,70 @@ Still unknown after this session:
     to end against a real `instr_dump`/host-CSV pair — it has never been
     run. Whether N8's proposed gate parameters (`discard=3 bin=5 band=0.80
     allow=0`) should be frozen. Everything already listed as open in `11`.
+
+---
+
+### 2026-10-07 — B2 end-to-end review: found and fixed one blocking bug
+Commits: (pending, this entry)
+Done:
+  - Delegated a bounded B2 review to the `experiment-engineer` agent: verify
+    the uncommitted `collect_run_meta.sh` rewrite's field-schema coverage
+    against `instr.c`, its `interval_gate.py`/N8 integration, its
+    `--boot-banner` cross-check, and its resume/COMPLETE semantics, and do
+    a real dry run against archived evidence — explicitly no new
+    QEMU/iperf/netem measurement.
+  - The agent found one blocking bug and verified a fix in a disposable
+    scratch copy (no tracked file touched by it). Independently
+    re-confirmed myself before acting: read the exact lines, reproduced the
+    broken behavior with a minimal awk test, applied the one-line-pattern
+    fix to the real file, then re-ran the real fixed script against the
+    real archived fixtures (`raw_logs/b1_capture/b1_idle_1.json` +
+    `host_idle.csv`, and `b1_load_1.json` + `host_load.csv`) in my own
+    separate scratch copy — not trusting the agent's claim alone.
+  - Confirmed after the fix: `b1_idle_1` with a matching `--run-id` comes
+    out `valid=yes` with `sample_count=915`/`gap_max_ticks=10` correctly
+    read; a deliberately mismatched `--run-id` is now correctly caught
+    (previously dead code); `b1_load_1` is correctly flagged INVALID by the
+    N8 gate (`per_interval_collapse`, matching the original B1 figures).
+    Confirmed via `git status` that no stray data landed in the real
+    `experiment/` tree from either my or the agent's testing.
+Found (not sought):
+  - The bug: `collect_run_meta.sh:199-200` stripped the `HEADER`/`VALUES`
+    line prefix with awk's `$1=""; print substr($0,2)` idiom, which forces
+    awk to rejoin `$0` with `OFS` (a space) instead of the tab the next
+    line's `IFS=$'\t' read -a` depends on. Every named-field lookup
+    (`sample_count`, `stale_count`, `gap_max_ticks`, `run_id`, …) silently
+    returned empty, so `instr_sample_count==0` was unconditionally true:
+    every run — including a perfectly clean one — would have been recorded
+    INVALID with a false "sampler never fired" reason, and the bounds/
+    stale/drift/run_id-mismatch gates were dead code for as long as the bug
+    existed. This would have silently produced zero valid Phase 1 data
+    forever without ever looking wrong at a glance (the row still gets
+    written, just always INVALID).
+  - Two non-blocking residuals, now `11` items N13 (no cross-check that
+    `--host-conn-index` corresponds to the same repetition as
+    `--instr-json` — an operator-discipline gap) and N14 (the live
+    `tc`/qdisc validity path was reasoned through but not exercised against
+    a real `tap0`, since QEMU was not running and none was started).
+Failed / blocked: none.
+Decisions taken:
+  - Applied the one-line fix directly rather than routing it back through
+    another delegation, because it is routine engineering judgment on
+    already-authorized B2 work (not a new design/validity/attribution
+    decision), and independently re-verified it myself before committing
+    rather than taking the agent's scratch-copy result on faith — this is
+    research-critical plumbing (it gates every future Phase 1 run), so it
+    gets checked twice.
+  - Committed the full `collect_run_meta.sh` change (the pre-existing B2
+    rewrite plus this fix) as one unit, since the review's purpose was
+    exactly to decide whether that rewrite, as a whole, is ready — it now
+    is, with the fix applied.
+  - Moved `11`'s B2 row to Resolved rather than leaving it Blocking, since
+    its stated blocker ("never executed end to end") is now false; left
+    N13/N14 as separate non-blocking items rather than folding them into
+    B2's resolution note, since they are independent, trackable gaps.
+Still unknown after this session:
+  - Whether the live-qdisc validity path behaves correctly against a real
+    `tap0` (N14) — only resolvable by an actual QEMU session. Whether N8's
+    gate parameters should be frozen. Everything else already listed as
+    open in `11`, including all of Phase 1's `tbd_from_pilot` fields.
