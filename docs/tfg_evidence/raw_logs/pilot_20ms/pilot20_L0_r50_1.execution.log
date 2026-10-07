@@ -1,0 +1,241 @@
+Pilot 20ms supplementary plan -- execution log for attempt 1 (pilot20_L0_r50_1)
+Delegate: experiment-engineer subagent (resumed after B5/tap0 blocker cleared)
+Git branch: clean-benchmark
+Git HEAD at task start: 5ef3c6a "docs: pilot BLOCKED at preflight -- tap0 missing, no non-interactive creation (B5)"
+Working tree at task start: clean (only this attempt's own new raw_logs/pilot_20ms/* files untracked by end of session)
+
+=== Preflight re-verification (per coordinator instruction: build/N5/instr.c source
+checks from the prior B5 attempt were NOT redone -- only tap0 state was reconfirmed) ===
+
+ip addr show tap0 (before QEMU boot):
+  tap0: <NO-CARRIER,BROADCAST,MULTICAST,UP> ... inet 192.168.10.1/24 ... state DOWN
+tc qdisc show dev tap0 (before QEMU boot): qdisc fq_codel 0: root ... (no netem yet)
+ip tuntap show: "tap0: tap persist user 1000" -- CONFIRMED persistent, owned by this
+  unprivileged user (vboxuser, uid 1000), so QEMU can attach without CAP_NET_ADMIN.
+  This is exactly what was missing in the B5 blocker.
+rtconfig.h re-checked (no rebuild): RT_LWIP_TCP_SEG_NUM=44, TCP_SND_BUF=8196,
+  TCP_SND_QUEUELEN=44, TCP_WND=2048 -- matches L0, unchanged since the archived
+  build_L0.log (rtthread.elf mtime 2026-09-30 18:27, untouched).
+
+=== Step: tmux/msh control loop (the one thing not reached in the prior B5 attempt) ===
+
+Command (identical to 07_reproduction_notes.md's VERIFIED invocation):
+  tmux new-session -d -s pilot20 -x 220 -y 50 \
+    "qemu-system-arm -M vexpress-a9 -kernel rtthread.elf -nographic \
+     -drive file=sd.bin,format=raw,if=sd -audio none \
+     -net nic -net tap,ifname=tap0,script=no,downscript=no"
+
+Result: session stayed alive (unlike the B5 attempt, which died within seconds).
+After ~8s, `tmux capture-pane -p -t pilot20 -S -100` showed the full RT-Thread boot
+banner through to `msh />`, including:
+  INSTR_CFG TCP_MSS=1460 TCP_SND_BUF=8196 TCP_SND_QUEUELEN=44 MEMP_NUM_TCP_SEG=44
+  TCP_WND=2048 TCP_OVERSIZE=1460 TCP_SNDLOWAT=4098 TCP_SNDQUEUELOWAT=22 LWIP_WND_SCALE=0
+This matches 07's "L0 (PREDICTED ...)" banner line EXACTLY -- now OBSERVED, not predicted.
+`ip addr show tap0` afterward: state UP, LOWER_UP (QEMU attached the persistent tap fd).
+
+Driving msh: `tmux send-keys -t pilot20 "<cmd>" Enter`, reading output via
+`tmux capture-pane -p -t pilot20 -S -N`. Wrapped as a one-line helper
+(scratchpad/msh.sh "<session> <cmd>") for reproducibility across attempts; not a
+tracked repo file, per instructions not to add new tracked scripts for this pilot.
+
+Read-back verification (per plan's Preflight list), BEFORE changing anything:
+  msh> instr_interval   -> "instr: interval=100ms (10 ticks, RT_TICK_PER_SECOND=100)"
+  msh> instr_tier       -> "instr: tier=full (walk_segment_lists compiled=1)"
+  msh> ping 192.168.10.1 -> 4/4 received, 0% loss (connectivity confirmed before
+                             touching netem)
+Both commands truly read back current state (not just a usage string), confirming
+07/13's assumption from source inspection.
+
+=== Netem ===
+  sudo -n /usr/local/sbin/tfg-set-netem 50
+  tc qdisc show dev tap0 -> "qdisc netem 8001: root refcnt 2 limit 1000 delay 50ms"
+Verified via the ONE approved mechanism, exactly as required. No plain `sudo tc`
+invoked at any point.
+
+=== Host-side measurement processes ===
+  tmux new-session -d -s iperfsrv "iperf -s -p 5001 -i 1 -y C | tee <out>/pilot20_L0_r50_1.host_iperf.csv"
+  QPID=12593 (qemu-system-arm), IPID=12985 (iperf -s)
+  nohup python3 experiment/scripts/hostmon.py 12593 12985 <out>/pilot20_L0_r50_1.hostmon.csv &
+hostmon started ~20:39:5x UTC, well before the guest connected (20:40:13 UTC) --
+satisfies "start hostmon before guest connects".
+
+=== Per-attempt msh sequence (timestamps are `date -u` on host, each immediately
+before/after the corresponding tmux send-keys call) ===
+  20:40:04Z  instr_tier full        -> "instr: tier=full"
+  20:40:0xZ  instr_interval 20      -> "instr: interval=20ms (2 ticks)"
+  20:40:0xZ  instr_reset pilot20_L0_r50_1 -> "instr: accumulators reset, run_id=pilot20_L0_r50_1"
+  20:40:13Z  iperf -c 192.168.10.1 -p 5001  (client_start_sent)
+             -> "[I/iperf] Connect to iperf server successful!"
+             -> "instr: sampler armed on fd=4 interval=20ms (2 ticks) tier=2"
+             -> periodic "[I/iperf] iperfcNN: 1.2xxx Mbps!" lines throughout
+  20:41:41Z  iperf --stop  (client_stop)   -> "[W/iperf] Disconnected, iperf server shut down!"
+  20:41:53Z  instr_dump  -> full JSON captured (see pilot20_L0_r50_1.json)
+  20:42:20Z  instr_trace 1 (FIRST attempt) -> truncated by tmux history-limit, see ANOMALY 2 below
+  20:42:56Z  instr_trace 1 (SECOND attempt, after raising history-limit) -> STILL truncated
+  20:43:54Z  instr_trace 1 (THIRD attempt, via tmux pipe-pane) -> COMPLETE capture, see fix below
+
+=== ANOMALY 1: requested-duration overrun (60s planned, ~88s actual) ===
+
+The plan specifies "Requested run duration: 60 s total, including startup". The
+actual observed duration, confirmed independently by THREE sources, was ~88s, not
+60s:
+  - instr_dump: first_sample_tick=7239, last_sample_tick=16028, sample_span_ticks=8789,
+    tick_per_second=100 -> 87.89s guest-side accumulator span.
+  - instr_trace: first trace row tick=7239, last trace row tick=16028 (identical
+    window, as expected -- same accumulator).
+  - host iperf -y C: connection on src_port 49153 produced per-second rows for
+    t=0.0 through t=87.0-88.0, and its own summary row is "...,0.0-88.0,13627388,1238575"
+    -- an 88-second host-observed interval, matching the guest window almost exactly
+    (88.0s host vs 87.89s guest -- consistent to within the measurement granularity).
+
+ROOT CAUSE: this is a control-loop timing defect in my own execution, not a
+platform/instrumentation anomaly. I sent `iperf -c` at 20:40:13Z intending to wait
+exactly 60s before stopping it, but the actual wait procedure (a background `sleep
+62` task plus several intervening tool round-trips while polling for its completion)
+consumed additional wall-clock time before I sent `iperf --stop` at 20:41:41Z --
+88 seconds after the client started, not 60.
+
+This is NOT a B1/R13-style host-contention stall: hostmon.csv shows load1 in the
+0.25-0.28 range throughout (idle 2-vCPU host), and the N8 gate (below) finds the
+entire 88s interval series flat with ZERO depressed bins -- i.e. throughput was
+uniformly steady for the full 88s, so the extra ~28s is genuinely additional clean
+transfer time, not a stall that happened to coincide with a slow stop command.
+
+CONSEQUENCE: this attempt's requested-duration control variable does not match the
+plan's "60 s total" specification. It is otherwise a complete, clean, analysis-shaped
+run (no gaps, no collapse, no identity ambiguity), and the predeclared [3,60) primary
+window is fully contained within the longer available data (ticks exist well past
+the 60s mark), so [3,60)/[30,60)/[3,30) sensitivity windows ARE all computable from
+this attempt's trace if the coordinator chooses to treat it as usable. But the
+deviation itself is flagged here, not silently absorbed -- per CLAUDE.md, run
+duration is a controlled variable that must not be silently modified, and per the
+plan's own early-stop language this is reported rather than corrected after the
+fact. I did NOT attempt to retroactively truncate the trace to make it look like a
+60s run.
+
+FOR ATTEMPTS 2-24 (if authorized): recommend timing the 60s window with a single
+precise background sleep command whose own completion event is awaited without
+intervening diagnostic round-trips, or by polling the host iperf CSV's own
+elapsed-time column directly (iperf's own per-second timestamps are already the
+ground truth) and stopping as soon as it reports ~60.0s, rather than relying on
+wall-clock bookkeeping across many short tool calls.
+
+=== ANOMALY 2: tmux history-limit truncated instr_trace output; fixed via pipe-pane ===
+
+First `instr_trace 1` capture attempt: `tmux capture-pane -p -t pilot20 -S -3000`
+(then retried with -S -6000 and -S -20000) returned only ~1866-1867 lines, containing
+the INSTR_TRACE_END marker and the tail of the trace (from sample index ~2530 to 4394)
+but NOT the INSTR_TRACE_BEGIN marker or the first ~2530 samples. Root cause: the
+pilot20 tmux pane's `history-limit` was 2000 (the tmux server default), and the
+~4397 lines the trace command printed (plus preceding console output) exceeded that
+buffer, so tmux itself discarded the earliest lines in real time as they scrolled
+past -- this happened BEFORE any capture-pane call, so it could not be recovered by
+capturing more history after the fact.
+
+Attempted fix 1: `tmux set-option -t pilot20 history-limit 20000` then re-ran
+`instr_trace 1`. This did NOT work: `tmux list-panes -t pilot20 -F
+'#{history_size} #{history_limit}'` continued to report `history-limit 2000` for
+the existing pane even after the option was set (tmux 3.4 on this host does not
+dynamically resize an already-created pane's scrollback allocation from a
+session-level `set-option`, and `-g` did not help either). The second `instr_trace 1`
+redump was therefore ALSO truncated, confirmed by an identical ~1866-line capture.
+
+Fix that worked: `tmux pipe-pane -o -t pilot20 "cat >> <scratchpad>/pilot20_full_pane.log"`
+started BEFORE the third `instr_trace 1` call. `pipe-pane` tees the pane's raw PTY
+output to a file as it is written, independent of the scrollback buffer, so it is
+immune to the history-limit truncation. The third capture was complete:
+  INSTR_TRACE_BEGIN run_id=pilot20_L0_r50_1 written=4395 retained_from=0 stride=1
+  ... 4395 data rows (n=0..4394) ...
+  INSTR_TRACE_END run_id=pilot20_L0_r50_1
+extracted via `sed -n '/BEGIN.../,/END.../p'` into pilot20_L0_r50_1.trace.
+`tmux pipe-pane -t pilot20` (no command argument) was then called to turn piping
+back off.
+
+IMPLICATION FOR ATTEMPTS 2-24: start `tmux pipe-pane -o -t pilot20 "cat >> <file>"`
+once, immediately after the tmux session is created (before any msh traffic), and
+leave it running for the whole block of attempts under one build -- this avoids
+needing to repeat the discovery process and guarantees no trace data is ever lost
+to scrollback again. This was NOT in the original plan or 07_reproduction_notes.md
+and is a new, reusable procedural finding from this session.
+
+=== Post-attempt capture ===
+  tc -s qdisc show dev tap0 (post): "qdisc netem 8001: root refcnt 2 limit 1000
+    delay 50ms / Sent 489148 bytes 9058 pkt (dropped 0, overlimits 0 requeues 0)"
+    -- this is host EGRESS (ACKs toward the guest, delayed direction), small volume
+    relative to the ~13.6MB of bulk DATA carried the other way, consistent with
+    07's documented topology (netem delays returning ACKs only).
+  hostmon stopped via `pkill -f "hostmon.py 12593 12985"` after the attempt;
+    267 total 1Hz rows collected (hostmon's own continuous window, started before
+    and stopped well after the 88s transfer window -- by design, not scoped tightly
+    to the transfer).
+  Host iperf server session stopped via Ctrl-C + tmux kill-session (tmux
+    auto-terminated the session once the piped `iperf -s | tee` command exited).
+  QEMU / pilot20 tmux session LEFT RUNNING at an idle msh prompt at end of task
+    (not torn down), in case the coordinator authorizes immediate continuation
+    through the same L0 block without a reboot. tap0 netem is still at 50ms.
+
+=== N8 verdict (pilot-only wrapper, reuses interval_gate.load_connections/gate
+unmodified; no tracked file touched) ===
+  Connection found: src_port 49153, t_start range [0.0, 87.0] (88 rows).
+  gate() with defaults (discard=3, bin=5, band=0.80, allow=0):
+    verdict = VALID, median=1237900.8 bit/s, n_bins=17, n_intervals=85 (85 = 88-3,
+    exactly 17 full 5s bins, no partial trailing bin this time).
+  No depressed bins. No orphan transfer ids.
+
+=== instr_dump sanity (full JSON in pilot20_L0_r50_1.json) ===
+  run_id: "pilot20_L0_r50_1" -- MATCHES the instr_reset argument (run_id-mismatch
+    gate satisfied).
+  sample_count=4395, stale_count=0, trace_written=4395, trace_slots=8192 (no wrap,
+    well under capacity as predicted).
+  gap_min_ticks=2, gap_max_ticks=3 -- sampler mostly hit exactly the requested 2-tick
+    (20ms) period, with occasional 3-tick (30ms) gaps (minor scheduling jitter, not
+    investigated further here).
+  mech_app_limited=137, mech_unsent_pending=2, mech_ack_pending=4256.
+    Sum = 137+2+4256 = 4395 = sample_count exactly -- confirms the three mech_*
+    fields are exhaustive and mutually exclusive over this run, as the plan's
+    Preflight section asserted (reused, not re-derived here).
+    As fractions of sample_count: app_limited=3.12%, unsent_pending=0.05%,
+    ack_pending=96.84%. Non-trivial, not all-zero, not a degenerate single-category
+    result -- ack_pending dominates heavily at L0 (8196-byte buffer)/50ms RTT, which
+    is directionally consistent with 08_design_rationale's framing (a small buffer
+    at a moderate RTT is expected to spend most samples with everything sent and
+    awaiting ACK, not with free buffer space or unsent-but-buffered data) but this
+    single attempt does not by itself establish that interpretation formally.
+  snd_buf_zero_count=4258 (buffer empty, i.e. fully sent, in 96.9% of samples) --
+    consistent with the ack_pending dominance above.
+  cwnd_max=65505, snd_wnd_max=65535 -- window growth proceeded far past the
+    8196-byte send buffer; the 8196-byte buffer itself is therefore the plausible
+    binding constraint at this cell, consistent with the experiment's framing of
+    TCP_SND_BUF as the probed factor. Not independently re-derived/re-argued here --
+    flagged only as consistent, not as new proof.
+
+=== Identity cross-check (N13) ===
+  run_id in instr_dump JSON: "pilot20_L0_r50_1" (matches instr_reset argument).
+  Single TCP connection observed host-side, source port 49153, active window
+  [0.0, 88.0]s by iperf's own per-second timestamps.
+  Guest accumulator window: ticks [7239, 16028] @ 100 ticks/s = [72.39s, 160.28s]
+  since RT-Thread boot -- an absolute offset, not directly comparable to the host's
+  run-relative [0.0, 88.0]s, but the SPAN (87.89s) matches the host's span (88.0s)
+  to within 0.11s, which is the cross-check that matters here (N13 is about
+  confusing which run a connection/sample set belongs to, not about absolute clock
+  sync across host/guest -- there is only one connection and one run_id in this
+  attempt, so there was no actual ambiguity to resolve, but the convergent span
+  arithmetic is recorded as the applied method, per the plan's requirement to use
+  port + timestamp window + run_id together rather than a positional convention
+  alone).
+
+=== Files produced (all under docs/tfg_evidence/raw_logs/pilot_20ms/) ===
+  pilot20_L0_r50_1.json          -- instr_dump JSON (1156 bytes)
+  pilot20_L0_r50_1.trace         -- instr_trace output, header + 4395 data rows +
+                                     BEGIN/END markers (156101 bytes, 4398 lines)
+  pilot20_L0_r50_1.hostmon.csv   -- 267 data rows + header, 1Hz host telemetry
+  pilot20_L0_r50_1.host_iperf.csv -- 88 per-second rows + 1 summary row, iperf -y C
+  pilot20_L0_r50_1.qdisc_pre     -- tc -s qdisc show, before the attempt (0 bytes sent)
+  pilot20_L0_r50_1.qdisc_post    -- tc -s qdisc show, after (489148 bytes / 9058 pkt)
+  pilot20_L0_r50_1.preflight.log -- prior session's B5-blocked preflight (unchanged)
+  pilot20_L0_r50_1.execution.log -- this file
+
+=== STOPPED HERE, as instructed. No attempt 2 was started. No netem change beyond
+the single 50ms setting for this attempt. No build, git, or other host activity
+occurred during the 60-88s measurement window besides the specified components
+(QEMU, host iperf server, hostmon.py, qdisc pre/post capture). ===

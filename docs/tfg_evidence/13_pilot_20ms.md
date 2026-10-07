@@ -270,3 +270,71 @@ lower variance after the fact.
   not discarded.
 - No scenario authorizes exceeding 24 attempts or silently substituting a
   different stratum's data for a missing one.
+
+## Results: L0/50 ms block (attempts 1–6, complete)
+
+Executed 2026-10-07, after resolving `11` B5 (`tap0` missing — the user
+ran the one-time interactive setup; recorded there, not repeated here).
+Raw artifacts: `raw_logs/pilot_20ms/pilot20_L0_r50_{1..6}.*`.
+
+**Deviation on attempt 1, disclosed not absorbed**: the control-loop's
+stop timing overran the planned 60 s to 87.89 s (a tooling defect in the
+delegate's wait procedure, not a platform stall — `hostmon` load stayed
+low throughout, N8 found the entire interval series flat with zero
+depressed bins). The coordinator independently computed the per-window
+`mech_app_limited` fraction from the raw trace before deciding whether to
+keep the attempt: `[3,30)=3.19%`, `[30,60)=3.27%`, `[3,60)=3.23%`,
+`[60,88)=2.94%` — all within noise of each other, confirming the overrun
+window is the same steady-state mixture, not a regime change. Attempt 1
+is **retained**, using its `[3,60)` value as the stratum data point.
+Fixed for attempts 2–6: the delegate's stop procedure now polls the host
+iperf CSV's own elapsed-time column directly (guest spans 60.17–60.36 s
+thereafter, no recurrence). A separate, independently-caught
+terminal-wrapping display bug in one capture command (attempt 2) was
+fixed without re-measuring — the underlying `instr_dump` data was intact,
+only the delegate's own line-reassembly needed a fix.
+
+**All 6 attempts' `mech_*` counts sum exactly to `sample_count`** (coordinator
+re-verified directly from each `.json`, not taken from either report).
+Per attempt, `[3,60)`-windowed (first 3 s of each run's own trace
+excluded by timestamp, not by truncating the denominator while leaving
+the numerator intact — the method the plan requires):
+
+| run_id | n (post-discard) | `app_limited` % | `unsent_pending` % | `ack_pending` % |
+|---|---|---|---|---|
+| `pilot20_L0_r50_1` | 2850 | 3.228 | 0.000 | 96.772 |
+| `pilot20_L0_r50_2` | 2850 | 3.333 | 0.000 | 96.667 |
+| `pilot20_L0_r50_3` | 2850 | 3.754 | 0.000 | 96.246 |
+| `pilot20_L0_r50_4` | 2850 | 2.982 | 0.000 | 97.018 |
+| `pilot20_L0_r50_5` | 2850 | 3.158 | 0.000 | 96.842 |
+| `pilot20_L0_r50_6` | 2850 | 3.404 | 0.000 | 96.596 |
+
+**Stratum summary, n=6**: `mech_app_limited` mean=3.310 %, between-run
+SD=0.262 pp, range 2.982–3.754 %. `mech_unsent_pending`=0.000 % in every
+run (structural zero at 50 ms, consistent with the existing 100 ms-interval
+evidence). N8: `VALID` on every attempt, zero depressed bins.
+
+**Historical comparison, not pooled**: the existing L0/50 ms,
+100 ms-interval evidence (`12`'s "Repetitions planning objective"
+section, G6 PINNED, n=6) gave mean=4.043 %, SD=1.779 pp — roughly **7×**
+larger between-run SD than this 20 ms-interval result. This is reported
+as an observation, with an explicit caution against over-reading it: each
+20 ms-interval run has ~13× more samples (2850 vs. ~219) than each
+100 ms-interval run, so some or all of the smaller between-run SD is
+expected from reduced *within-run estimation noise* propagating into the
+run-level point estimate, independent of whether the *underlying physical
+process* is actually any less variable at a faster sampling interval.
+Distinguishing those two explanations is not attempted here.
+
+Applying the same planning calculation as `12` (`h(n) = t_(0.975,n-1) *
+s/sqrt(n)`, target ≤2 pp) to this stratum's own `s=0.262` pp: `h(3)`
+(t=4.303) `= 0.651 ≤ 2` already; `h(2)` (t=12.706) `= 2.355 > 2`. Smallest
+`n` meeting the objective at this one stratum: **3** — markedly smaller
+than the `n=6` candidate derived from the 100 ms-interval data. This is
+one stratum only; it is not generalized to L1/L2/500 ms here, and it does
+not change the `repetitions` candidate recorded in `12` (which stays
+unfrozen, pending the remaining strata below and a decision on the
+within-run-noise question above).
+
+**Not yet run**: L1/50 ms (6), L2/50 ms (6), L2/500 ms (6) — 18 of 24
+attempts remain.
