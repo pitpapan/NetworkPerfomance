@@ -961,7 +961,7 @@ written.
 | `run_duration_s = 60` | **INSUFFICIENT** | The only leg of the original reasoning that pinned down a *specific* number — "a 2–4 s collapse is diluted by averaging within 60 s" — is false (collapses are 20–324 s; nothing this length is diluted by averaging, only gated out). Surviving legs (transient <2 s; sample count at 20 ms) support "long enough," not "60 specifically." Per the task's own instruction, not reusing the disproven rationale and not proposing a replacement number — the gap is reported, not patched. |
 | `discard_interval_s = 3` | **SUPPORTED WITH QUALIFICATION** | Defensible for its narrow, audited-correct purpose (excludes the <2 s startup transient; not built on the 2–4 s figure). The separate, previously implicit assumption that discard never masks a real collapse is contradicted by one archived case (`g4_L0_r200_t100`, stall begins at the first kept interval) — but that run is still caught by N8 regardless, so this is a logical property of a `[0, D)` window colliding with an early stall, not an observed detection failure. Document the interaction; do not widen the window to chase it (would trade transient-exclusion margin for no proven benefit). |
 | `sampling_interval_ms = 20` | **SUPPORTED WITH QUALIFICATION** (unchanged by this session) | 20 ms has only ever been run at L0/50 ms (5 runs, `g3b_*_full20`) — never at L2 or any other RTT. The claim elsewhere that 20 ms showed "zero drift... including L2" has no archive support. |
-| `repetitions = 8` | **INSUFFICIENT** | Its own stated precondition (collapses reliably gated INVALID) remains structurally unmet — N8 catches only 3/7 of the archive's by-inspection-labelled natural collapses, by dilution design, not a parsing defect (see B3). No mechanism-fraction-based precision target has ever been computed, and the manifest's own primary evidence is the mechanism classification, not throughput. If the N8 `VALID_ANOMALOUS` policy above is ever adopted, this precondition becomes structurally impossible to satisfy, not just currently unmet. No number is proposed as a replacement — the missing precision target and the policy conflict are reported, not resolved here. |
+| `repetitions = 8` | **INSUFFICIENT for the full matrix; evidence-limited candidate n=6 for L0 only** | See "Repetitions planning objective" section below (2026-10-07) for the precision objective, per-stratum calculation, and the L1/L2/20ms gap this candidate does not cover. Superseded in detail by that section; this row kept only as an index entry. |
 | `snd_buf_low_threshold` retirement | **SUPPORTED, implementation incomplete** | The G5 degeneracy finding itself is solid and re-confirmed multiple times this session. But `manifest.yaml`'s `aggregate_statistics_per_cell`/`per_run_record_fields` still list only the legacy `snd_buf_low_fraction`/`instr_snd_buf_low_count` — no `mech_*` field appears anywhere in the manifest's formal schema (confirmed by reading it), even though `collect_run_meta.sh`'s generic `instr_fields` blob already captures the raw values per run. The retirement has evidentiary support but was never actually written into the manifest's analysis schema. |
 
 ### Bottom line
@@ -974,3 +974,189 @@ field). Two are supported with a documented qualification, not a silent
 caveat. B3/B4 are resolved, not blockers. N8's proposed role is a
 reviewed proposal, not a decision. See `11_open_problems.md` for the
 full, audited evidentiary record this table summarizes.
+
+---
+
+## 2026-10-07 — Repetitions planning objective and evidence-limited proposal
+
+A **prospective planning decision**, made in this task, not a value Phase 0
+established and not a frozen `repetitions`. No new measurement was run; all
+numbers below are recomputed from `analyse_mechfrac_variance.py`'s existing
+output (re-run fresh for this section, not taken from an earlier summary) —
+re-verify by running `python3 experiment/scripts/analyse_mechfrac_variance.py`.
+
+### Precision objective (decided here, prospectively)
+
+- **Estimand**: the per-cell arithmetic mean, across independent runs, of
+  each sampled three-state sender fraction (`mech_app_limited`,
+  `mech_unsent_pending`, `mech_ack_pending`), under the joint-state
+  definitions `instr.c` already implements.
+- **Precision objective**: a nominal 95 % one-sample t-interval half-width
+  of at most **2 percentage points (0.02 on the fraction scale)**,
+  assessed *separately* for each state and each stratum — not a
+  simultaneous 95 % coverage claim across all states/cells at once.
+- **Replication unit**: an independently executed run. Individual PCB
+  samples within one run's accumulators are not additional repetitions.
+- This objective is **not** a run-validity criterion, an adaptive
+  stopping rule, a guarantee the eventual formal intervals will hit 2 pp,
+  or a requirement that every state resolve to a clear dominant
+  mechanism — a close or noisy state may remain inconclusive and that is
+  an acceptable outcome, not a failure of the objective.
+
+### Supported strata
+
+Three compatible strata exist, kept distinguishable by window length
+(22 s vs. 92 s, confirmed from each file's own `sample_span_ticks`) and by
+compiled config — only `TCP_SND_QUEUELEN=MEMP_NUM_TCP_SEG=44` ("PINNED")
+cells are literally `TCP_SND_BUF=8196` = L0 under `controls_pinned`; the
+STOCK cells (22/40) are a different compiled config (external-validity
+only) and are excluded from this L0 estimate, not pooled into it:
+
+| Stratum | Runs included | n | Window | app_limited % (mean, s) | unsent_pending % (mean, s) | ack_pending % (mean, s) |
+|---|---|---|---|---|---|---|
+| L0, RTT=50 ms, interval=100 ms | `g6_{c1,c2}_PINNED_r50_{1,2,3}` | 6 | 21.8 s | 4.043, 1.779 | 0.000, 0.000 | 95.957, 1.779 |
+| L0, RTT=200 ms, interval=100 ms | `b1_idle_{1..5}` | 5 | 91.4 s | 0.873, 0.278 | 0.218, 0.0003 | 98.909, 0.278 |
+| L0, RTT=500 ms, interval=100 ms | `g6_{c1,c2}_PINNED_r500_{1,2,3}` | 6 | 21.8 s | 0.078, 0.190 | 2.324, 0.004 | 97.599, 0.191 |
+
+All 16 included runs are already `VALID` under every existing gate (none
+of G6's 24 runs or B1 idle's 5 runs is among the 4 archive connections B3
+found to change verdict) — there was no actual anomalous-but-compliant run
+to decide on in this specific evidence, so the task's population rule
+("include otherwise-compliant anomalous runs; exclude deliberate
+interventions; exclude demonstrated failures only with a specific
+reason") changed nothing numerically here; it is recorded as the
+governing rule for when a future stratum does contain one. B1's LOAD arm
+(5 runs) is excluded as a deliberate intervention, consistent with B4.
+No demonstrated measurement/protocol failure required excluding any of
+the 16 included runs.
+
+**`mech_unsent_pending` cannot be used for this calculation at any
+stratum.** At 50 ms it is exactly 0 in all 6 runs — a structural zero
+(RTT too short for `unsent` to ever accumulate, consistent with prior
+Phase 0 findings), not sampling noise, and the task explicitly forbids
+treating that as proof of zero uncertainty. At 200/500 ms its sample
+variance is driven almost entirely by sample-count discreteness (a
+near-constant raw count of "2 of ~916" or "5 of ~215" every run) rather
+than by demonstrated run-to-run consistency of an underlying rate. Only
+`mech_app_limited` (and its near-complement `mech_ack_pending`, which
+moves with it whenever `unsent_pending` is ~0) is used below.
+
+### Candidate repetitions (planning calculation, not a guarantee)
+
+`h(n) = t_(0.975, n-1) * s_pilot / sqrt(n)`, `s_pilot` fixed at each
+stratum's own observed SD, smallest integer `n` (≥2, since a two-sided
+t-interval needs ≥1 df) with `h(n) ≤ 2.0` pp:
+
+| Stratum | s_pilot (pp) | h(5) | h(6) | h(3) | h(2) | Smallest n meeting 2 pp |
+|---|---|---|---|---|---|---|
+| L0/50 ms (`mech_app_limited`) | 1.779 | 2.209 | **1.868** | — | — | **6** |
+| L0/200 ms (`mech_app_limited`) | 0.278 | — | — | **0.691** | 2.499 | **3** |
+| L0/500 ms (`mech_app_limited`) | 0.190 | — | — | — | **1.708** | **2** |
+
+(t-values used: t(0.975,1)=12.706, t(0.975,2)=4.303, t(0.975,4)=2.776,
+t(0.975,5)=2.571 — standard one-sample two-sided 95 % values.)
+
+Per the task's instruction to report the **largest** minimal-n across the
+strata actually represented, not to average or cherry-pick:
+
+> **Candidate repetitions = 6**, applicable only to: `TCP_SND_BUF=8196`
+> (L0) under the pinned controls, at `sampling_interval_ms=100`, for run
+> durations in the 21.8–91.4 s range already observed (the proposed 60 s
+> falls inside this bracket, so duration extrapolation here is mild;
+> ladder-point and interval extrapolation, below, is not).
+
+This is calibrated at the same cell (50 ms) the original throughput-CV
+analysis (R11) also found noisiest, which is at least directionally
+consistent, not merely coincidental.
+
+**Explicit limitations of this calculation** (stated per the task, not
+omitted): it substitutes an estimated pilot SD for an unknown population
+SD and does not guarantee the eventual formal interval will actually be
+≤2 pp wide at n=6 — a new sample could yield a larger SD. It assumes each
+stratum's 6 (or 5) runs are themselves a representative, independent
+sample, which a single-session capture cannot fully establish. It is
+silent on `mech_unsent_pending` entirely (see above) — the precision
+objective is **not currently assessable for that state at all**, at any
+tested stratum, from existing evidence.
+
+### What this does and does not support
+
+- **A. Precision objective**: decided (this section), prospective, not
+  derived from Phase 0.
+- **B. Repetitions count for observed strata**: supported — n=6, for L0
+  (pinned), RTT∈{50,200,500 ms}, `sampling_interval_ms=100`, run duration
+  22–91 s, for `mech_app_limited`/`mech_ack_pending` only.
+- **C. Transfer to the proposed formal settings**: **untested, not
+  qualified-supported, for most of the actual Phase 1 matrix**:
+  - `TCP_SND_BUF` = L1 (16384) or L2 (32768): **zero** `mech_*` evidence
+    exists at either ladder point (consistent with `11` N3 for L1).
+    Extrapolating n=6 to L1/L2 is unsupported, not merely qualified.
+  - RTT = 100 ms: **zero** `mech_*` evidence at this RTT point either
+    (G6 only ran 50/500 ms; B1 idle only ran 200 ms) — the L0 ladder point
+    itself is missing one of its four formal RTT cells.
+  - `sampling_interval_ms` = 20 (the actual Phase 1 candidate, see
+    `discard_interval_s`/`sampling_interval_ms` rows above): **zero**
+    `mech_*` evidence was ever captured at 20 ms — every record used here
+    is at 100 ms. Whether a faster interval changes per-run fraction
+    variability (more samples could reduce it; or run-to-run variability
+    could be dominated by physical/scheduling factors independent of
+    sampling density, per the earlier G5/R11 finding that CV tracks
+    collapses rather than sampling resolution) is not resolved either way
+    by this archive — not reasoned to a number here.
+  - `run_duration_s` = 60: bracketed by the tested 22–91 s range, the
+    mildest of the four extrapolations.
+
+Keep `discard_interval_s=3` and `sampling_interval_ms=20` at their
+previously recorded SUPPORTED WITH QUALIFICATION status (above, this
+file) — this section does not change either, and does not freeze them.
+
+### Single next evidence task (identified, not executed)
+
+The single most consequential gap is that **no `mech_*` evidence exists
+at any ladder point other than L0, and none exists at the actual
+candidate sampling interval (20 ms)** — repetitions calibrated purely
+from L0/100 ms could be wrong for L2 in particular, where prior Phase 0
+work (`07`/`08`, the `unsent` sweep) already showed `mech_unsent_pending`
+becomes materially non-zero, a qualitatively different mixture than any
+stratum used above.
+
+**Proposed bounded supplementary pilot (not executed, not authorized by
+this task)**:
+- Settings: `TCP_SND_BUF=32768` (L2), `TCP_SND_QUEUELEN=MEMP_NUM_TCP_SEG=44`
+  (pinned, matching Phase 1's actual L2 config), `RTT=50 ms` (the cell
+  already established as noisiest), `sampling_interval_ms=20`,
+  `run_duration_s=60` — i.e. the actual proposed Phase 1 settings, not a
+  repeat of G6's older 100 ms/22 s protocol, since it is exactly those
+  settings that currently have zero mechanism-fraction evidence anywhere.
+- Fixed attempt count: **6** (matching the established G6 per-cell
+  replication count; no adaptive extension).
+- Required artifacts: full `instr_dump` capture per run (tier=2/FULL, to
+  populate `mech_*`), archived the same way as G6/B1 (`raw_logs/`,
+  `instr_dumps.jsonl` or equivalent), extending
+  `analyse_mechfrac_variance.py` rather than a new script.
+  Stopping condition: exactly 6 attempts; if fewer complete validly,
+  report the partial n honestly rather than extending the pilot to reach
+  6, and rather than silently reusing this section's L0 numbers in its
+  place.
+- Scope justification: one pilot, at one new ladder point and the one
+  actually-proposed sampling interval, directly addresses the largest
+  single gap (zero L1/L2/20 ms evidence) without reproducing the full
+  19-cell formal matrix as "another pilot," and without promising that
+  one new cell's result would by itself guarantee 2 pp precision
+  everywhere — it would only resolve whether L0's n=6 transfers to L2, the
+  ladder point most likely to differ given its distinct mechanism mixture.
+
+### Audit
+
+**Not requested.** This task explicitly does not freeze `repetitions` or
+any other parameter (`FORMAL REPETITION COUNT FROZEN: NO`), and
+`CLAUDE.md`'s audit triggers (protocol freeze, attribution-rule changes,
+mechanism attribution, contradictory evidence, final Results/Discussion
+claims) are not met by a bounded, fully transparent arithmetic planning
+calculation. Self-verification performed instead: every `t`-value above
+is a standard one-sample two-sided 95 % value re-checked against the
+standard t-table; every `s_pilot`/mean was re-derived by re-running
+`analyse_mechfrac_variance.py` fresh for this section rather than reused
+from an earlier summary; the window-length distinction (21.8 s vs 91.4 s)
+was independently confirmed from each file's own `sample_span_ticks`
+rather than assumed.

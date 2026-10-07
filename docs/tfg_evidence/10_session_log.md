@@ -594,3 +594,57 @@ Still unknown after this session:
     proposal should actually be adopted, and how it would reconcile with
     `repetitions`. Everything else already open in `11`/`12`, unchanged
     except as corrected above.
+
+---
+
+### 2026-10-07 — Repetitions planning objective and evidence-limited n=6 (L0 only)
+Commits: (pending, this entry)
+Done:
+  - Per explicit instruction, recorded a prospective planning objective
+    (2 pp 95% t-interval half-width, per state, per stratum; replication
+    unit = independent run) and applied it to the existing mechanism-fraction
+    evidence rather than Phase 0 measurements retroactively redefining it.
+  - Re-ran `analyse_mechfrac_variance.py` fresh (not reused from an
+    earlier summary) and independently confirmed each stratum's window
+    length from its own `sample_span_ticks` (G6: 21.8 s; B1 idle: 91.4 s)
+    before using either number.
+  - Identified 3 compatible, non-pooled strata (L0/50/200/500 ms, all at
+    `interval_ms=100`), confirmed none of their 16 included runs needed a
+    population-definition judgment call (all already `VALID` under every
+    existing gate; B1 LOAD excluded as the deliberate intervention it is).
+  - Computed `h(n) = t_(0.975,n-1) * s/sqrt(n)` per stratum for
+    `mech_app_limited`, found the smallest `n` meeting 2 pp at each
+    (6 / 3 / 2 for 50/200/500 ms respectively), and reported the largest
+    (6) as the candidate, per instruction, rather than averaging or
+    picking a convenient one.
+  - Explicitly could not compute anything for `mech_unsent_pending` at any
+    stratum — exactly 0 at 50 ms (structural, not noise) and
+    discreteness-dominated at 200/500 ms — flagged rather than forced.
+  - Specified one bounded supplementary pilot (L2/50 ms/20 ms-interval/
+    60 s-duration, fixed n=6) addressing the single largest gap (zero
+    `mech_*` evidence outside L0/100 ms anywhere) — recorded, not run.
+  - Declined to request an Opus audit: this task does not freeze anything
+    and is a fully transparent, self-checkable arithmetic calculation, not
+    a protocol freeze/attribution/mechanism/contradictory-evidence
+    decision under `CLAUDE.md`'s own trigger list. Self-verified instead
+    (re-derived every t-value, re-ran the source script, re-checked window
+    lengths independently).
+Found (not sought): nothing new; this task worked entirely from already-
+  verified evidence.
+Failed / blocked: none.
+Decisions taken:
+  - Did not average or cherry-pick across the three strata's minimal-n
+    values; reported the largest (6) as instructed, with the others shown
+    in the same table so the per-stratum spread stays visible.
+  - Did not extrapolate the L0 candidate to L1, L2, RTT=100 ms, or
+    `sampling_interval_ms=20` — stated each as untested rather than
+    reasoning toward a number for any of them.
+  - Did not execute the proposed supplementary pilot.
+  - Updated the `12` freeze-candidates table's `repetitions` row to point
+    at the new section rather than duplicating the derivation there.
+Still unknown after this session:
+  - Whether L2's mechanism-fraction variability resembles L0's (the
+    reason the proposed pilot targets L2 specifically). Whether `n=6`
+    would hold up under a genuinely independent replication (this
+    calculation substitutes a pilot SD and cannot guarantee that).
+    Everything else already open in `11`/`12`.
