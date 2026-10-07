@@ -6,4 +6,4 @@ scons: building associated VariantDir targets: build
 scons: `.' is up to date.
 scons: done building targets.
    text	   data	    bss	    dec	    hex	filename
- 767059	  34272	 130732	 932063	  e38df	rtthread.elf
+ 767059	  34272	 245420	1046751	  ff8df	rtthread.elf

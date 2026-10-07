@@ -1,0 +1,101 @@
+Pilot 20ms supplementary plan — preflight log for attempt 1 (pilot20_L0_r50_1)
+Delegate: experiment-engineer subagent
+Timestamp (start, UTC): 2026-10-07T20:22Z (date -u on host)
+Git branch: clean-benchmark
+Git HEAD at task start: f76c09f "docs: persist 20ms/L1-L2 supplementary pilot plan, before any measurement"
+Working tree: clean (git status --short empty) at task start
+
+=== Step 1: build verification (per plan "Preflight required") ===
+Command: cd bsp/qemu-vexpress-a9 && ./experiment/scripts/set_config.sh L0
+Result: OK. rtconfig.h/.config already held L0 values (SND_BUF=8196 QUEUELEN=44 SEG=44 WND=2048);
+scons reported "'.' is up to date" (no-op rebuild, zero warnings/errors reported by the script's
+own grep-for-error/warning check). Compiler-preprocessor macro dump re-verified effective values
+match requested L0 values exactly. iperf linked exactly once (arm-none-eabi-nm count=1).
+Archived by the script itself (not duplicated here):
+  docs/tfg_evidence/raw_logs/build_L0.log
+  docs/tfg_evidence/raw_logs/macro_dump_L0.txt
+
+=== Step 2: iperf.c hand-applied hooks (N5) ===
+Command: grep -n instr bsp/qemu-vexpress-a9/packages/netutils-latest/iperf/iperf.c
+Result: 3 hits, matching 07_reproduction_notes.md's documented expected set exactly:
+  line 24:  #include "instr.h"
+  line 244: instr_attach_client_socket(sock);  (immediately after successful connect())
+  line 286: instr_detach_client_socket(sock);  (immediately before closesocket())
+Verdict: present and matches expected hook set. Not reinstalled/redesigned, per instructions.
+
+=== Step 3: instr.c msh command read-back behavior (source-level, confirmed before boot) ===
+Read applications/instr.c directly (lines ~588-800):
+  - `instr_interval` with argc<2 prints current g_instr_interval_ms AND the derived tick count
+    AND RT_TICK_PER_SECOND, i.e. it DOES support a true read-back of current value, not just
+    a usage string. Confirmed by source, not yet confirmed live (QEMU never reached — see blocker).
+  - `instr_tier` with argc<2 similarly prints current tier name + INSTR_WALK_SEGMENT_LISTS compile
+    flag. True read-back supported.
+  - `instr_trace [stride]` prints "INSTR_TRACE_BEGIN run_id=... written=<total> retained_from=<start>
+    stride=..." — `written` vs `retained_from` is exactly the overflow/wrap indicator the plan asked
+    for: if written > INSTR_TRACE_SLOTS (8192), retained_from = written - 8192 (wrapped), else 0.
+  - INSTR_TRACE_SLOTS = 8192u (confirmed by source, #define at line 119), matches the plan's
+    assumption. At 20 ms / 60 s requested duration, expected sample count is on the order of
+    ~3000 (60000/20 = 3000 ticks of the periodic soft timer, modulo any missed deadlines) which
+    is well under the 8192-slot capacity — no wrap expected. NOT YET OBSERVED LIVE.
+  - `instr_dump`'s JSON includes `"run_id"` (echoes g_accum.run_id, set by the most recent
+    instr_reset call) — this is the run_id-mismatch gate's data source: compare requested run_id
+    (argument to instr_reset) against the dump's own run_id field. Not yet exercised live.
+  - mech_app_limited / mech_unsent_pending / mech_ack_pending fields are emitted unconditionally
+    in instr_dump's JSON (only populated meaningfully under tier=full per the plan's own text).
+
+=== Step 4: host-side iperf and tools ===
+  - /usr/bin/iperf = iperf 2.1.9 (pthreads) — confirmed, matches required GNU iperf2, not iperf3.
+  - /usr/bin/iperf3 also present but not used.
+
+=== BLOCKER — tap0 network interface does not exist and cannot be created non-interactively ===
+
+`tc qdisc show dev tap0` → "Cannot find device \"tap0\"" (checked before touching anything else).
+`ip link show` / `ip addr show` / `ip tuntap show` → no tap0, no tap interface of any kind present.
+
+Attempted the QEMU boot command (07_reproduction_notes.md's documented, "VERIFIED" invocation,
+inside a freshly created detached tmux session `pilot20`, exactly as the task instructed):
+
+  tmux new-session -d -s pilot20 -x 220 -y 50 \
+    "qemu-system-arm -M vexpress-a9 -kernel rtthread.elf -nographic \
+     -drive file=sd.bin,format=raw,if=sd -audio none \
+     -net nic -net tap,ifname=tap0,script=no,downscript=no"
+
+The tmux session died immediately (tmux ls -> "no server running" seconds later). Re-ran the exact
+same command in the foreground with `timeout 5` to see the real stderr:
+
+  qemu-system-arm: -net tap,ifname=tap0,script=no,downscript=no: could not configure
+  /dev/net/tun (tap0): Operation not permitted
+
+/dev/net/tun is world-rw (crw-rw-rw- root:root), so the failure is not a /dev/net/tun permission
+problem — creating/configuring a NEW tap interface (TUNSETIFF/TUNSETPERSIST-equivalent via netdev
+ioctls) requires CAP_NET_ADMIN, which this unprivileged user does not have. `getcap` on
+qemu-system-arm itself returns nothing (no file capabilities set). No persistent tap device exists
+(`ip tuntap show` empty) and no setuid qemu-bridge-helper path is configured
+(/etc/qemu/bridge.conf absent).
+
+Root cause located in ~/.bash_history (read-only inspection, not executed): tap0 was previously
+brought up by hand, OUTSIDE any tracked script, via plain (interactive-password) sudo:
+
+  sudo ip tuntap add dev tap0 mode tap user $USER
+  sudo ip link set tap0 up
+  sudo ip addr add 192.168.10.1/24 dev tap0
+
+This sequence requires full interactive sudo (confirmed: `sudo -n ip tuntap add dev tap0 mode tap
+user vboxuser` -> "sudo: a password is required", exit 1). It is NOT covered by the one approved
+non-interactive mechanism (`sudo -n /usr/local/sbin/tfg-set-netem <ms>`), which only runs
+`tc qdisc del|replace dev tap0 ...` on an ALREADY-EXISTING tap0 device — it does not and cannot
+create the interface itself. The task instructions explicitly forbid plain `sudo tc`/other
+interactive-sudo invocations in a non-interactive session (they will hang). Creating tap0 requires
+the same category of privileged, interactive-only operation; I did not attempt it, did not try any
+password, and did not look for or use any workaround (no setuid binary exists to exploit, and
+using one would not be appropriate in any case).
+
+This blocks ALL 24 attempts under the current host network state, not just attempt 1 — it is an
+environment/infrastructure precondition, not something specific to the 20ms pilot's own settings.
+No measurement, no QEMU boot reaching msh, no iperf, and no netem change (tfg-set-netem itself
+would also report "Cannot find device" against tap0, even though it is the approved tool, since
+there is nothing for it to operate on) can proceed until tap0 exists again on this host.
+
+=== Stopped here. No attempt 1 data was collected. No netem change was attempted (nothing to
+change netem on). No build or other host activity occurred after discovering the blocker, besides
+this diagnostic capture and writing this log. ===
