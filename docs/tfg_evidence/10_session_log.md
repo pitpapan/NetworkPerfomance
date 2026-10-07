@@ -337,3 +337,82 @@ Still unknown after this session:
     `tap0` (N14) — only resolvable by an actual QEMU session. Whether N8's
     gate parameters should be frozen. Everything else already listed as
     open in `11`, including all of Phase 1's `tbd_from_pilot` fields.
+
+---
+
+### 2026-10-07 — Attempted Phase 1 protocol freeze: FAILED audit, do not freeze
+Commits: (pending, this entry)
+Done:
+  - Took the recommendations in `12`'s "Proposals for the fenced
+    tbd_from_pilot slots" table (repetitions=8, run_duration_s=60,
+    discard_interval_s=3, sampling_interval_ms=20, retire
+    snd_buf_low_threshold) plus the N8/timing-drift/retransmission gate
+    parameters, and routed the freeze decision through `evidence-auditor`
+    (Opus, read-only) before writing anything to `manifest.yaml` — per the
+    standing workflow, "Phase 1 protocol freeze" is an explicit Opus-audit
+    trigger, and a completed pilot or recommendation alone is not a freeze
+    decision.
+  - Audit result: **FAIL for the bundle.** Four slots supportable with
+    qualification (`run_duration_s`, `discard_interval_s`,
+    `sampling_interval_ms`, retiring the legacy threshold);
+    `repetitions=8` INCONCLUSIVE because its precondition depends on N8;
+    the N8 gate itself REJECTED as implemented.
+  - **Independently reproduced the central defect myself before accepting
+    it**, rather than taking the audit on faith: read `interval_gate.py`'s
+    `load_connections()` and confirmed it drops any CSV row with
+    `len(f) < 9`; confirmed iperf writes a zero-throughput second as
+    exactly such a short row; ran `interval_gate.py check` against
+    `raw_logs/p0d_g4_L0_host_iperf.csv` connection index 4 (src_port 49157,
+    transfer id 5) and got `VALID`; then confirmed from the raw CSV that
+    this connection's throughput jumps `196704 bps (t=2-3s)` straight to
+    `11680 bps (t=10-11s)` with the 7 seconds in between existing only as
+    6-field short rows the parser silently discards — a 7-second total
+    stall, worse than any collapse the gate targets, invisible to it.
+    Separately confirmed the trailing-bin omission
+    (`range(0, len(kept)-binsec+1, binsec)` never emits a short final bin)
+    by reading the loop directly. Also independently confirmed one minor
+    audit finding (stale trace-ring size: `instr.c:119` already says 8192,
+    not the 1024 that `11` N9 and `12` still claimed).
+Found (not sought):
+  - The audit also surfaced several stale/incorrect passages in `12` and
+    `08` (B1 described as "unresolved" after it was classified; "not yet
+    wired" after B2 wired it; a self-referential timing-drift gate
+    described as proof against stalls when B1's own loaded runs show the
+    guest's sample span shrinking with the outage rather than the gate
+    detecting anything; an arithmetic slip in the L2/500 ms quantization
+    row; unreferenced "15-25" and "roughly triples" repetition figures)
+    and a candidate alternative stall detector (guest-span/host-duration
+    ratio) that separated every known-disturbed run checked, including
+    the three N8 misses, with a visible but narrow margin. Not adopted —
+    recorded as a proposal, not a decision (see `11` B3).
+Failed / blocked:
+  - The freeze did not happen. This was not a failed attempt at a
+    mechanical task; it is the intended outcome of the audit gate working
+    as designed (Section 48: "the current hypothesis fails" / "a proposed
+    mechanism is unsupported" are valid outcomes, not failures of the
+    session).
+Decisions taken:
+  - Did not freeze any `tbd_from_pilot` field, and did not write any gate
+    parameter into `manifest.yaml`, because the evidence does not support
+    it yet — specifically because `repetitions=8`'s justification assumes
+    collapsed runs are reliably excluded, and that assumption is now
+    falsified for the specific gate that was going to do the excluding.
+  - Moved B2's successor finding to a new blocking item `11` B3 rather
+    than reopening B2 (B2 was specifically "the script never ran end to
+    end," which is still true and resolved; B3 is "the gate the script
+    wires in doesn't catch what it claims to catch," a different claim).
+  - Did not adopt the guest-span/host-duration ratio detector the auditor
+    found promising — that is a new validity-gate design, not a bug fix,
+    and adding it is a protocol-design decision for the user/coordinator
+    to make deliberately, not a by-product of fixing N8.
+  - Corrected `11` N9 immediately (trivial, source-verifiable, no judgment
+    call) rather than leaving a known-stale entry in a live register.
+Still unknown after this session:
+  - Whether fixing N8's two confirmed defects (short-row parsing,
+    trailing-bin omission) is sufficient, or whether the gate needs
+    further redesign once re-evaluated against the full archive including
+    the previously-invisible collapses. Whether `repetitions` should
+    change once N8 is fixed and the mechanism-fraction variance (never
+    estimated — the auditor's point 7) is accounted for. Whether the
+    guest-span/host-duration idea is worth adopting as a second detector.
+    Everything else already open in `11`.
