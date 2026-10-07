@@ -336,5 +336,59 @@ not change the `repetitions` candidate recorded in `12` (which stays
 unfrozen, pending the remaining strata below and a decision on the
 within-run-noise question above).
 
-**Not yet run**: L1/50 ms (6), L2/50 ms (6), L2/500 ms (6) — 18 of 24
-attempts remain.
+## Results: L1/50 ms block (attempts 7–12, complete)
+
+Build: `set_config.sh L1` — PASS, effective macros confirmed, `iperf`
+linked once, no `rtconfig.h`/`.config` drift. Boot banner on the fresh
+QEMU boot confirmed `TCP_SND_BUF=16384` (not 8196) before any attempt —
+the same cross-check `collect_run_meta.sh` uses elsewhere, done by eye
+here. `tap0` netem confirmed still `delay 50ms` throughout (reboot does
+not touch host networking state, verified rather than assumed).
+
+**Anomaly, non-blocking**: the L0 block's `pilot20` tmux/QEMU session
+was found already gone (tmux server itself had exited) when the delegate
+went to tear it down for the L1 rebuild — no `dmesg` access to confirm a
+cause (permission denied), `journalctl`/`free`/`uptime` showed nothing
+abnormal. Not a data-loss event (all L0 artifacts were already extracted
+and committed in `d780e4f` before this happened), and tearing down that
+exact session was this task's own next step regardless. Noted for
+awareness if it recurs; not investigated further.
+
+**All 6 attempts' `mech_*` sums re-verified exactly against
+`sample_count`** (coordinator, direct from each `.json`). The whole-run
+accumulator showed a constant `mech_unsent_pending=5` in every single
+attempt, which the coordinator checked by trace position rather than
+accepting at face value: in all 6 runs, every `unsent>0` sample falls
+in the first 5 trace rows (t=0.00–0.08 s from connection start) — a
+connection-establishment burst, not a steady-state phenomenon, and
+entirely inside the 3 s discard window. `[3,60)`-windowed, from each
+trace:
+
+| run_id | n (post-discard) | `app_limited` % | `unsent_pending` % | `ack_pending` % |
+|---|---|---|---|---|
+| `pilot20_L1_r50_1` | 2850 | 1.544 | 0.000 | 98.456 |
+| `pilot20_L1_r50_2` | 2850 | 1.053 | 0.000 | 98.947 |
+| `pilot20_L1_r50_3` | 2815 | 0.746 | 0.000 | 99.254 |
+| `pilot20_L1_r50_4` | 2839 | 1.268 | 0.000 | 98.732 |
+| `pilot20_L1_r50_5` | 2849 | 1.229 | 0.000 | 98.771 |
+| `pilot20_L1_r50_6` | 2850 | 0.982 | 0.000 | 99.018 |
+
+**Stratum summary, n=6**: `mech_app_limited` mean=1.137 %, between-run
+SD=0.274 pp, range 0.746–1.544 %. `mech_unsent_pending`=0.000 % in every
+run once discard is applied (confirmed, not assumed, per the trace-position
+check above). N8 `VALID` on all 6, `stale_count=0`, `trace_written==sample_count`
+on every attempt, `gap_max_ticks` 2–4 (two attempts briefly at 3–4, not a
+defect). Connection identity: strictly sequential, non-repeating host
+ports across the 6 attempts, each with its own `run_id` match.
+
+**Comparison with L0/50 ms** (same interval, same RTT, larger buffer):
+`app_limited` mean dropped from 3.310 % (L0) to 1.137 % (L1) — directionally
+consistent with a larger send buffer being less often the binding
+constraint. Between-run SD is similar in magnitude (0.262 pp vs. 0.274 pp)
+— the earlier caution about within-run sample count driving apparent SD
+(this session, both strata have ~2850 post-discard samples) applies
+equally to both, so this near-equal SD is also consistent with that
+explanation, not yet distinguished from a real "variability doesn't
+change much with buffer size" claim.
+
+**Not yet run**: L2/50 ms (6), L2/500 ms (6) — 12 of 24 attempts remain.
