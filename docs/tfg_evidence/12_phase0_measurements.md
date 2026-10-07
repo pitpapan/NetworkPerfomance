@@ -558,6 +558,37 @@ hold. If it counts as valid data, `repetitions` roughly triples.
 | Retransmission threshold (INVALID gate) | `nrtx_max` = 0 and `nrtx_nonzero_count` = 0 in **every run of this session** (~113 runs), across all four RTT points, both ladder points and both pinning configs. qdisc counters showed 0 dropped / 0 overlimits throughout. | **`nrtx_max > 0`** through a small tolerance | **`nrtx_max > 0` → INVALID** | The observed distribution is a point mass at exactly zero over ~113 runs, so any non-zero reading is a change in conditions rather than noise, and a tolerance would only admit runs whose link behaved differently. **Caveat that should be recorded with the gate:** `pcb->nrtx` resets on forward progress, so it is an activity indicator, not a cumulative count — a zero reading means "no retransmission was in progress at any sampling instant", which is weaker than "no retransmission occurred". A cumulative counter would be better evidence but requires modifying lwIP, which the no-data-path-change constraint forbids. |
 | Steady-state band + consecutive-interval count | The rule "all later intervals within ±5 % of the median" is **unusable**: it returned t = 70 s for L0/50 ms and no answer at all for L0/200 ms and L0/500 ms, because a single late dip falsifies it. Normal steady-state jitter at L0/100 ms alone spans 600 640 – 655 680, i.e. **±4.3 %**, with no disturbance present. | band **5 – 10 %**, count **2 – 5** | **3 consecutive 1-second intervals within ±10 % of the run median, evaluated as a first-crossing rule** | ±5 % is inside the normal jitter of the L0/100 ms cell, so a 5 % band would fire on noise at that cell alone; 10 % clears it with margin. Three consecutive intervals prevents a single lucky interval from declaring steady state, while staying short relative to the 1–2 s onset actually measured. **It must be a first-crossing rule, not an all-subsequent-intervals rule** — the collapses occur later in the run, so any all-subsequent formulation is unsatisfiable on this platform regardless of the band. |
 
+> **CORRECTION (2026-10-07, B3/B4/audit), appended not rewritten — the
+> rows above are preserved as originally written:**
+>
+> The `run_duration_s` row's "Collapses last 2–4 s" figure is **wrong**.
+> It was computed by code (`interval_gate.py`, and `analyse_intervals.py`
+> has the same defect) that silently dropped iperf's short zero-byte-second
+> rows, so a total stall read as a short string of merely *reduced*
+> values at its edges instead of the stall itself. Recomputed directly
+> from `raw_logs/b1_capture/host_load.csv` with those rows restored: the
+> B1 LOAD arm's contiguous zero-throughput stretches are **20 s (run 1,
+> t=19–39), 35 s (run 2, t=19–54) and 23 s (run 3, t=21–44)** — not 2–4 s
+> — and natural (non-intervention) Phase 0 collapses are also longer than
+> 2–4 s where checked (`g4_L0_r200_t100` is a 7 s total stall at t=3–10;
+> `g3a_6_full`'s collapse is at least 4 s and is cut off by the end of its
+> run). This affects the `run_duration_s` row specifically: its "a single
+> 2–4 s collapse is ≤ 7 %... but 15–20 % of a 20 s run" dilution argument
+> no longer holds at the corrected 20–35 s duration — a collapse of that
+> length cannot be diluted by averaging within any proposed run length,
+> only gated out by something like N8. The row's other legs (transient
+> length, sample count, CV at L0/500 ms) are not affected by this
+> correction. The `discard_interval_s` row is **not** built on the 2–4 s
+> figure (it cites onset time and "collapses occur later in the run"
+> instead) but needs its own caveat: `g4_L0_r200_t100`'s stall begins at
+> t≈2–3 s, inside the proposed 3 s discard window, so "collapses occur
+> later" is not true of every collapse. Full detail, independent
+> verification and the fix for the underlying parser defect:
+> `docs/tfg_evidence/11_open_problems.md` B3 (Resolved) and B4 (Open).
+> `repetitions=8` (first row above), already conditional on "gating
+> collapsed runs INVALID", is affected transitively — see B3/B4/N16 for
+> the current state of that gate — and remains unfrozen.
+
 ### Slots the brief did not fence but which now visibly need a number
 
 Flagged rather than filled, per the standing rule.

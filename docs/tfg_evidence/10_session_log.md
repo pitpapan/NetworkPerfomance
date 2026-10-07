@@ -416,3 +416,95 @@ Still unknown after this session:
     estimated — the auditor's point 7) is accounted for. Whether the
     guest-span/host-duration idea is worth adopting as a second detector.
     Everything else already open in `11`.
+
+---
+
+### 2026-10-07 — B3 fixed, audited, and hardened; B4 corrected; still no freeze
+Commits: (pending, this entry)
+Done:
+  - Per explicit user instruction, continued B3 under the standing
+    delegation contract rather than freezing or redesigning: delegated the
+    full fix (short-row attribution via transfer-id map, trailing-bin
+    evaluation) to `experiment-engineer`, independently reproduced the two
+    before/after cases myself from raw data, then delegated a hardening
+    pass (8 new synthetic regression tests, a full 105-connection
+    before/after archive table, an end-to-end `collect_run_meta.sh`
+    re-verification, and a recomputed B1 run 4/5 timeline) to the same
+    role, then sent the whole bounded patch to `evidence-auditor` (Opus)
+    per the user's explicit requirement, before touching any record.
+  - Audit result: **PASS WITH QUALIFICATION.** Confirmed correct: column
+    choice and attribution logic (checked against 2 real files), orphan
+    handling, tail-bin arithmetic (actual length, not nominal), the 4
+    exact verdict changes (reproduced by hand), collector compatibility
+    (`INVALID`/`INSUFFICIENT` both reject a row). Found and required
+    correcting: a stale docstring; an orphan-warning/stdout-stderr
+    buffering race that could corrupt the parsed verdict under
+    `collect_run_meta.sh`'s `2>&1` capture; a short-trailing-bin
+    quantization risk (not present in the real archive, relevant to
+    future parameter choices); an over-claimed "new finding" about
+    `collect_run_meta.sh` carrying the same defect (rejected — that path
+    is protected by iperf's own summary row in every real case); and
+    confirmed the B4 entry's "2-4 s dip for runs 1-3" figure is wrong
+    (actual: 20/35/23 s contiguous zero stretches), which also undermines
+    the dilution leg of `12`'s `run_duration_s=60` reasoning.
+  - Applied the two required code fixes directly (routine, well-specified,
+    independently verified — not delegated): reordered the orphan warning
+    after the verdict print AND added an explicit `sys.stdout.flush()`,
+    because testing the ACTUAL merged `2>&1` byte stream (not just source
+    line order) showed print-order alone was insufficient — Python
+    block-buffers stdout but not stderr when neither is a tty, so a later
+    stderr write can still win the race against an earlier, still-buffered
+    stdout write. Caught this myself by testing the real merged stream
+    before trusting the first fix; re-verified after the `flush()` that
+    the verdict is reliably first. Fixed the stale docstring. Added a
+    code comment at the B1 LOAD selftest loop explaining the two
+    intentional `INSUFFICIENT`-vs-`INVALID` FAILs are tracked (B4), not a
+    regression to chase.
+  - Independently re-confirmed, a third time, via direct script execution
+    (not the subagent's or auditor's hand computation): exactly 4 of 105
+    archived connections change verdict between committed HEAD and the
+    working tree, matching both prior reports exactly.
+  - Corrected `11`'s B3 row, which a prior edit this session had deleted
+    outright instead of moving to Resolved (the auditor caught this —
+    confirmed true on inspection, fixed). Corrected B4's "2-4 s" figures.
+    Updated N8 to reflect the fix instead of "carries a broken gate."
+    Added N16 (short-trailing-bin risk) and N17 (the corrected, narrower
+    `collect_run_meta.sh` latent risk, replacing the rejected over-claim).
+    Appended a dated correction note to `12` after the proposals table
+    (not rewriting the original rows) explaining the `run_duration_s`
+    impact and the `discard_interval_s` caveat (`g4_L0_r200_t100`'s stall
+    begins inside the 3 s discard window).
+Found (not sought):
+  - Same as the two prior entries' "Found" sections (B1 run 4/5
+    heterogeneity, the g3a_4_floor dilution blind spot) — not repeated
+    here; see B4 and N16.
+Failed / blocked:
+  - My first fix for the orphan-warning ordering bug (moving the `print`
+    call later in source) was insufficient and I caught this myself before
+    committing, by testing the actual `2>&1`-merged output rather than
+    trusting source-line order. Worth remembering: stdio buffering
+    behavior, not print order, determines interleaving across a pipe.
+Decisions taken:
+  - Did not change `selftest`'s `want="INVALID"` for B1 LOAD runs 4/5 to
+    make the suite pass. The auditor offered this as one acceptable
+    option; chose instead to keep the strict intervention-based label and
+    document the FAIL as intentional, so the INSUFFICIENT/INVALID
+    distinction (which is itself evidence, per B4) stays visible on every
+    run rather than being absorbed into a passing test.
+  - Did not re-tune `band`/`discard`/`bin`/`allow` to raise the 3/7
+    historical-label catch rate. `g3a_4_floor` and three `g4_L0` dips are
+    diluted by the `bin=5` averaging design itself, not a parsing defect;
+    changing parameters now would be exactly the "retune to fit known
+    examples" the user's instructions explicitly forbade.
+  - Did not implement the auditor-proposed guest-span/host-duration
+    detector. Still an unadopted proposal.
+  - Did not freeze `repetitions`, `run_duration_s`, `discard_interval_s`,
+    `sampling_interval_ms`, or any gate parameter. `12`'s correction note
+    explicitly states `repetitions=8` remains unfrozen.
+Still unknown after this session:
+  - Whether B4 (R13/N12 implications) needs its own audit pass or further
+    evidence before the next freeze attempt. Whether a corrected
+    sensitivity table (post-B3-fix) would support a different `band` than
+    0.80 — not computed this session, since doing so without also
+    resolving B4 would freeze on an incomplete picture. Everything else
+    already open in `11`, unchanged by this session except as noted above.
