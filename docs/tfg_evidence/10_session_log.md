@@ -508,3 +508,89 @@ Still unknown after this session:
     0.80 — not computed this session, since doing so without also
     resolving B4 would freeze on an incomplete picture. Everything else
     already open in `11`, unchanged by this session except as noted above.
+
+---
+
+### 2026-10-07 — Freeze-readiness assessment: B4 resolved (reframed), still not freeze-ready
+Commits: (pending, this entry)
+Done:
+  - Per explicit user instruction, completed one bounded offline
+    freeze-readiness assessment: resolved B4 through existing evidence,
+    established a proposed (unimplemented) scientific role for N8,
+    extracted mechanism-fraction replication evidence from the existing
+    archive, and reassessed all five `tbd_from_pilot` candidates
+    individually.
+  - Delegated the offline extraction (B1/g4 timeline reconstruction
+    cross-referenced against hostmon + instr_dump, mechanism-fraction
+    variance tables, existing-test run) to `experiment-engineer`, who
+    wrote two new reproducible scripts
+    (`analyse_b4_timeline.py`, `analyse_mechfrac_variance.py`).
+    Independently re-ran both myself and reproduced the numbers exactly
+    before using them, plus independently re-derived two of the most
+    consequential figures by hand from raw `host_iperf`/`hostmon.csv`
+    files (the discard-window overlap for `g4_L0_r200_t100`; the exact
+    jiffy/ctxt counts during run 1's 22 s hostmon gap).
+  - Drafted a full assessment (B4 resolution text, N8 4-way classification
+    proposal, 5 freeze-candidate verdicts) and sent the complete package
+    to `evidence-auditor` (Opus) before writing anything into `11`/`12`,
+    per explicit instruction. Audit result: **PASS WITH QUALIFICATION** —
+    the raw observations held up, but several of my own interpretations
+    were wrong and required correction before persisting.
+  - **Corrected my own draft before writing anything, not after**:
+    independently re-verified the audit's two most consequential
+    corrections myself from raw data rather than taking them on faith:
+    (1) read `b1_load_1.hostmon.csv` directly and confirmed the 22 s gap's
+    cumulative `/proc/stat` jiffy delta is ~15 (against an expected ~4400
+    for 22 s on 2 vCPUs) and ctxt delta ~513 (against ~33000 expected) —
+    this rules out my own "multi-process contention" wording (ordinary
+    process-level contention would still show normal cumulative kernel
+    accounting, just reattributed) and supports the audit's "the whole VM
+    wasn't being scheduled" reading instead; (2) confirmed G6 PINNED's
+    compiled config is literally L0 under `controls_pinned`
+    (`8196/44/44`), not a separate "pinning-control-only" population as my
+    own draft had wrongly characterized it — this means mechanism-fraction
+    replication exists at three L0 RTT points (50/200/500 ms), not one.
+  - Persisted the corrected version only: moved B4 to Resolved in `11`
+    with the reframed finding ("same signature in all 5 runs, differs
+    only in duration" — not "runs 4/5 are categorically different," my
+    own initial framing, withdrawn); appended correction notes (not
+    rewrites) to R13 and N12; updated N8's entry with the corrected policy
+    proposal and the manifest-mismatch finding; appended a dated
+    freeze-readiness section to `12` with the corrected mechanism-fraction
+    table and all 5 candidate verdicts.
+Found (not sought):
+  - The audit's jiffy/ctxt-accounting finding is itself a new,
+    independently-reproducible piece of evidence about B1's mechanism,
+    beyond anything in the archive before this session: not "QEMU lost a
+    scheduling contest," but "the measuring host's own kernel barely
+    accounted for any CPU time at all during the gap," which points lower
+    (VirtualBox/physical host) than R13's original framing implied.
+  - My own first-draft error pattern this session: I twice reached for an
+    intuitive mechanism story (host process contention; a clock-rate
+    ratio) that was more dramatic-sounding and less precisely supported
+    than what a careful reading of the raw counters actually shows
+    (near-total absence of cumulative accounting; an additive, not
+    multiplicative, guest-time gap). Worth remembering for future
+    sessions: prefer the plainest reading the numbers support over the
+    more narratively satisfying one.
+Failed / blocked: none.
+Decisions taken:
+  - Did not implement the N8 classification policy, change any gate
+    threshold, or touch `manifest.yaml`/`collect_run_meta.sh` — the task
+    explicitly scoped this to assessment, not implementation.
+  - Did not freeze `run_duration_s`, `repetitions`, or any other
+    candidate. Two have a documented, specific gap (duration's rationale
+    is gone; repetitions lacks a mechanism-fraction precision target and
+    its exclusion precondition is unmet) rather than a patched-over
+    number.
+  - Resolved B4 rather than leaving it open, since the audit's own
+    recommendation was to do so once the mechanism wording was corrected
+    and the open mechanism-locus question was explicitly forwarded to N12
+    rather than silently closed with B4.
+Still unknown after this session:
+  - Whether the sub-Ubuntu-kernel-layer hypothesis (VirtualBox/physical
+    host) is correct — N12 remains open, now with sharper (but still not
+    conclusive) evidence pointing that way. Whether/how the N8 policy
+    proposal should actually be adopted, and how it would reconcile with
+    `repetitions`. Everything else already open in `11`/`12`, unchanged
+    except as corrected above.

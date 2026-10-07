@@ -860,3 +860,117 @@ full rather than collapsed to the one value used.
   operational no-concurrent-load rule was followed**, not the primary defence
   against B1 — but it still needs to exist for exactly the case the rule is
   violated without anyone noticing.
+
+---
+
+## 2026-10-07 — Freeze-readiness assessment (offline, no new measurements)
+
+One bounded assessment of whether the Phase 1 protocol can be frozen now.
+Evidence: `11_open_problems.md` B3/B4 (Resolved), N8/N12 (updated), R13
+(corrected), two new reproducible scripts
+(`experiment/scripts/analyse_b4_timeline.py`,
+`analyse_mechfrac_variance.py`), and one bounded evidence-auditor (Opus)
+review, PASS WITH QUALIFICATION, whose required corrections are already
+folded into `11`'s B3/B4/N8/N12/R13 entries and into this section.
+**No parameter is frozen by this section. Nothing here is adopted.**
+
+### Mechanism-fraction (`mech_*`) replication evidence
+
+`mech_app_limited`/`mech_unsent_pending`/`mech_ack_pending` (mutually
+exclusive, sum exactly to `sample_count`, verified on all 34 real records
+that have them) exist ONLY in `raw_logs/p0b_g6_instr_dumps.jsonl` (24
+records) and `raw_logs/b1_capture/b1_{idle,load}_*.json` (10 records) —
+confirmed absent, not merely unchecked, in every g3a/g3b/g4 record (70
+records checked). **Correction to this assessment's own first draft**: G6
+PINNED's compiled config (`TCP_SND_BUF=8196, TCP_SND_QUEUELEN=44,
+MEMP_NUM_TCP_SEG=44`) is not a separate "pinning-control-only" population
+— it is byte-for-byte `controls_pinned` at `TCP_SND_BUF=8196`, i.e. L0
+itself. So mechanism-fraction replication exists at **three** L0 RTT
+points, not one:
+
+| Cell | n | app_limited % (mean, sd pp, range) | unsent_pending % | ack_pending % |
+|---|---|---|---|---|
+| L0 (G6 PINNED), RTT=50 ms | 6 | 4.043, 1.779, 1.826–6.881 | 0.000, 0.000 | 95.957, 1.779 |
+| L0 (B1 idle), RTT=200 ms | 5 | 0.873, 0.278, 0.546–1.201 | 0.218, 0.000 | 98.909, 0.278 |
+| L0 (G6 PINNED), RTT=500 ms | 6 | 0.078, 0.190, 0.000–0.465 | 2.324, 0.004 | 97.599, 0.191 |
+| L0 (G6 STOCK, external-validity only), RTT=50 ms | 6 | 3.577, 0.786, 2.740–4.566 | 0.000, 0.000 | 96.423, 0.786 |
+| L0 (G6 STOCK, external-validity only), RTT=500 ms | 6 | 0.155, 0.380, 0.000–0.930 | 2.326, 0.007 | 97.519, 0.380 |
+
+Each run is one data point (its own fraction of its own `sample_count`);
+samples are never pooled across runs. The dominant category
+(`mech_ack_pending`) is the same (93–99 %) in all 34 runs checked, at
+both RTTs and across the STOCK/PINNED split. Absolute between-run spread
+is 0.2–1.8 percentage points, not the ~44 % relative figure an earlier
+draft of this assessment used — that relative framing was rejected on
+audit: with ~219 samples per 22 s run, a mean near 4 % is close enough to
+the counting floor that relative-SD framing is dominated by sample-count
+discreteness, not by a real, large relative dispersion; the informative
+number is the absolute percentage-point spread, which is small.
+
+**What is still missing, stated precisely, nothing substituted**: no
+`mech_*` replication exists at L1 (16384) or L2 (32768) — none at all, not
+even unreplicated. None exists at `sampling_interval_ms=20` (the interval
+actually under consideration) — every `mech_*` record is at
+`interval_ms=100`. None exists at 100/18.4-ms-ish Phase-1 run lengths
+(G6's runs are ~22 s; B1 idle's are ~92 s; the Phase 1 proposal is 60 s).
+Throughput CV is not a substitute for this gap and none is used as one.
+
+### N8's proposed scientific role (drafted, audited, NOT implemented)
+
+`manifest.yaml` has never listed N8/per-interval-collapse in
+`validity_gates` or `validity_gates_additional` (confirmed by reading the
+file; its only mention of N8 is a comment saying no such gate exists).
+N8 exists only inside `collect_run_meta.sh`, which today maps ANY
+`INVALID`/`INSUFFICIENT` verdict (N8's included) straight to the row's
+`valid=no`, identically to every other gate — there is no detector-output
+vs. final-scientific-validity distinction in the code today.
+
+A candidate (unimplemented) 3-way classification was drafted and
+independently audited (PASS WITH QUALIFICATION — see `11` N8 for the
+full, corrected statement): `VALID_NORMAL` / `VALID_ANOMALOUS` (an
+otherwise-protocol-compliant run where only N8 flags a throughput pattern
+or reports "run median is zero" — retained, flagged, analysed as its own
+stratum, never auto-excluded) / `INVALID` (any independently-justified
+gate fails — including, per the audit's correction, N8's own "too few
+intervals"/no-such-connection outcomes, which are a data-completeness
+failure under the existing "required output/metadata field missing" gate,
+not an anomalous-but-complete observation). This directly implements the
+task requirement that a throughput-collapse flag alone must not be read
+as proof of concurrent load or measurement corruption, and that
+exclusion requires a specific, pre-specified protocol/measurement
+failure — unexplained but otherwise-compliant runs are retained.
+
+**Not adopted. Required before it could be**: a schema change
+(`manifest.yaml`'s single boolean `valid` would need a `validity_class`
+field or equivalent); an explicit decision on whether `VALID_ANOMALOUS`
+runs count toward `repetitions` and toward `aggregate_statistics_per_cell`
+(computed today over `VALID` runs only); a way to flag an
+operator-recorded deliberate protocol violation (B1's LOAD arm has none
+today — it is not part of the 19-cell matrix, so this does not block
+Phase 1, but the gap is real); and an explicit reconciliation with
+`repetitions`, since adopting `VALID_ANOMALOUS` makes the existing
+`repetitions=8` precondition ("collapses reliably gated INVALID")
+unsatisfiable by design — a policy that retains anomalous runs and a
+repetitions count calibrated on their exclusion cannot both stand as
+written.
+
+### The five freeze candidates, reassessed
+
+| Candidate | Status | Evidence / dependency |
+|---|---|---|
+| `run_duration_s = 60` | **INSUFFICIENT** | The only leg of the original reasoning that pinned down a *specific* number — "a 2–4 s collapse is diluted by averaging within 60 s" — is false (collapses are 20–324 s; nothing this length is diluted by averaging, only gated out). Surviving legs (transient <2 s; sample count at 20 ms) support "long enough," not "60 specifically." Per the task's own instruction, not reusing the disproven rationale and not proposing a replacement number — the gap is reported, not patched. |
+| `discard_interval_s = 3` | **SUPPORTED WITH QUALIFICATION** | Defensible for its narrow, audited-correct purpose (excludes the <2 s startup transient; not built on the 2–4 s figure). The separate, previously implicit assumption that discard never masks a real collapse is contradicted by one archived case (`g4_L0_r200_t100`, stall begins at the first kept interval) — but that run is still caught by N8 regardless, so this is a logical property of a `[0, D)` window colliding with an early stall, not an observed detection failure. Document the interaction; do not widen the window to chase it (would trade transient-exclusion margin for no proven benefit). |
+| `sampling_interval_ms = 20` | **SUPPORTED WITH QUALIFICATION** (unchanged by this session) | 20 ms has only ever been run at L0/50 ms (5 runs, `g3b_*_full20`) — never at L2 or any other RTT. The claim elsewhere that 20 ms showed "zero drift... including L2" has no archive support. |
+| `repetitions = 8` | **INSUFFICIENT** | Its own stated precondition (collapses reliably gated INVALID) remains structurally unmet — N8 catches only 3/7 of the archive's by-inspection-labelled natural collapses, by dilution design, not a parsing defect (see B3). No mechanism-fraction-based precision target has ever been computed, and the manifest's own primary evidence is the mechanism classification, not throughput. If the N8 `VALID_ANOMALOUS` policy above is ever adopted, this precondition becomes structurally impossible to satisfy, not just currently unmet. No number is proposed as a replacement — the missing precision target and the policy conflict are reported, not resolved here. |
+| `snd_buf_low_threshold` retirement | **SUPPORTED, implementation incomplete** | The G5 degeneracy finding itself is solid and re-confirmed multiple times this session. But `manifest.yaml`'s `aggregate_statistics_per_cell`/`per_run_record_fields` still list only the legacy `snd_buf_low_fraction`/`instr_snd_buf_low_count` — no `mech_*` field appears anywhere in the manifest's formal schema (confirmed by reading it), even though `collect_run_meta.sh`'s generic `instr_fields` blob already captures the raw values per run. The retirement has evidentiary support but was never actually written into the manifest's analysis schema. |
+
+### Bottom line
+
+Not freeze-ready. Three candidates are blocked on real, specific gaps
+(no duration-specific rationale survives; repetitions lacks both a
+working exclusion precondition and a mechanism-fraction precision
+target; the manifest schema doesn't yet carry the primary evidence
+field). Two are supported with a documented qualification, not a silent
+caveat. B3/B4 are resolved, not blockers. N8's proposed role is a
+reviewed proposal, not a decision. See `11_open_problems.md` for the
+full, audited evidentiary record this table summarizes.
