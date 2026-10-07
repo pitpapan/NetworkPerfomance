@@ -711,3 +711,73 @@ Still unknown after this session:
     confirm it reaches a working `msh` prompt end-to-end — preflight
     stopped one step before that). Everything else already open in
     `11`/`12`/`13`.
+
+---
+
+### 2026-10-07 — 20 ms pilot completed: 24/24 attempts, 4 strata
+Commits: (pending, this entry)
+Done:
+  - User resolved `11` B5 interactively (`tap0` tuntap-add/link-up/addr-add,
+    across two follow-up turns since the first attempt only created the
+    device without bringing it up or assigning an IP — both independently
+    verified by the coordinator before resuming).
+  - Resumed the pilot in four checkpointed batches, each delegated to
+    `experiment-engineer`, each independently re-verified by the
+    coordinator from raw artifacts before authorizing the next: L0/50 ms
+    (6 attempts, one duration-overrun anomaly diagnosed and retained, two
+    tooling fixes derived), L1/50 ms (6, new build, boot-banner
+    cross-checked), L2/50+500 ms (12, new build, RTT-interleaved per the
+    pre-recorded 2026-10-07 randomization, netem verified before every
+    single attempt including repeats).
+  - Independently recomputed the `[3,60)`-windowed `mech_*` fractions
+    myself from the raw trace files for all 24 attempts (not reused from
+    either delegate's report) before writing any stratum summary.
+  - Investigated two suspicious-looking whole-run numbers rather than
+    accepting them: L1's constant `mech_unsent_pending=5` in every
+    attempt, and L2's apparently-confirming 2.47–2.50 % at every 500 ms
+    run — both traced to connection-start bursts (first 0.08–1.5 s)
+    entirely inside the 3 s discard window; both are 0.000 % once
+    `[3,60)` is applied, at every one of the 4 strata.
+Found (not sought):
+  - A uniform `mech_unsent_pending=0.000%` null result across the whole
+    pilot, including L2/500 ms specifically — the cell `12`'s own text
+    expected to show it *largest*, based on an older (`07`/`08`) sweep.
+    Not resolved; flagged as an open discrepancy, with a candidate
+    explanation (the metric's narrower buffer-full-AND-unsent-nonzero
+    definition vs. the older sweep's plain unsent-nonzero count) that was
+    not itself verified against this pilot's own data.
+  - At the real 20 ms/60 s settings, the pilot's own internal repetitions
+    candidate (largest minimal-`n` across its 4 strata) is **3** —
+    smaller than `12`'s existing `n=6` (from the 100 ms-interval archive).
+    Both figures are reported side by side; neither replaces the other,
+    and the within-run-sample-count explanation already flagged for the
+    100 ms-vs-20 ms SD difference applies equally here, unresolved.
+  - One further non-blocking anomaly: the L0 tmux/QEMU session was found
+    already dead before the L1 teardown step, cause unconfirmed (no
+    `dmesg` access); no data loss, not investigated further.
+Failed / blocked: none, after B5's resolution.
+Decisions taken:
+  - Retained attempt 1 (87.89 s instead of 60 s) rather than discarding
+    and re-running it — the task's own rules forbid both silent
+    replacement and extra repetitions; its `[3,60)` window is fully
+    contained in the captured data and was verified, not assumed, to
+    match the rest of that run.
+  - Checkpointed after every build block (one commit per stratum-block:
+    L0, L1, L2) rather than one commit for the whole pilot or one per
+    attempt — matches `manifest.yaml`'s own `block_by: build` structure
+    and keeps each commit independently reviewable.
+  - Did not treat the pilot's own `n=3` as supplanting `12`'s `n=6`; did
+    not freeze `repetitions`, `sampling_interval_ms`, or anything else.
+  - Updated `11` N18 to `PARTIALLY_RESOLVED` (not `RESOLVED`) since
+    RTT=100/200 ms and L0/L1 at 500 ms remain genuinely untested — the
+    plan excluded them by design, not by oversight, and that gap is
+    unchanged by this pilot succeeding at what it did cover.
+Still unknown after this session:
+  - Why `mech_unsent_pending` never appears outside a connection-start
+    burst anywhere in this pilot, including at L2/500 ms. Whether the
+    100 ms-vs-20 ms SD gap (both in `12` and within this pilot's own
+    comparison to it) is a real physical-variability difference or an
+    artifact of within-run sample count. Whether `n=3` or `n=6` (or
+    neither) should inform an eventual `repetitions` freeze. The bounded
+    evidence-auditor review this task's own instructions require before
+    final persistence — not yet requested as of this log entry.

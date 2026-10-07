@@ -391,4 +391,139 @@ equally to both, so this near-equal SD is also consistent with that
 explanation, not yet distinguished from a real "variability doesn't
 change much with buffer size" claim.
 
-**Not yet run**: L2/50 ms (6), L2/500 ms (6) — 12 of 24 attempts remain.
+## Results: L2 block (attempts 13–24, complete — pilot finished, 24/24)
+
+Build: `set_config.sh L2` — PASS, `TCP_SND_BUF=32768` confirmed effective
+and on the fresh boot banner before any attempt. Netem verified
+immediately before **every** attempt (not just on a change), per the
+plan: every `r500_*` run's own `.qdisc_pre` shows exactly `delay 500ms`,
+every `r50_*` run's shows exactly `delay 50ms` — no stale-delay
+mismatch anywhere across the interleaved sequence. Executed in the exact
+pre-recorded order (500,500,500,50,500,500,50,500,50,50,50,50); not
+reordered. Connection identity: strictly sequential, non-repeating host
+ports across all 12 (49153→49164), each cross-checked against its own
+qdisc delay and `run_id`.
+
+All 12 `mech_*` triples re-verified (coordinator, direct from JSON) to
+sum exactly to `sample_count`. `[3,60)`-windowed, independently
+recomputed by the coordinator from every trace (not taken from the
+delegate's numbers):
+
+| run_id | n | `app_limited` % | `unsent_pending` % | `ack_pending` % |
+|---|---|---|---|---|
+| `pilot20_L2_r500_1` | 2850 | 0.386 | 0.000 | 99.614 |
+| `pilot20_L2_r500_2` | 2850 | 0.316 | 0.000 | 99.684 |
+| `pilot20_L2_r500_3` | 2850 | 0.421 | 0.000 | 99.579 |
+| `pilot20_L2_r500_4` | 2850 | 0.175 | 0.000 | 99.825 |
+| `pilot20_L2_r500_5` | 2850 | 0.281 | 0.000 | 99.719 |
+| `pilot20_L2_r500_6` | 2850 | 0.316 | 0.000 | 99.684 |
+| `pilot20_L2_r50_1` | 2849 | 3.756 | 0.000 | 96.244 |
+| `pilot20_L2_r50_2` | 2850 | 3.860 | 0.000 | 96.140 |
+| `pilot20_L2_r50_3` | 2850 | 3.474 | 0.000 | 96.526 |
+| `pilot20_L2_r50_4` | 2850 | 4.526 | 0.000 | 95.474 |
+| `pilot20_L2_r50_5` | 2850 | 3.825 | 0.000 | 96.175 |
+| `pilot20_L2_r50_6` | 2850 | 4.491 | 0.000 | 95.509 |
+
+**Stratum summaries, n=6 each**: L2/500 ms `app_limited` mean=0.316 %,
+SD=0.086 pp, range 0.175–0.421 %. L2/50 ms `app_limited` mean=3.989 %,
+SD=0.425 pp, range 3.474–4.526 %. `unsent_pending`=0.000 % in every one
+of the 12 runs. N8 `VALID` on all 12; `stale_count=0`,
+`trace_written==sample_count` throughout.
+
+**Notable null result, flagged not absorbed**: the plan's own stated
+expectation was that L2/500 ms would show the *largest*
+`mech_unsent_pending` (per `07`/`08`'s older `unsent` sweep, at a 10 ms
+interval and shorter runs). Checked by trace position before accepting
+the whole-run accumulator's apparently-confirming numbers (2.47–2.50 %
+at every `r500_*` run): in every one of the 12 L2 attempts, 100 % of
+`unsent>0` samples fall in a short connection-start burst — `t∈[0,1.5]s`
+for the 500 ms-RTT runs (the slow-start ramp, visibly slowed by the
+500 ms RTT), `t∈[0,0.14]s` for the 50 ms-RTT runs — and zero such samples
+occur at or after `t=3s` in any of the 12. Once `[3,60)` is applied,
+`mech_unsent_pending=0.000%` everywhere, at every stratum this entire
+pilot measured (L0/50, L1/50, L2/50, L2/500) — a uniform null result,
+not a near-miss. This is not necessarily a contradiction of the older
+`unsent_nonempty_count` finding (R6, `11` Resolved): that metric counts
+any sample with `unsent>0` regardless of `snd_buf`, while
+`mech_unsent_pending` requires `snd_buf<=0` (buffer full) *and*
+`unsent>0` — a strictly narrower condition that a brief, buffer-not-full
+excursion would never satisfy. The two metrics are not nested in a way
+that makes one checkable against the other without re-deriving
+`unsent_nonempty_count` from this pilot's own traces, which was not done
+here. Recorded as an open discrepancy for whoever next reconciles the
+G3c sweep's framing with this pilot's, not resolved.
+
+**Within-run window-sensitivity spot-check** (predeclared `[3,30)`/
+`[30,60)`/`[3,60)`, not independent runs): `pilot20_L2_r50_4` —
+4.593/4.467/4.526 % — stable. `pilot20_L2_r500_4` — 0.370/0.000/0.175 % —
+*not* stable in absolute terms, but this is a ~5-sample count over 1500
+post-split observations; at this base rate a 0-vs-nonzero half-run split
+is ordinary count noise on a rare event, not evidence of a within-run
+regime change. Flagged as a specific limitation of the L2/500 ms
+stratum's precision (already visible in its own small `n` and discrete
+counts), not generalized to the other three strata, which did not show
+this.
+
+## Full-pilot summary (24/24 attempts, all four strata)
+
+| Stratum | n | `app_limited` mean % | SD (pp) | range % |
+|---|---|---|---|---|
+| L0, RTT=50 ms | 6 | 3.310 | 0.262 | 2.982–3.754 |
+| L1, RTT=50 ms | 6 | 1.137 | 0.274 | 0.746–1.544 |
+| L2, RTT=50 ms | 6 | 3.989 | 0.425 | 3.474–4.526 |
+| L2, RTT=500 ms | 6 | 0.316 | 0.086 | 0.175–0.421 |
+
+`mech_unsent_pending = 0.000 %` at every stratum, post-discard (see null
+result above). N8 `VALID` on all 24 attempts — zero collapses, zero
+host-contention signatures (every `hostmon` capture stayed at normal
+load throughout every window).
+
+**Repetitions candidate at the actual Phase-1-candidate settings**
+(20 ms interval, 60 s duration — not extrapolated from the earlier
+100 ms-interval data): `h(n) = t_(0.975,n-1)*s/sqrt(n)`, target ≤2 pp:
+
+| Stratum | s (pp) | Smallest n meeting 2 pp |
+|---|---|---|
+| L0/50 ms | 0.262 | 3 (h(3)=0.651) — but see L0's own table above: pilot used n=6 |
+| L1/50 ms | 0.274 | 3 (h(3)=0.682) |
+| L2/50 ms | 0.425 | 3 (h(3)=1.058) |
+| L2/500 ms | 0.086 | 2 (h(2)=0.773) |
+
+Largest across the four tested strata: **n=3** for `mech_app_limited`
+precision at these specific settings — smaller than the n=6 figure
+derived from the 100 ms-interval archive. Both analyses independently
+identify a sampling-related explanation (more samples per run at 20 ms
+reduces within-run estimation noise, which propagates into a smaller
+apparent between-run SD) as a plausible driver of the difference, which
+this pilot does not and cannot resolve on its own (it would need a
+repeated-measurement design that varies interval while holding the
+run's true physical conditions fixed, which this pilot's design does
+not provide). **Not treated as a replacement candidate for `12`'s n=6**:
+reported alongside it, consistent with the task's "largest of the
+candidates actually represented" instruction applied *within* this
+pilot's four strata, not as a license to lower the cross-document
+figure. `mech_unsent_pending` still cannot be used for a repetitions
+calculation anywhere (uniform structural zero, all four strata).
+
+## What this pilot does and does not establish
+
+- **Covers**: L0/L1/L2 at RTT=50 ms, and L2 at RTT=500 ms, all at the
+  actual candidate `sampling_interval_ms=20`/`run_duration_s=60`
+  settings — real evidence at the real settings, not extrapolation, for
+  these four (config, RTT) cells only.
+- **Does not cover**: RTT=100/200 ms at any buffer level (plan explicitly
+  excluded them — not an oversight); L0/L1 at RTT=500 ms; L2 at
+  RTT=100/200 ms. The repetitions candidate above is bounded by the
+  four strata actually measured, exactly as `11` N18 and `12`'s
+  "Repetitions planning objective" section already cautioned it would
+  be before this pilot ran.
+- Does not change, freeze, or supersede `discard_interval_s=3` or
+  `sampling_interval_ms=20`'s existing SUPPORTED WITH QUALIFICATION
+  status in `12` — this pilot's own data is additional evidence *for*
+  `sampling_interval_ms=20` specifically (it worked, cleanly, at three
+  buffer levels and two RTTs) but a formal re-assessment of that
+  candidate's status is left to the coordinator's write-up in `12`, not
+  decided here.
+- Does not freeze `repetitions`. `12`'s candidate (n=6) and this
+  pilot's own internal candidate (n=3) are both reported; neither is
+  adopted as the formal count.

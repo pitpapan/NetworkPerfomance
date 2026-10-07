@@ -960,8 +960,8 @@ written.
 |---|---|---|
 | `run_duration_s = 60` | **INSUFFICIENT** | The only leg of the original reasoning that pinned down a *specific* number — "a 2–4 s collapse is diluted by averaging within 60 s" — is false (collapses are 20–324 s; nothing this length is diluted by averaging, only gated out). Surviving legs (transient <2 s; sample count at 20 ms) support "long enough," not "60 specifically." Per the task's own instruction, not reusing the disproven rationale and not proposing a replacement number — the gap is reported, not patched. |
 | `discard_interval_s = 3` | **SUPPORTED WITH QUALIFICATION** | Defensible for its narrow, audited-correct purpose (excludes the <2 s startup transient; not built on the 2–4 s figure). The separate, previously implicit assumption that discard never masks a real collapse is contradicted by one archived case (`g4_L0_r200_t100`, stall begins at the first kept interval) — but that run is still caught by N8 regardless, so this is a logical property of a `[0, D)` window colliding with an early stall, not an observed detection failure. Document the interaction; do not widen the window to chase it (would trade transient-exclusion margin for no proven benefit). |
-| `sampling_interval_ms = 20` | **SUPPORTED WITH QUALIFICATION** (unchanged by this session) | 20 ms has only ever been run at L0/50 ms (5 runs, `g3b_*_full20`) — never at L2 or any other RTT. The claim elsewhere that 20 ms showed "zero drift... including L2" has no archive support. |
-| `repetitions = 8` | **INSUFFICIENT for the full matrix; evidence-limited candidate n=6 for L0 only** | See "Repetitions planning objective" section below (2026-10-07) for the precision objective, per-stratum calculation, and the L1/L2/20ms gap this candidate does not cover. Superseded in detail by that section; this row kept only as an index entry. |
+| `sampling_interval_ms = 20` | **SUPPORTED WITH QUALIFICATION** (partially strengthened 2026-10-07 — see the "Repetitions planning objective" section's update box below) | At the time this row was written, 20 ms had only ever run at L0/50 ms (5 runs, `g3b_*_full20`) — never at L2 or any other RTT. The 2026-10-07 pilot (`13_pilot_20ms.md`) ran it cleanly at L0/L1/L2/50 ms and L2/500 ms (24 attempts, no timeout, no N8 flag, no trace overflow) — direct support at 4 cells, still none at RTT=100/200 ms. The claim elsewhere that 20 ms showed "zero drift... including L2" at the OLD 5-run basis still has no archive support from that basis; it now has separate, new, direct L2 support from the pilot instead. |
+| `repetitions = 8` | **INSUFFICIENT for the full matrix; evidence-limited candidates n=6 (100ms-interval archive, L0 only) and n=3 (2026-10-07 pilot, 20ms-interval, 4 cells)** | See "Repetitions planning objective" section below (2026-10-07) and its update box for the precision objective, both candidates' derivations, and the RTT=100/200ms + L0/L1-at-500ms gap neither covers. Superseded in detail by that section; this row kept only as an index entry. |
 | `snd_buf_low_threshold` retirement | **SUPPORTED, implementation incomplete** | The G5 degeneracy finding itself is solid and re-confirmed multiple times this session. But `manifest.yaml`'s `aggregate_statistics_per_cell`/`per_run_record_fields` still list only the legacy `snd_buf_low_fraction`/`instr_snd_buf_low_count` — no `mech_*` field appears anywhere in the manifest's formal schema (confirmed by reading it), even though `collect_run_meta.sh`'s generic `instr_fields` blob already captures the raw values per run. The retirement has evidentiary support but was never actually written into the manifest's analysis schema. |
 
 ### Bottom line
@@ -1109,6 +1109,31 @@ tested stratum, from existing evidence.
 Keep `discard_interval_s=3` and `sampling_interval_ms=20` at their
 previously recorded SUPPORTED WITH QUALIFICATION status (above, this
 file) — this section does not change either, and does not freeze them.
+
+> **UPDATE (2026-10-07), appended not rewritten — the proposal and status
+> above are preserved as originally written:** the bounded supplementary
+> pilot immediately below was executed in full (`13_pilot_20ms.md`,
+> 24/24 attempts, after resolving `11` B5). It covers L0/L1/L2 at
+> RTT=50 ms and L2 at RTT=500 ms, at the real `sampling_interval_ms=20`/
+> `run_duration_s=60` settings. Findings: (1) `sampling_interval_ms=20`
+> ran cleanly at all three buffer levels and both tested RTTs — no
+> timeout, no N8 flag, no trace overflow across 24 attempts — additional
+> direct support for its SUPPORTED WITH QUALIFICATION status, though the
+> qualification itself (untested at L2/other-RTT before this pilot) is
+> only now partially lifted, not fully, since RTT=100/200 ms remain
+> untested at any buffer level; (2) a uniform `mech_unsent_pending=0.000%`
+> null result at every one of the 4 tested strata once the 3 s discard is
+> applied — including L2/500 ms, which `07`/`08`'s older sweep led this
+> section to expect would show it *largest* — flagged as an open
+> discrepancy with that older finding (see `13` for the metric-definition
+> distinction that may or may not explain it); (3) an internally
+> consistent repetitions candidate of **n=3** from this pilot's own
+> `mech_app_limited` data at the real settings — smaller than this
+> section's `n=6` (itself derived from the 100 ms-interval archive). The
+> pilot's `n=3` is reported *alongside* this section's `n=6`, not as its
+> replacement — both remain unfrozen candidates, and `repetitions`
+> remains undecided. See `13_pilot_20ms.md` for full detail, per-attempt
+> data, and the within-run window-sensitivity spot-checks.
 
 ### Single next evidence task (identified, not executed)
 
