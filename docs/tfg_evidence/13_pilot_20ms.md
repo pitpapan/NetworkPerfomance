@@ -625,3 +625,96 @@ assertion alone): `unsent_nonempty_count`/`mech_unsent_pending` equality
 for both cited runs; the host-CSV dip values and the exact `hostmon.csv`
 rows for both flagged L1 attempts; `pilot20_L1_r50_4`'s sample-count
 deficit and `gap_max_ticks`.
+
+## Full 24-attempt window-sensitivity recheck (2026-10-08)
+
+The `[3,30)`/`[30,60)` sensitivity comparison had only been spot-checked
+on 3 of 24 attempts. Extended to all 24 (`experiment-engineer`,
+coordinator-spot-verified on `pilot20_L1_r50_3`'s `[30,60)` cell,
+reproduced exactly: n=1465, 0.478%). These are overlapping windows of
+the SAME run, not independent replications — not counted toward any n.
+
+| run_id | `[3,30)` % | `[30,60)` % | `[3,60)` % |
+|---|---|---|---|
+| `pilot20_L0_r50_1` | 3.185 | 3.267 | 3.228 |
+| `pilot20_L0_r50_2` | 3.037 | 3.600 | 3.333 |
+| `pilot20_L0_r50_3` | 3.704 | 3.800 | 3.754 |
+| `pilot20_L0_r50_4` | 2.074 | 3.800 | 2.982 |
+| `pilot20_L0_r50_5` | 3.111 | 3.200 | 3.158 |
+| `pilot20_L0_r50_6` | 3.333 | 3.467 | 3.404 |
+| `pilot20_L1_r50_1` | 1.704 | 1.400 | 1.544 |
+| `pilot20_L1_r50_2` | 1.259 | 0.867 | 1.053 |
+| `pilot20_L1_r50_3` | 1.037 | 0.478 (n=1465) | 0.746 (n=2815) |
+| `pilot20_L1_r50_4` | 1.634 (n=1346) | 0.938 (n=1493) | 1.268 (n=2839) |
+| `pilot20_L1_r50_5` | 1.259 | 1.201 (n=1499) | 1.229 (n=2849) |
+| `pilot20_L1_r50_6` | 1.259 | 0.733 | 0.982 |
+| `pilot20_L2_r500_1` | 0.519 | 0.267 | 0.386 |
+| `pilot20_L2_r500_2` | 0.444 | 0.200 | 0.316 |
+| `pilot20_L2_r500_3` | 0.593 | 0.267 | 0.421 |
+| `pilot20_L2_r500_4` | 0.370 | 0.000 | 0.175 |
+| `pilot20_L2_r500_5` | 0.222 | 0.333 | 0.281 |
+| `pilot20_L2_r500_6` | 0.370 | 0.267 | 0.316 |
+| `pilot20_L2_r50_1` | 4.074 | 3.469 (n=1499) | 3.756 (n=2849) |
+| `pilot20_L2_r50_2` | 3.852 | 3.867 | 3.860 |
+| `pilot20_L2_r50_3` | 4.370 | 2.667 | 3.474 |
+| `pilot20_L2_r50_4` | 4.593 | 4.467 | 4.526 |
+| `pilot20_L2_r50_5` | 3.111 | 4.467 | 3.825 |
+| `pilot20_L2_r50_6` | 4.074 | 4.867 | 4.491 |
+
+`n[30,60)` is below the nominal 1500 only for `pilot20_L1_r50_3/4` and
+`pilot20_L2_r50_1` — the same sample-count deficits already on record
+above (gap/drop effects on `L1_r50_3/4`; a similar small deficit on
+`L2_r50_1`), not a new finding. No qualitative regime change is visible
+between half-windows at any of the 24 attempts beyond ordinary
+run-to-run noise. No new exclusion gate is proposed from this.
+
+**`pilot20_L0_r50_1`'s overrun — command-level cause, not just outcome
+consistency.** Quoted directly from the attempt's own `.execution.log`:
+
+> "ROOT CAUSE: this is a control-loop timing defect in my own execution,
+> not a platform/instrumentation anomaly. I sent `iperf -c` at 20:40:13Z
+> intending to wait exactly 60s before stopping it, but the actual wait
+> procedure (a background `sleep 62` task plus several intervening tool
+> round-trips while polling for its completion) consumed additional
+> wall-clock time before I sent `iperf --stop` at 20:41:41Z -- 88 seconds
+> after the client started, not 60."
+
+The log attributes the overrun to polling-loop/tool-round-trip overhead
+layered on top of an intended ~60s wait, not to a specific wrong sleep
+duration — it does not quantify how much of the extra ~28s came from
+which source, and none is inferred beyond that here. Independently
+re-confirmed that the stratum table uses the correct, predeclared `[3,60)`
+value for this attempt (3.228%) and not the whole-run accumulator's
+value (`mech_app_limited`/`sample_count` = 137/4395 = 3.117%, a different
+number) — the existing record did not substitute the wrong figure.
+
+**L1 anomalous runs' eligibility**, checked against this plan's own
+completeness/identity requirements, independent of N8's verdict:
+both `pilot20_L1_r50_3` and `pilot20_L1_r50_4` have zero stale samples,
+a fully-written trace matching `sample_count` exactly, a `run_id` in the
+JSON matching the requested run_id exactly, and a single unambiguous
+host connection with a port/timestamp/run_id correspondence leaving no
+positional-index ambiguity. `pilot20_L1_r50_4`'s small sample deficit
+(2989 vs. 2994 expected, 0.17%) sits under `GATE_DRIFT_FRAC=0.5%`, and
+its `gap_max_ticks=4` sits at (not over) `GATE_GAP_FACTOR=2`'s threshold
+— neither would fire the timing-drift gate. Both runs are eligible by
+the plan's own completeness/identity bar; the host-scheduling anomaly is
+recorded as coincident with the throughput dip (per `hostmon.csv`), not
+upgraded to an assigned unique cause beyond what that correlation
+supports.
+
+## N8/scientific-validity implementation (2026-10-08)
+
+Implemented in `collect_run_meta.sh` (only tracked file changed) per
+`11_open_problems.md`'s N8 entry (RESOLVED) — see that entry and the
+script's own header comment for the full design. Independently verified
+by the coordinator against **real** archived data, not just the
+implementing agent's synthetic fixtures: running the updated script
+against `b1_capture/b1_load_4.json` + `host_load.csv` (the actual
+"run median is zero" case) gives `valid=yes`, `validity_class=VALID_ANOMALOUS`,
+`n8_verdict=INSUFFICIENT`, `n8_reason="run median is zero"`,
+`invalid_reason` empty, `anomaly_reason` populated — confirming the
+intended behavior change on a real, not synthetic, run. `interval_gate.py
+selftest` re-run afterward (that file was not modified) reproduces
+exactly its prior output, including the two known, intentional
+`INSUFFICIENT`-vs-`INVALID` FAILs on B1 LOAD 4/5 — nothing regressed.

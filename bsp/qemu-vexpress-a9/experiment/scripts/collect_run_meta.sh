@@ -21,6 +21,60 @@
 # attempt is fully recorded, allocate a NEW run_id to try again" rather than
 # "patch this one in place."
 #
+# VALIDITY SEMANTICS CHANGE (2026-10-08, implements the N8/scientific-validity
+# distinction drafted and PASS-WITH-QUALIFICATION-audited in
+# docs/tfg_evidence/11_open_problems.md N8, and corrected in
+# docs/tfg_evidence/13_pilot_20ms.md's audit-corrections section):
+#
+# PREVIOUSLY, any N8 (experiment/scripts/interval_gate.py) flag at all --
+# INVALID (collapse pattern) or INSUFFICIENT (any reason) -- unconditionally
+# forced this script's `valid` column to `no`, exactly like every other gate.
+# This conflated "a specific, pre-specified protocol/measurement failure
+# occurred" with "the detector flagged an unusual-but-real throughput
+# pattern on an otherwise complete, correctly-identified run."
+#
+# NOW, a new `VALIDITY_CLASS` is computed, with three values:
+#   - VALID_NORMAL:    no gate of any kind fired.
+#   - VALID_ANOMALOUS: every independently-justified gate passed (wrong
+#                       config, wrong netem delay, qdisc drops, stale pcb,
+#                       timing drift, zero samples, run_id mismatch, runtime/
+#                       socket error, missing required file/field) AND the
+#                       only thing that fired is N8 reporting INVALID (a
+#                       throughput-collapse *pattern*, which may be real and
+#                       is retained, not excluded) or N8 reporting
+#                       INSUFFICIENT specifically because "run median is
+#                       zero" (a real, complete, degenerate observation --
+#                       not missing data).
+#   - INVALID:         any independently-justified gate above fires, OR N8
+#                       reports INSUFFICIENT for any OTHER reason: "fewer
+#                       than N intervals after the discard window" (a
+#                       genuine data-completeness failure) or "no connection
+#                       at index N" (a connection-identity failure) each
+#                       route to INVALID with their own specific named
+#                       reason, not lumped with the median-zero case.
+#
+# The pre-existing `valid` column is RETAINED as a compatibility field,
+# redefined precisely as: `yes` when VALIDITY_CLASS is VALID_NORMAL or
+# VALID_ANOMALOUS; `no` when VALIDITY_CLASS is INVALID. This is a REAL
+# BEHAVIOR CHANGE from before (previously ANY N8 flag forced valid=no; now
+# only the data-completeness/connection-identity N8 sub-cases do) -- flagged
+# here prominently because, although there are currently zero real
+# consumers of results.csv (it has never been produced by a real formal
+# run), a future reader must not assume `valid` means what it meant before
+# this change.
+#
+# Three new CSV columns record the underlying N8 diagnostic independent of
+# the classification it produced: `n8_reason` (the full N8 reason text,
+# populated whenever N8 ran, regardless of verdict/classification),
+# `validity_class` (the three-way value above), and `anomaly_reason` (the
+# N8-anomaly text specifically when VALIDITY_CLASS=VALID_ANOMALOUS, empty
+# otherwise). `invalid_reason` keeps its prior meaning unchanged: only
+# INVALID-causing reasons (it is still fed exclusively by `add_reason`).
+#
+# No other gate's behavior changes. GATE_DRIFT_FRAC/GATE_GAP_FACTOR/
+# N8_DISCARD/N8_BIN/N8_BAND/N8_ALLOW are untouched -- this is a
+# classification change, not a detector-sensitivity change.
+#
 # Usage:
 #   collect_run_meta.sh --run-id ID --config L0|L1|L2|STOCK|PINNED \
 #       --rtt-target MS --rep N --bytes B --duration S --ubuntu-mbps M \
@@ -52,11 +106,21 @@
 # same read also verifies the configured netem delay (manifest.yaml gate:
 # "wrong netem delay was active").
 #
-# All numeric gate parameters below are PROPOSALS carried over from
-# docs/tfg_evidence/12_phase0_measurements.md's fenced-slot table. None is
-# written to manifest.yaml; they exist here so B2 (pipeline correctness) can be
-# tested without waiting on that decision. Change them by editing this file,
-# not by inventing a value under pressure to make a run pass.
+# Numeric gate parameters below, status as of 2026-10-08 (manifest.yaml
+# tbd_from_pilot is now frozen -- see that file):
+#   GATE_DRIFT_FRAC, GATE_GAP_FACTOR: still PROPOSALS. Never part of the
+#     tbd_from_pilot bundle; not re-examined by the 2026-10-08 freeze task.
+#   N8_DISCARD: FROZEN -- this IS manifest.yaml's tbd_from_pilot.discard_interval_s
+#     (=3). If that value is ever re-frozen, update this default to match;
+#     do not let the two drift apart silently.
+#   N8_BIN, N8_BAND, N8_ALLOW: documented diagnostic settings (not frozen
+#     protocol parameters -- never part of the tbd_from_pilot bundle,
+#     explicitly not re-tuned by the 2026-10-08 task, which authorized a
+#     classification change, not a detector-sensitivity change). See
+#     docs/tfg_evidence/11_open_problems.md N8/N16 for their evidentiary
+#     basis and known margin limits.
+# Change any of these by editing this file, not by inventing a value under
+# pressure to make a run pass.
 set -euo pipefail
 
 BSP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -66,13 +130,13 @@ RESULTS_DIR="$BSP_DIR/experiment/results"
 MATRIX_CSV="$BSP_DIR/experiment/run_matrix.csv"
 mkdir -p "$RESULTS_DIR"
 
-# ---- PROPOSAL gate parameters (see header) ---------------------------------
+# ---- gate parameters (see header for FROZEN/PROPOSAL/diagnostic status) ---
 GATE_DRIFT_FRAC="${GATE_DRIFT_FRAC:-0.005}"   # PROPOSAL: >0.5% missing samples -> INVALID (12: drift tolerance row)
 GATE_GAP_FACTOR="${GATE_GAP_FACTOR:-2}"       # PROPOSAL: gap_max_ticks > this x nominal -> INVALID
-N8_DISCARD="${N8_DISCARD:-3}"                 # PROPOSAL, matches interval_gate.py default
-N8_BIN="${N8_BIN:-5}"
-N8_BAND="${N8_BAND:-0.80}"
-N8_ALLOW="${N8_ALLOW:-0}"
+N8_DISCARD="${N8_DISCARD:-3}"                 # FROZEN 2026-10-08 == tbd_from_pilot.discard_interval_s
+N8_BIN="${N8_BIN:-5}"                         # documented diagnostic setting, not frozen
+N8_BAND="${N8_BAND:-0.80}"                    # documented diagnostic setting, not frozen
+N8_ALLOW="${N8_ALLOW:-0}"                     # documented diagnostic setting, not frozen
 
 RUN_ID=""; CONFIG=""; SET=""; RTT_TARGET=""; REP=""; BYTES=""; DURATION=""
 UBUNTU_MBPS=""; MEASURED_RTT=""; RTT_MBPS=""; INSTR_JSON=""; HOST_CSV=""
@@ -276,7 +340,14 @@ else
 fi
 
 # ---- host-side per-second CSV: throughput fallback + N8 gate --------------
-N8_VERDICT=""; N8_REASON=""
+# N8_ANOMALY_REASON (distinct from REASON/add_reason): set only for the two
+# N8 outcomes that are an anomalous-but-complete OBSERVATION rather than a
+# protocol/measurement failure -- INVALID (collapse pattern) and
+# INSUFFICIENT/"run median is zero" (degenerate but complete). These do NOT
+# call add_reason and so do NOT force VALID=no. Every OTHER N8 outcome that
+# is not plain VALID is a genuine protocol/measurement failure and still
+# calls add_reason with its own specific, named reason (see header comment).
+N8_VERDICT=""; N8_REASON=""; N8_ANOMALY_REASON=""
 if [ -n "$HOST_CSV" ]; then
   if [ ! -f "$HOST_CSV" ]; then
     add_reason "required output/metadata field missing: --host-csv file not found: $HOST_CSV"
@@ -287,8 +358,35 @@ if [ -n "$HOST_CSV" ]; then
       N8_VERDICT="$(echo "$N8_OUT" | awk '{print $1; exit}')"
       N8_REASON="$(echo "$N8_OUT" | cut -d' ' -f2-)"
     case "$N8_VERDICT" in
-      INVALID)      add_reason "N8 per-interval gate: $N8_REASON" ;;
-      INSUFFICIENT) add_reason "N8 per-interval gate could not evaluate: $N8_REASON" ;;
+      INVALID)
+        # A throughput-collapse pattern -- real and retained, not a gate
+        # failure, per 13_pilot_20ms.md's "N8 kept separate from pilot
+        # classification" policy and 11's N8 entry.
+        N8_ANOMALY_REASON="N8 per-interval gate (collapse pattern, retained not excluded): $N8_REASON"
+        ;;
+      INSUFFICIENT)
+        case "$N8_REASON" in
+          *"run median is zero"*)
+            # Real, complete, degenerate observation -- not missing data.
+            N8_ANOMALY_REASON="N8 per-interval gate (insufficient: run median is zero -- complete degenerate observation, retained not excluded): $N8_REASON"
+            ;;
+          *"no connection at index"*)
+            # Connection-identity failure (main()'s own out-of-range
+            # --host-conn-index case) -- a genuine protocol/measurement
+            # failure, not an anomalous-but-complete observation.
+            add_reason "N8 gate: connection index out of range: $N8_REASON"
+            ;;
+          *"fewer than"*"intervals after"*)
+            # Genuine data-completeness failure (gate()'s own 2-bin minimum).
+            add_reason "N8 gate: insufficient post-discard coverage: $N8_REASON"
+            ;;
+          *)
+            # Unrecognized INSUFFICIENT reason: do not silently classify an
+            # unknown failure mode as anomalous-but-complete.
+            add_reason "N8 per-interval gate could not evaluate (unrecognized INSUFFICIENT reason): $N8_REASON"
+            ;;
+        esac
+        ;;
       VALID) : ;;
       *) add_reason "N8 per-interval gate: unexpected output: $N8_OUT" ;;
     esac
@@ -317,6 +415,24 @@ BACKLOG="$(echo "$QSTATS" | grep -oP 'backlog \K[0-9a-zA-Z]+' | head -1 || echo 
 [ "${DROPPED:-0}" = "0" ]    || add_reason "qdisc dropped=$DROPPED due to netem queue exhaustion"
 [ "${OVERLIMITS:-0}" = "0" ] || add_reason "qdisc overlimits=$OVERLIMITS"
 if [ "$ERRORS" != "none" ] && [ -n "$ERRORS" ]; then add_reason "iperf connection terminated abnormally: $ERRORS"; fi
+
+# ---- VALIDITY_CLASS: computed last, after every gate above has run --------
+# See the header comment's "VALIDITY SEMANTICS CHANGE" section. `VALID`
+# (hence the compatibility `valid` column) is "no" if and only if some
+# independently-justified gate called add_reason -- that already includes
+# N8's two genuine-failure INSUFFICIENT sub-cases, since those call
+# add_reason themselves above. N8_ANOMALY_REASON is non-empty only for N8's
+# two anomalous-but-complete outcomes, which never call add_reason.
+if [ "$VALID" = "no" ]; then
+  VALIDITY_CLASS="INVALID"
+  ANOMALY_REASON=""
+elif [ -n "$N8_ANOMALY_REASON" ]; then
+  VALIDITY_CLASS="VALID_ANOMALOUS"
+  ANOMALY_REASON="$N8_ANOMALY_REASON"
+else
+  VALIDITY_CLASS="VALID_NORMAL"
+  ANOMALY_REASON=""
+fi
 
 # ---- throughput fallback from host CSV if not hand-given -------------------
 if [ -z "$BYTES$DURATION$UBUNTU_MBPS" ] && [ -n "$HOST_CSV" ] && [ -f "$HOST_CSV" ]; then
@@ -354,9 +470,9 @@ if [ ! -f "$RESULTS_CSV" ]; then
     printf 'run_id,cell_id,set,config_id,tcp_snd_buf,tcp_snd_queuelen,memp_num_tcp_seg,tcp_wnd,'
     printf 'configured_delay_ms,measured_rtt_ms,repetition_number,'
     printf 'total_bytes,duration_seconds,ubuntu_avg_mbps,rtthread_reported_mbps,'
-    printf 'n8_verdict,'
+    printf 'n8_verdict,n8_reason,'
     printf 'qdisc_packets,qdisc_dropped,qdisc_overlimits,qdisc_backlog,'
-    printf 'runtime_or_socket_errors,valid,invalid_reason,notes,instr_fields\n'
+    printf 'runtime_or_socket_errors,valid,validity_class,invalid_reason,anomaly_reason,notes,instr_fields\n'
   } > "$RESULTS_CSV"
 fi
 
@@ -373,15 +489,15 @@ fi
 # CSV-escape fields that may contain ',' or ';' (REASON, NOTES, INSTR_BLOB)
 csvq() { printf '"%s"' "$(echo -n "$1" | sed 's/"/""/g')"; }
 
-printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' \
+printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' \
   "$RUN_ID" "$CELL_ID" "$SET" "$CONFIG" "$SND_BUF" "$QUEUELEN" "$SEG" "$TCP_WND" \
   "$RTT_TARGET" "$MEASURED_RTT" "$REP" \
   "$BYTES" "$DURATION" "$UBUNTU_MBPS" "$RTT_MBPS" \
-  "${N8_VERDICT:-not_run}" \
+  "${N8_VERDICT:-not_run}" "$(csvq "$N8_REASON")" \
   "$PACKETS" "$DROPPED" "$OVERLIMITS" "$BACKLOG" \
-  "$ERRORS" "$VALID" "$(csvq "$REASON")" "$(csvq "$NOTES")" "$(csvq "$INSTR_BLOB")" >> "$RESULTS_CSV"
+  "$ERRORS" "$VALID" "$VALIDITY_CLASS" "$(csvq "$REASON")" "$(csvq "$ANOMALY_REASON")" "$(csvq "$NOTES")" "$(csvq "$INSTR_BLOB")" >> "$RESULTS_CSV"
 
-echo "== recorded $RUN_ID ($CELL_ID, $CONFIG, rep $REP, ${RTT_TARGET}ms) -> valid=$VALID ${REASON:+($REASON)} =="
+echo "== recorded $RUN_ID ($CELL_ID, $CONFIG, rep $REP, ${RTT_TARGET}ms) -> valid=$VALID validity_class=$VALIDITY_CLASS ${REASON:+($REASON)} ${ANOMALY_REASON:+[anomaly: $ANOMALY_REASON]} =="
 echo "-- appended to $RESULTS_CSV"
 
 # ---- COMPLETE marker: only after the row is written AND cited artifacts ---

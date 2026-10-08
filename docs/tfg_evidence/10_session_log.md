@@ -838,3 +838,96 @@ Still unknown after this session:
     B1/R13's platform-stall cause or are unrelated minor contention —
     not investigated (out of this task's scope). Everything else
     already open in `11`/`12`/`13`.
+
+---
+
+### 2026-10-08 — Protocol freeze: repetitions/duration/sampling FROZEN, discard PARTIALLY FROZEN; N8 implemented
+Commits: (pending, this entry)
+Done:
+  - Under explicit user authorization superseding the standing no-freeze
+    restriction for this bounded task, froze `repetitions=6`,
+    `run_duration_s=60`, `sampling_interval_ms=20`,
+    `snd_buf_low_threshold=RETIRED` in `experiment/manifest.yaml`/
+    `run_matrix.csv` (`reps=6` in all 19 cells); `discard_interval_s=3`
+    PARTIALLY FROZEN (fully wired for N8, not yet auto-applied to primary
+    `mech_*` evidence — see below). Kept `repetitions=6` per explicit
+    instruction rather than reducing it to the pilot's own smaller
+    per-stratum estimates.
+  - Delegated to `experiment-engineer`: (a) extended the `[3,30)/[30,60)/
+    [3,60)` sensitivity check from 3 to all 24 pilot attempts; (b)
+    investigated `pilot20_L0_r50_1`'s overrun from its own command log,
+    not just outcome consistency; (c) checked both anomalous L1 runs'
+    eligibility against the plan's completeness/identity bar,
+    independent of N8; (d) implemented the N8/scientific-validity
+    distinction (`VALIDITY_CLASS`: `VALID_NORMAL`/`VALID_ANOMALOUS`/
+    `INVALID`) in `collect_run_meta.sh`, retaining `valid` as a
+    redefined compatibility field; (e) wrote and ran test coverage.
+  - Independently re-verified before accepting: the agent's `[30,60)`
+    figure for `pilot20_L1_r50_3` (reproduced exactly: n=1465, 0.478%);
+    the exact diff of `collect_run_meta.sh`, read line by line, not
+    summarized; the median-zero classification against **real** archived
+    data (`b1_capture/b1_load_4.json`), not just the agent's synthetic
+    fixtures — confirmed `valid=yes`, `validity_class=VALID_ANOMALOUS`.
+  - Wrote and independently verified a new committed script,
+    `experiment/scripts/compute_discard_windowed_mechfrac.py`, closing
+    the gap (found by audit, below) that no reproducible way existed to
+    apply the frozen 3s discard to the primary sender-state evidence —
+    reproduces `13`'s already-published `pilot20_L0_r50_1` figure
+    (3.228%) exactly.
+  - Sent the complete bundle (manifest freeze, implementation diff,
+    tests, 24-attempt recheck) to `evidence-auditor` (Opus) per the
+    task's required review. Result: PASS WITH QUALIFICATION.
+  - **Caught and corrected three factual errors the audit found**,
+    independently re-verified before correcting (not taken on the
+    audit's word):
+    1. My own N16 claim "all 24 attempts give a safe 3-element trailing
+       bin" was wrong — checked all 24 directly from their host CSVs:
+       **18 three-element, 5 two-element (all at 50ms, safe for a
+       different reason — small quantization step, not tail length), 1
+       with no trailing bin.** Confirmed by recomputing the exact
+       percentage for one 2-element case myself (`pilot20_L2_r50_1`:
+       100.12% of median, not the ~80% N16 originally warned about).
+    2. The manifest's `run_duration_s` comment mixed a post-discard
+       sample-count minimum with an unrelated whole-run maximum
+       ("2815-3037") — corrected to the real post-discard range
+       (2815-2850).
+    3. `00_project_state.md` cited "RTT=50/200ms" for the pilot's
+       coverage; the pilot actually covered RTT=50/500ms. Corrected.
+  - Fixed the one real implementation gap the audit found: stale
+    "PROPOSAL -- manifest slot stays null" comments in both
+    `collect_run_meta.sh` and `interval_gate.py` for `N8_DISCARD`/
+    `DEFAULT_DISCARD` (now correctly say FROZEN, tied explicitly to
+    `discard_interval_s`) — and, separately, corrected my own earlier
+    overclaim that N8's `bin`/`band`/`allow` were "FROZEN": they were
+    never part of this task's authorized 5-value bundle and are now
+    labelled "documented diagnostic settings, not frozen" instead.
+Found (not sought):
+  - The audit's sign-test finding: a real, small (<=0.45pp) per-stratum
+    directional shift between `[3,30)` and `[30,60)` across all 24
+    attempts (L0 higher in the second half 6/6; L1 lower 6/6; L2/500
+    lower 5/6) — far below the 2pp objective, not a sufficiency threat,
+    but means "stable sub-windows" was an overclaim; corrected to name
+    the shift explicitly.
+Failed / blocked: none — this is the intended, authorized outcome
+  (PARTIALLY FROZEN for one of five candidates, with the exact
+  unresolved item named, not a failure to decide).
+Decisions taken:
+  - Did not implement full automatic wiring of the discard-windowing
+    script into `collect_run_meta.sh` itself this task — wrote and
+    verified the standalone script, specified its required role in
+    `manifest.yaml`, and named the remaining wiring as an explicit
+    pre-Phase-1 implementation task rather than silently calling
+    `discard_interval_s` fully frozen when it isn't yet for primary
+    evidence.
+  - Did not re-freeze N8's `bin`/`band`/`allow` parameters — outside the
+    explicitly authorized bundle, and the task explicitly said not to
+    tune detector sensitivity this task.
+  - Applied `reps=6` uniformly across main/platform/pinctl in
+    `run_matrix.csv` — no evidence distinguishes them, and G6 (pinctl)
+    already used this count historically.
+Still unknown after this session:
+  - Whether `collect_run_meta.sh`'s auto-wiring of the discard-windowing
+    script will surface any further surprise once implemented. Whether
+    RTT=100/200ms or RTT=0/STOCK at 20ms would change any frozen value —
+    explicitly untested, explicitly not claimed covered. Everything else
+    already open in `11`/`12`/`13`.

@@ -58,20 +58,134 @@ coupled_not_operative:
     returning ERR_MEM, not by TCP_SNDLOWAT, and netutils-iperf never calls
     select(). No fixed-TCP_SNDLOWAT arm is required."
 
-# Proposals with measurements, defensible ranges and reasoning are in
-# docs/tfg_evidence/12_phase0_measurements.md ("Proposals for the fenced
-# tbd_from_pilot slots"). They are PROPOSALS. Every value below stays null
-# until the user decides; null means undecided, not zero and not "pick
-# something sensible". Note also that four of these depend on how the
-# sporadic throughput collapses (11_open_problems.md item B1) are classified,
-# and that there is currently no validity gate that can even see them (N8).
+# FROZEN 2026-10-08. Full evidence, qualifications, and the independent
+# audit backing each value are in docs/tfg_evidence/12_phase0_measurements.md
+# ("Repetitions planning objective" section and its dated update boxes) and
+# docs/tfg_evidence/13_pilot_20ms.md (the 24-attempt supplementary pilot and
+# its audit corrections). This is a working-protocol freeze for executing
+# the formal matrix, not a claim that every value is uniquely optimal or
+# that every untested condition has been verified -- see each field's
+# comment for its specific, named qualification before relying on it
+# outside the conditions it was actually evidenced under.
 tbd_from_pilot:
-  repetitions: null            # from noisiest pilot cell -- measured to be the
-                               # 50 ms cell, not the 500 ms cell (11 item R11)
-  run_duration_s: null         # from transient characterization
-  discard_interval_s: null     # from transient characterization
-  sampling_interval_ms: null   # from perturbation pilot
-  snd_buf_low_threshold: null  # from observed distribution
+  repetitions: 6               # Not derived as a unique minimal n: set at or
+                               # above every per-stratum minimal-n found by
+                               # either dataset (100ms-interval archive:
+                               # n=6 at L0/50ms, the noisiest throughput
+                               # cell, R11; 20ms pilot, 13: per-stratum
+                               # minimal-n 2-4 for mech_app_limited across
+                               # L0/L1/L2@50ms + L2@500ms, sigma-bound <=4).
+                               # Matches this project's own established G6
+                               # per-cell replication count. Applies
+                               # uniformly to main/platform/pinctl sets --
+                               # no 20ms mech_* evidence exists for RTT=0
+                               # (platform) or STOCK (pinctl) specifically
+                               # to distinguish them, not "no evidence
+                               # could possibly distinguish them."
+                               # Objective: nominal 95% half-width <=2
+                               # percentage points per state per cell
+                               # (12). NOT established for
+                               # mech_unsent_pending at any stratum tested
+                               # (uniform OBSERVED ZERO post-discard, no
+                               # variance to measure, not proof of zero
+                               # uncertainty -- 13). Not tested at
+                               # RTT=100/200ms or at L0/L1/RTT=500ms --
+                               # visible gap, not represented as covered.
+  run_duration_s: 60           # Not derived from the disproven "2-4s
+                               # collapse dilution" rationale (12,
+                               # corrected 2026-10-07). Basis: the startup
+                               # transient clears by t<2s at every RTT/
+                               # buffer point characterized (09); 60s gives
+                               # ample POST-DISCARD sample count at 20ms
+                               # (2815-2850 samples/run, [3,60) window,
+                               # 13 -- corrected 2026-10-08; do not confuse
+                               # with whole-run sample_count, 2965-3039,
+                               # a different, unwindowed quantity) and was
+                               # exercised across 4 real cells. A real but
+                               # small (<=0.45pp) per-stratum directional
+                               # shift exists between [3,30) and [30,60)
+                               # (13's full 24-attempt recheck, audit
+                               # finding) -- far below the 2pp objective,
+                               # not a sufficiency concern, but "stable"
+                               # is not claimed without that qualification.
+                               # Not shown optimal or uniquely necessary --
+                               # sufficient and evidence-backed is the
+                               # claim, not optimality.
+  discard_interval_s: 3        # PARTIALLY FROZEN, see note below. Covers
+                               # the <2s startup transient at every tested
+                               # RTT/buffer point, and the pilot's own
+                               # connection-start burst (clears by t<=1.5s
+                               # at the slowest tested cell, L2/500ms --
+                               # 13). Known, documented interaction, not a
+                               # defect: a collapse starting AT t=3.0 (the
+                               # first kept interval, not "inside [0,3)")
+                               # is invisible to N8's discard/bin logic by
+                               # construction at that boundary; one
+                               # archived natural case (g4_L0_r200_t100)
+                               # is exactly this and is still caught by N8
+                               # on other grounds. FULLY WIRED for N8 (its
+                               # gate reads this value directly, audited).
+                               # NOT YET WIRED for the primary mech_*
+                               # evidence as of 2026-10-08: instr_dump's
+                               # whole-run accumulators cannot retroactively
+                               # exclude a startup window; the required
+                               # per-run windowing step is now specified
+                               # and implemented as a committed,
+                               # independently-verified script
+                               # (experiment/scripts/compute_discard_windowed_mechfrac.py,
+                               # reproduces 13's published pilot figures
+                               # exactly) but collect_run_meta.sh does not
+                               # yet invoke it automatically -- a named
+                               # implementation task before the first
+                               # formal run, not a reason to change the
+                               # value 3 itself.
+  sampling_interval_ms: 20     # Direct evidence at 4 cells (L0/L1/L2 @
+                               # 50ms, L2 @ 500ms -- 13_pilot_20ms.md,
+                               # 24/24 attempts): no timeout, no trace
+                               # overflow, resolves mech_app_limited with
+                               # useful per-run precision. NOT tested at
+                               # RTT=100/200ms at any buffer level --
+                               # recorded as an explicit, non-blocking
+                               # limitation (no specific mechanism has
+                               # been shown by which RTT would change a
+                               # fixed-rate sampler's ability to resolve
+                               # buffer-occupancy transitions), not as
+                               # verified everywhere. The original
+                               # unsent-resolution leg of this candidate's
+                               # rationale ("catches unsent reliably") is
+                               # undermined, not supported, once the 3s
+                               # discard is applied -- it only ever caught
+                               # the connection-start burst (12, corrected
+                               # 2026-10-07). The snd_buf-excursion
+                               # (mech_app_limited) resolution argument is
+                               # unaffected and is this field's real basis.
+  snd_buf_low_threshold: RETIRED  # Not a numeric threshold. G5
+                               # (12_phase0_measurements.md) showed the
+                               # legacy snd_buf-magnitude counter is
+                               # degenerate (point mass at/near zero at
+                               # L0; still uninformative, though less
+                               # extreme, at L2). Replaced by the
+                               # parameter-free mech_app_limited /
+                               # mech_unsent_pending / mech_ack_pending
+                               # classification -- see sender_state below
+                               # and aggregate_statistics_per_cell. Legacy
+                               # snd_buf_low_fraction / instr_snd_buf_low_count
+                               # kept for historical comparability only,
+                               # explicitly marked not analysed.
+
+# Invalid-run replacement policy (bounded, prospective -- not previously
+# written down explicitly, though validity_gates' own comment already
+# implied it). An INVALID run may be replaced by exactly ONE new attempt
+# under a NEW run_id (never silently rerun-and-overwrite the same
+# run_id). If that replacement is ALSO INVALID, stop and escalate to the
+# coordinator rather than attempting a third time -- unlimited rerunning
+# until a clean result or a desired conclusion appears is explicitly not
+# authorized. A VALID_ANOMALOUS run is not a candidate for replacement at
+# all: it is retained, not excluded, so there is nothing to replace.
+invalid_run_replacement_policy:
+  max_replacement_attempts_per_cell_repetition: 1
+  on_second_invalid: escalate_to_coordinator_do_not_auto_retry
+  rule: "never rerun under the same run_id; always allocate a new one"
 
 rejected_points:
   - value: 65536
@@ -97,8 +211,22 @@ run_ordering:
 
 validity_gates:
   # A run failing ANY of these must be recorded as INVALID with its reason,
-  # then replaced by a new repetition under a NEW run_id. Never silently
-  # rerun-and-overwrite.
+  # then replaced per invalid_run_replacement_policy (above) under a NEW
+  # run_id. Never silently rerun-and-overwrite.
+  #
+  # N8 (experiment/scripts/interval_gate.py, FROZEN parameters: discard=3
+  # bin=5 band=0.80 allow=0 -- matching tbd_from_pilot.discard_interval_s
+  # above) is deliberately NOT listed here as a bare validity gate. As of
+  # 2026-10-08 (11_open_problems.md N8; collect_run_meta.sh's
+  # VALIDITY_CLASS), N8 reporting a throughput-collapse pattern (INVALID)
+  # or a degenerate-but-complete run (INSUFFICIENT, "run median is zero")
+  # on an otherwise fully-compliant run produces VALID_ANOMALOUS, not
+  # INVALID -- the run is retained in primary analysis, flagged, not
+  # excluded. Only N8's two genuine data-completeness/connection-identity
+  # failure modes ("fewer than N intervals after discard", "no connection
+  # at index N") are protocol/measurement failures and route to INVALID
+  # via the "required output/metadata field missing" gate below, with
+  # their own specific named reason.
   - "qdisc dropped > 0 due to netem queue exhaustion"
   - "unexpected packet loss occurs"
   - "overlimit/drop behavior indicates unintended shaping"
@@ -107,7 +235,10 @@ validity_gates:
   - "wrong netem delay was active"
   - "another benchmark instance was active (stale iperf process/session)"
   - "QEMU/RT-Thread restarted unexpectedly mid-run"
-  - "required output/metadata field missing"
+  - "required output/metadata field missing (includes N8 insufficient
+     post-discard coverage and N8 connection-index-out-of-range -- see
+     above; does NOT include N8 INVALID or N8's run-median-is-zero
+     INSUFFICIENT, both VALID_ANOMALOUS)"
 
 aggregate_statistics_per_cell:
   throughput:
@@ -117,8 +248,13 @@ aggregate_statistics_per_cell:
     - min_throughput_mbps
     - max_throughput_mbps
   mechanism:
+    - mech_app_limited_fraction     # PRIMARY, 2026-10-08: parameter-free
+    - mech_unsent_pending_fraction  # classification replacing
+    - mech_ack_pending_fraction     # snd_buf_low_fraction (RETIRED, G5).
     - snd_buf_min_over_cell
-    - snd_buf_low_fraction
+    - snd_buf_low_fraction          # legacy; kept for historical
+                                     # comparability ONLY; not analysed
+                                     # (degenerate at L0, per G5).
     - snd_queuelen_high_water
     - cwnd_min_max_mean
     - snd_wnd_min_max_mean
@@ -126,9 +262,19 @@ aggregate_statistics_per_cell:
     - unsent_nonempty_fraction
     - limiting_mechanism_verdict
   note: >
-    Computed only over the VALID repetitions of a cell (n TBD FROM PILOT).
+    Computed over the VALID_NORMAL + VALID_ANOMALOUS repetitions of a cell
+    (n=6, see tbd_from_pilot.repetitions) -- an N8 flag alone (collapse
+    pattern, or a degenerate run-median-is-zero observation) does not
+    exclude a run from this aggregate; only INVALID runs are excluded
+    (11_open_problems.md N8; collect_run_meta.sh VALIDITY_CLASS, 2026-10-08).
     No hypothesis testing at this stage. The mechanism block is the primary
     evidence; the throughput block is context for it.
+    mech_unsent_pending_fraction is reported descriptively with its raw
+    count/denominator per cell -- the 2pp precision objective is NOT
+    established for this state at any tested stratum (uniform OBSERVED
+    ZERO post-discard in the 2026-10-07 pilot; this is not asserted as a
+    structural impossibility, and must not be silently dropped from the
+    per-cell record even where it reads zero).
 
 # Per-run record. The throughput fields alone are NOT sufficient under the
 # mechanism-attribution framing: the joint sender state is the primary
@@ -170,6 +316,17 @@ per_run_record_fields:
     - instr_inflight_mean_x1000
     - instr_unsent_nonempty_count
     - instr_unsent_bytes_max
+    - instr_mech_app_limited      # 2026-10-08: the actual emitted mech_*
+    - instr_mech_unsent_pending   # fields (instr.c), parameter-free,
+    - instr_mech_ack_pending      # mutually exclusive & exhaustive over
+                                   # instr_sample_count (verified this
+                                   # session on every record that has
+                                   # them). Captured generically today via
+                                   # collect_run_meta.sh's instr_fields
+                                   # blob regardless of this list; named
+                                   # here so analysis code has a fixed
+                                   # target instead of parsing the blob
+                                   # ad hoc.
   link_validity:
     - qdisc_packets
     - qdisc_dropped
@@ -177,8 +334,19 @@ per_run_record_fields:
     - qdisc_backlog
   bookkeeping:
     - runtime_or_socket_errors
-    - valid
-    - invalid_reason
+    - valid                       # compatibility field, 2026-10-08
+                                   # semantics: yes iff validity_class in
+                                   # {VALID_NORMAL, VALID_ANOMALOUS}.
+    - validity_class               # VALID_NORMAL | VALID_ANOMALOUS | INVALID
+    - n8_verdict                   # VALID | INVALID | INSUFFICIENT | not_run
+                                   # (detector output, independent of
+                                   # validity_class -- always recorded)
+    - n8_reason                    # full N8 diagnostic text, independent
+                                   # of validity_class
+    - anomaly_reason               # populated iff validity_class ==
+                                   # VALID_ANOMALOUS; empty otherwise
+    - invalid_reason               # populated iff validity_class ==
+                                   # INVALID; unchanged meaning from before
     - notes
 
 validity_gates_additional:

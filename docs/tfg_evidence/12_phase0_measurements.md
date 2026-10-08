@@ -990,6 +990,99 @@ caveat. B3/B4 are resolved, not blockers. N8's proposed role is a
 reviewed proposal, not a decision. See `11_open_problems.md` for the
 full, audited evidentiary record this table summarizes.
 
+> **FROZEN 2026-10-08, appended not rewritten — the "Not freeze-ready"
+> assessment above is preserved as it stood on 2026-10-07, before the
+> 20ms pilot (`13_pilot_20ms.md`) and the N8 implementation closed the
+> specific gaps it named.** Under explicit user authorization superseding
+> the prior no-freeze restriction for this bounded task, all five
+> candidates are addressed in `experiment/manifest.yaml`
+> (`tbd_from_pilot`) and `run_matrix.csv` (`reps=6`). Independently
+> evidence-auditor reviewed (PASS WITH QUALIFICATION) — the audit found
+> the freeze defensible but caught two factual errors in the first draft
+> of this box and one real implementation gap, both corrected below
+> (not silently fixed in place — see `13`'s audit-corrections section and
+> `11` N16/N8 for the full record):
+>
+> - `repetitions = 6`: **FROZEN.** Kept at 6 per explicit instruction, not
+>   reduced to the pilot's own smaller per-stratum point estimates (2–4,
+>   up to 4 under a conservative SD bound). Set at or above every
+>   per-stratum minimal-n found by either dataset (100ms archive and
+>   20ms pilot) — a margin/consistency choice, not a claimed unique
+>   estimate. NOT established for `mech_unsent_pending` at any stratum
+>   (uniform observed zero). NOT tested at RTT=100/200ms, at RTT=0
+>   (platform cells), at STOCK (pinctl), or at L0/L1/RTT=500ms — visible
+>   gaps, not claimed covered. The "non-blocking" framing rests on: these
+>   are bracketed conditions (RTT=100/200ms sits between tested 50/500ms;
+>   trace capacity and timer load depend on duration/rate, not RTT), and
+>   missing 2pp at an untested cell means a wider honestly-reported
+>   interval, not invalid or biased data — not on an assumption that
+>   nothing could differ. R13's finding that RTT=200ms was historically
+>   the highest-collapse cell is a specific, named reason this framing
+>   does NOT extend to "no risk at RTT=200ms" — only to "no repetitions-
+>   count blocker from untested interval resolution."
+> - `run_duration_s = 60`: **FROZEN.** The specific "2-4s dilution"
+>   rationale stays rejected (not reused); frozen instead on sufficiency
+>   (ample post-discard sample count across 4 real cells, per `13`'s
+>   2026-10-08 full 24-attempt `[3,30)/[30,60)` recheck) — sufficient and
+>   evidence-backed, not claimed optimal. **Correction**: the recheck
+>   found a real, small (≤0.45pp) per-stratum directional shift between
+>   the two half-windows (L0 higher in the second half in 6/6 runs, L1
+>   lower in 6/6, L2/500 lower in 5/6 — a sign test gives p≈0.031 per
+>   stratum) — far below the 2pp objective, not threatening sufficiency,
+>   but "stable" in the original draft of this box overstated it; a slow
+>   within-run drift beyond 3s is not ruled out, only shown to be small.
+> - `discard_interval_s = 3`: **PARTIALLY FROZEN**, corrected. Frozen and
+>   fully wired for N8's purposes (its gate operates on this value
+>   directly, audited). For the PRIMARY `mech_*` evidence, the value
+>   itself (3s) is defensible and unchanged (the pilot's connection-start
+>   burst clears by t<=1.5s at the slowest tested cell), but the audit
+>   correctly found no committed, reproducible way to apply it existed —
+>   `instr_dump`'s whole-run accumulators cannot retroactively exclude a
+>   startup window, and no script existed to do it from the trace for use
+>   in formal collection (the pilot's own `[3,60)` numbers were computed
+>   ad hoc, per-document, not via a committed tool). Closed 2026-10-08:
+>   `experiment/scripts/compute_discard_windowed_mechfrac.py` (new,
+>   reproducible, independently verified against `13`'s already-published
+>   `pilot20_L0_r50_1` figures — reproduces 3.228% exactly). **Still
+>   open**: `collect_run_meta.sh` does not yet invoke this script
+>   automatically as part of formal row collection — a named,
+>   non-measurement implementation task before the first formal run, not
+>   a reason to delay the value 3s itself.
+> - `sampling_interval_ms = 20`: **FROZEN.** Direct evidence at 4 cells
+>   now exists (`13`); RTT=100/200ms remains untested and is recorded as
+>   such — the bracketing argument above applies here too (trace
+>   capacity/timer load are duration/rate-dependent, not RTT-dependent,
+>   and the fastest/hardest-to-resolve tested RTT, 50ms, already passed).
+> - `snd_buf_low_threshold = RETIRED`: **FROZEN.** Implemented —
+>   `manifest.yaml`'s `aggregate_statistics_per_cell`/`per_run_record_fields`
+>   now list the `mech_*` fields explicitly; the gap this row named is
+>   closed.
+>
+> **Corrected factual errors** (found by the audit, independently
+> re-verified by the coordinator against the raw host CSVs before
+> accepting): the trailing-bin census an earlier draft of this
+> correction cited ("all 24 attempts overshoot enough for a safe
+> 3-element N8 trailing bin") is wrong — the real census is **18
+> three-element, 5 two-element (all at 50ms RTT, where quantization is
+> small enough that none produced a false `INVALID`, for a different
+> reason than originally stated), 1 with no trailing bin at all**; see
+> `11` N16 for the corrected entry and the residual risk this leaves for
+> a future short-overshoot run at 200/500ms. The post-discard sample
+> count for `run_duration_s`'s own comment is `2815-2850` (not
+> `2815-3037`, which mixed a post-discard minimum with an unrelated
+> whole-run maximum) — fixed directly in `manifest.yaml` since nothing
+> was committed when the error was found.
+>
+> The repetitions exclusion-precondition gap this bottom-line names is
+> resolved differently than either original path assumed: the N8/
+> scientific-validity reconciliation (`11` N8, implemented in
+> `collect_run_meta.sh`) means `repetitions` no longer depends on N8
+> reliably excluding collapses at all — `VALID_ANOMALOUS` runs (N8
+> flagged, otherwise compliant) are retained in `aggregate_statistics_per_cell`,
+> not excluded, so there is no exclusion precondition left to fail. Full
+> decision record, evidence-auditor review, and implementation diff in
+> `10_session_log.md`'s 2026-10-08 entry and `13_pilot_20ms.md`.
+
 ---
 
 ## 2026-10-07 — Repetitions planning objective and evidence-limited proposal

@@ -51,10 +51,10 @@ Exit code 0 = VALID, 2 = INVALID, 1 = usable data missing.
 """
 import sys, os, collections, statistics, tempfile
 
-DEFAULT_DISCARD = 3      # s   PROPOSAL -- manifest slot stays null
-DEFAULT_BIN     = 5      # s   PROPOSAL -- manifest slot stays null
-DEFAULT_BAND    = 0.80   #     PROPOSAL -- manifest slot stays null
-DEFAULT_ALLOW   = 0      #     PROPOSAL -- manifest slot stays null
+DEFAULT_DISCARD = 3      # s   FROZEN 2026-10-08 -- manifest.yaml tbd_from_pilot.discard_interval_s
+DEFAULT_BIN     = 5      # s   documented diagnostic setting, not a frozen protocol parameter
+DEFAULT_BAND    = 0.80   #     documented diagnostic setting, not a frozen protocol parameter
+DEFAULT_ALLOW   = 0      #     documented diagnostic setting, not a frozen protocol parameter
 
 
 def load_connections(path, warn=None):
