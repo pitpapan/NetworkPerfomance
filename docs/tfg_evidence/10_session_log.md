@@ -933,7 +933,7 @@ Still unknown after this session:
     already open in `11`/`12`/`13`.
 
 ### 2026-10-08 — Wire discard-windowed evidence into `collect_run_meta.sh`'s normal collection path
-Commits: `<pending>`
+Commits: `7a3d2ac`
 Done:
   - Integrated the standalone `compute_discard_windowed_mechfrac.py`
     (committed previously, `fe43063`) into `collect_run_meta.sh`'s normal
