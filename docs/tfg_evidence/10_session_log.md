@@ -1035,3 +1035,99 @@ Still unknown after this session:
     this task.
   - Everything else already open in `11`/`12`/`13` (notably N1, N3, N5,
     N6, N11-N14, N16, N17, N18 — unaffected by this task).
+
+### 2026-10-08 — Phase 1 launch check: LAUNCH BLOCKED on N19
+Commits: none (no source change this session; `11_open_problems.md`
+  and this entry are the only tracked changes, committed after this
+  entry)
+Done:
+  - Verified the current frozen state (`repetitions=6`, `run_duration_s=60`,
+    `discard_interval_s=3`, `sampling_interval_ms=20`,
+    `snd_buf_low_threshold=RETIRED`) is unchanged since `9a811a4`;
+    checkout clean, HEAD unmoved.
+  - Verified the formal-trace-enforcement requirement is ALREADY
+    mechanically enforced by `collect_run_meta.sh` (committed in
+    `7a3d2ac`, not touched this session) -- not merely documented in
+    `campaign-runner.md`. Directly ran the real collector in a
+    disposable scratch copy against real archived data for all 4
+    required cases: `--trace` omitted, `--trace` naming a missing file,
+    `--trace` belonging to another run (`run_id` mismatch), and a
+    corrupted trace the windowing script itself rejects -- all four
+    produced `validity_class=INVALID` with distinct, correct reasons
+    and empty (not zero) `window_*` columns. No code change needed; this
+    item was already resolved by the prior session's integration.
+  - Resolved N19's four cases individually (A: observed-zero; B: small
+    gaps; C: short observed span; D: truncated trace) -- see the
+    rewritten `11` N19 entry for the full reasoning. Built a synthetic,
+    internally-consistent fixture (guest trace complete and
+    self-consistent, but spanning only ~10s of a nominal 60s run, while
+    a paired host-side throughput CSV showed a full clean 65s) and ran
+    it through the real, unmodified collector: produced
+    `valid=yes, validity_class=VALID_NORMAL, window_duration_s=60,
+    window_sample_count=350` -- i.e. a row that falsely reads as
+    complete `[3,60)` evidence. Confirmed no code anywhere (collector or
+    `compute_discard_windowed_mechfrac.py`) checks the trace's own
+    observed span against `RUN_DURATION_S`.
+  - Checked whether any zero-cost tolerance could close this gap:
+    found real, already-published, already-accepted evidence
+    (`pilot20_L1_r50_3` span 59.28s/0.72s short, published n=2815;
+    `pilot20_L1_r50_4` span 59.86s/0.14s short, published n=2839;
+    `pilot20_L2_r50_1` span 59.97s, n=2849) with natural shortfalls up
+    to ~1.2% of the window, already treated as valid (anomalous-but-
+    compliant, not clean) in `13_pilot_20ms.md`. Repurposing the
+    existing unfrozen `GATE_DRIFT_FRAC=0.5%` proposal as a span-shortfall
+    tolerance would retroactively flag `pilot20_L1_r50_3` INVALID,
+    contradicting that already-published data -- confirming no implied
+    threshold exists and closing this generally requires a new,
+    explicitly-versioned acceptance decision, not an implementation
+    default.
+  - Requested one bounded evidence-auditor review of all of the above
+    (formal trace enforcement; N19 case resolution; the fixture;
+    the no-implied-tolerance argument). Result: PASS WITH QUALIFICATION.
+    All four claims VERIFIED (claim 0, "no source change", could not be
+    checked by the auditor directly -- it lacks Bash -- so I verified it
+    myself via `git status`/`git diff`, both clean). Two corrections
+    applied: (1) `pilot20_L1_r50_3/4` are documented as
+    "anomalous-but-compliant", not "VALID_NORMAL" -- `11`'s N19 entry
+    now distinguishes the documentary label from what the current
+    collector would mechanically output; (2) added `pilot20_L2_r50_1`
+    (59.97s, n=2849) as a third real naturally-short-span accepted run,
+    strengthening the no-implied-tolerance argument.
+  - Rewrote `11_open_problems.md` N19 with the full case-by-case
+    resolution and moved it from "Non-blocking, known" to "Blocking",
+    since Case C now concretely blocks a Phase 1 launch pending a
+    versioned decision.
+Found (not sought):
+  - The auditor's side note: `13_pilot_20ms.md`'s existing explanation
+    for `pilot20_L1_r50_3`'s `[30,60)` sample deficit ("gap/drop
+    effects", lines 664-666) is incomplete -- that run has
+    `gap_max_ticks=2` and `sample_count` exactly matching its own
+    expected value from its span, so its deficit comes entirely from
+    the span ending early (Case C), not from dropped samples. Not
+    corrected in `13` this session (out of this task's scope -- `13` is
+    a closed, published record; flagged here for a future correction
+    pass, not silently edited).
+Failed / blocked:
+  - LAUNCH BLOCKED. No formal attempt was selected, ordered, or
+    executed. QEMU/tap0/netem were never touched live this session.
+Decisions taken:
+  - Did NOT implement a span-vs-`run_duration_s` gate under launch
+    pressure. The real archive shows no zero-cost tolerance exists
+    (see above) -- any numeric choice would be a new acceptance rule,
+    which this task's own instructions required surfacing as an
+    explicit decision rather than hiding as an implementation default.
+  - Did NOT select or instantiate a formal run order, and did not touch
+    live `tap0`/netem state, since the launch did not clear criterion 2
+    of the authorization checklist ("required primary evidence cannot be
+    ... falsely represented as covering the prescribed window").
+Still unknown after this session:
+  - The exact acceptance-tolerance decision needed to close N19 Case C:
+    what span shortfall against `run_duration_s`, if any, is tolerable,
+    and whether an excessive one should be `INVALID` or a new
+    `VALID_ANOMALOUS` sub-case. Blocks the next Phase 1 launch attempt
+    until the user/coordinator makes and records this decision.
+  - Whether `pilot20_L1_r50_3`'s already-published `13` explanation
+    needs a formal correction entry (`05`) for the "gap/drop effects"
+    wording -- flagged, not yet acted on.
+  - Everything else already open in `11`/`12`/`13`, unaffected by this
+    session.
