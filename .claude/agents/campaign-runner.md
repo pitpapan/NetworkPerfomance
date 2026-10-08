@@ -16,10 +16,18 @@ For each assigned run:
 2. verify effective configuration;
 3. execute prescribed pre-run checks;
 4. execute the approved run command/script;
-5. capture metadata;
+5. capture metadata, including the per-sample guest trace (`instr_trace`,
+   uncompressed — `collect_run_meta.sh`'s `--trace` does not decompress
+   `.gz` archives);
 6. preserve raw evidence;
 7. evaluate predefined validity gates;
-8. create the required run record (`experiment/scripts/collect_run_meta.sh`);
+8. create the required run record (`experiment/scripts/collect_run_meta.sh`),
+   **always passing `--trace <file>`** pointing at that run's uncompressed
+   trace file. Since the 2026-10-08 discard-windowing integration, `--trace`
+   is required for a row to be anything other than `INVALID`: the primary
+   `window_mech_*` evidence is computed from it, and a missing or
+   unparseable trace, or a trace whose `run_id` does not match, routes the
+   row to `INVALID` regardless of how clean the rest of the run was;
 9. report status and anomalies.
 
 Do not redesign, debug, reinterpret, or improvise. Do not modify scripts,

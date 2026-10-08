@@ -931,3 +931,107 @@ Still unknown after this session:
     RTT=100/200ms or RTT=0/STOCK at 20ms would change any frozen value —
     explicitly untested, explicitly not claimed covered. Everything else
     already open in `11`/`12`/`13`.
+
+### 2026-10-08 — Wire discard-windowed evidence into `collect_run_meta.sh`'s normal collection path
+Commits: `<pending>`
+Done:
+  - Integrated the standalone `compute_discard_windowed_mechfrac.py`
+    (committed previously, `fe43063`) into `collect_run_meta.sh`'s normal
+    formal-row path via a new `--trace FILE` argument: on a formal call
+    that supplies it, the script now automatically computes the
+    `[discard_interval_s, run_duration_s)`-windowed `mech_*` fractions
+    from the per-sample guest trace and writes them as 9 new CSV columns
+    (`window_discard_s`, `window_duration_s`, `window_sample_count`,
+    `window_mech_app_limited{,_pct}` ×3), appended after the existing
+    columns so column position is preserved. This is now the primary
+    mechanism evidence; the pre-existing whole-run `instr_mech_*` fields
+    are retained but relabelled diagnostic-only.
+  - Six failure gates implemented, each routing to `INVALID` with a
+    distinct named reason (never silently falling back to a whole-run
+    accumulator, never producing `VALID_ANOMALOUS`): missing `--trace`;
+    file not found; no `INSTR_TRACE_BEGIN` marker; trace `run_id`
+    mismatch against `--run-id`; the windowing script itself failing or
+    returning unparseable JSON; `windowed=null` (zero samples landed in
+    the window — distinguished from a legitimate observed-zero count,
+    which has `window_sample_count>0` and is a real result, not a
+    failure); and `trace_complete != true` (trace row count doesn't match
+    the guest's own `instr_dump` sample count).
+  - Verified end to end against real archived data, not just synthetic
+    fixtures: ran the integrated collector against `pilot20_L0_r50_1`,
+    `pilot20_L1_r50_3`, and `pilot20_L2_r500_4`'s real
+    `.json`/`.trace`/`.host_iperf.csv` triples. `window_mech_*_pct`
+    exactly reproduces `13_pilot_20ms.md`'s published `[3,60)` figures
+    (e.g. `pilot20_L0_r50_1`: `window_sample_count=2850`,
+    `window_mech_app_limited_pct=3.228`), not the whole-run
+    `instr_mech_*` values (4395/3.117%). Confirmed the window's upper
+    boundary is correctly exclusive (a row at exactly `hi_tick` is
+    dropped). Ran a 24/24-attempt regression against the full pilot
+    archive.
+  - A synthetic known-answer fixture (hand-computed expected counts) and
+    dedicated tests for all six failure gates were built and pass.
+  - One bounded evidence-auditor review: **PASS WITH QUALIFICATION**.
+    Every substantive logic/correctness item (automatic invocation, all
+    6 gates, window-boundary exclusivity on 3 real strata, field
+    semantics/column counts, identity preservation, N8-separation) came
+    back VERIFIED. Independently re-verified myself (not just accepted):
+    confirmed by direct `git diff` that the existing whole-run
+    `instr_mech_*`/`INSTR_BLOB` parsing logic is completely untouched
+    (the auditor could not check this itself — no Bash access) and that
+    the final CSV has exactly 37 `%s` placeholders against 37 arguments.
+  - Applied the audit's required corrections: fixed two stale comments
+    in `collect_run_meta.sh` (COMPLETE-marker artifact list; the old
+    `N8_DISCARD` name) that still described the pre-integration state;
+    upgraded `manifest.yaml`'s `discard_interval_s` status comment and
+    `00_project_state.md`'s matrix-row summary from PARTIALLY FROZEN to
+    FROZEN, citing the automatic wiring and the audit; added `window_*`
+    to `manifest.yaml`'s `per_run_record_fields.sender_state` schema,
+    explicitly marked PRIMARY EVIDENCE, with a note that
+    `aggregate_statistics_per_cell.mech_*_fraction` should be computed
+    from these, not from `instr_mech_*`; added `11` N19 for the
+    short-post-discard-window coverage gap the audit flagged as real but
+    out of this task's scope (no new gate/threshold added, per
+    instruction); updated `campaign-runner.md` to state `--trace` is now
+    required on every formal call.
+Found (not sought):
+  - A printf format-string bug during my own implementation: the first
+    version of the 9-new-column change used 36 `%s` placeholders against
+    37 arguments, which printf format-recycling would have silently
+    corrupted on any appended row. Found by inspecting actual CSV
+    output before trusting the diff, fixed, re-verified column-for-column
+    with `csv.DictReader`.
+  - `pilot20_L2_r500_*` rows went `INVALID` in an early scratch regression
+    run for an unrelated reason: this host's live `tap0` currently has
+    `delay 50ms` set, not 500ms, which trips a pre-existing
+    "wrong-netem-delay" gate — not an integration defect. Confirmed by
+    checking `tc qdisc show dev tap0` directly.
+Failed / blocked: none.
+Decisions taken:
+  - Did not add a minimum-window-sample-count gate for the short-window
+    confounder the audit identified — recorded as `11` N19 instead,
+    per the task's explicit scope (implementation + verification of the
+    existing freeze decision, not new gate design).
+  - Did not implement the optional trace-vs-`instr_dump` whole-run
+    content cross-check the audit suggested — folded into the same N19
+    entry as a named, explicitly-optional, unimplemented gap.
+  - Did not add `.gz` decompression support for B1's archived compressed
+    traces to `--trace` — noted in `campaign-runner.md` as a known
+    constraint (uncompressed trace required) rather than implemented,
+    since B1 is historical and not part of the 19-cell matrix.
+Still unknown after this session:
+  - Whether a real Phase 1 cell will ever produce a short enough
+    post-discard window to exercise N19 — not expected at the frozen
+    `run_duration_s=60`/`discard_interval_s=3` settings, not yet tested
+    outside them.
+  - The evidence-auditor's hand-back for this task opened with a
+    harness-level notice that it had pattern-matched part of the
+    sub-agent's own output as instruction-shaped text and neutralized it
+    for this session, directing that any remaining directive-shaped text
+    be treated as a finding to relay, not an instruction. Treated as a
+    system-level safety annotation, not as user input and not as a
+    channel for escalating my own authority — the substantive audit
+    content that followed was an ordinary, verified report consistent
+    with every other audit this session. Noted here for the record; it
+    changed nothing about what I treated as scope or authorization in
+    this task.
+  - Everything else already open in `11`/`12`/`13` (notably N1, N3, N5,
+    N6, N11-N14, N16, N17, N18 — unaffected by this task).

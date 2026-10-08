@@ -111,34 +111,44 @@ tbd_from_pilot:
                                # Not shown optimal or uniquely necessary --
                                # sufficient and evidence-backed is the
                                # claim, not optimality.
-  discard_interval_s: 3        # PARTIALLY FROZEN, see note below. Covers
-                               # the <2s startup transient at every tested
-                               # RTT/buffer point, and the pilot's own
-                               # connection-start burst (clears by t<=1.5s
-                               # at the slowest tested cell, L2/500ms --
-                               # 13). Known, documented interaction, not a
-                               # defect: a collapse starting AT t=3.0 (the
-                               # first kept interval, not "inside [0,3)")
-                               # is invisible to N8's discard/bin logic by
-                               # construction at that boundary; one
-                               # archived natural case (g4_L0_r200_t100)
-                               # is exactly this and is still caught by N8
-                               # on other grounds. FULLY WIRED for N8 (its
-                               # gate reads this value directly, audited).
-                               # NOT YET WIRED for the primary mech_*
-                               # evidence as of 2026-10-08: instr_dump's
-                               # whole-run accumulators cannot retroactively
-                               # exclude a startup window; the required
-                               # per-run windowing step is now specified
-                               # and implemented as a committed,
-                               # independently-verified script
-                               # (experiment/scripts/compute_discard_windowed_mechfrac.py,
-                               # reproduces 13's published pilot figures
-                               # exactly) but collect_run_meta.sh does not
-                               # yet invoke it automatically -- a named
-                               # implementation task before the first
-                               # formal run, not a reason to change the
-                               # value 3 itself.
+  discard_interval_s: 3        # FROZEN (upgraded from PARTIALLY FROZEN,
+                               # 2026-10-08). Covers the <2s startup
+                               # transient at every tested RTT/buffer
+                               # point, and the pilot's own connection-start
+                               # burst (clears by t<=1.5s at the slowest
+                               # tested cell, L2/500ms -- 13). Known,
+                               # documented interaction, not a defect: a
+                               # collapse starting AT t=3.0 (the first kept
+                               # interval, not "inside [0,3)") is invisible
+                               # to N8's discard/bin logic by construction
+                               # at that boundary; one archived natural
+                               # case (g4_L0_r200_t100) is exactly this and
+                               # is still caught by N8 on other grounds.
+                               # FULLY WIRED for N8 (its gate reads this
+                               # value directly, audited) AND for the
+                               # primary mech_* evidence: `collect_run_meta.sh`
+                               # now invokes
+                               # experiment/scripts/compute_discard_windowed_mechfrac.py
+                               # automatically for every run whose
+                               # instr_dump parses with a non-zero sample
+                               # count, gated (--trace required; missing/
+                               # malformed/identity-mismatched/incomplete
+                               # trace -> INVALID, never silently falls
+                               # back to the whole-run instr_mech_* fields).
+                               # Independently audited, reproduces 13's
+                               # published [3,60) figures exactly on 24/24
+                               # pilot attempts across 3 strata spot-checked
+                               # by hand. KNOWN, EXPLICITLY-SCOPED-OUT
+                               # LIMITATION (not fixed, not a blocker --
+                               # see 11 N19): a short-duration run (e.g. an
+                               # early-terminated attempt) still produces a
+                               # windowed fraction over fewer samples with
+                               # no dedicated minimum-coverage gate of its
+                               # own; `window_sample_count` makes this
+                               # visible per row, N8's existing 2-bin
+                               # minimum is the only floor that currently
+                               # applies, and no new threshold is set here
+                               # without an explicit, versioned decision.
   sampling_interval_ms: 20     # Direct evidence at 4 cells (L0/L1/L2 @
                                # 50ms, L2 @ 500ms -- 13_pilot_20ms.md,
                                # 24/24 attempts): no timeout, no trace
@@ -316,17 +326,40 @@ per_run_record_fields:
     - instr_inflight_mean_x1000
     - instr_unsent_nonempty_count
     - instr_unsent_bytes_max
-    - instr_mech_app_limited      # 2026-10-08: the actual emitted mech_*
-    - instr_mech_unsent_pending   # fields (instr.c), parameter-free,
-    - instr_mech_ack_pending      # mutually exclusive & exhaustive over
+    - instr_mech_app_limited      # WHOLE-RUN DIAGNOSTIC ONLY (2026-10-08).
+    - instr_mech_unsent_pending   # The actual emitted mech_* fields
+    - instr_mech_ack_pending      # (instr.c), parameter-free, mutually
+                                   # exclusive & exhaustive over
                                    # instr_sample_count (verified this
                                    # session on every record that has
-                                   # them). Captured generically today via
+                                   # them), but computed with NO discard
+                                   # applied -- includes the startup
+                                   # transient/connection-start burst.
+                                   # Captured generically via
                                    # collect_run_meta.sh's instr_fields
                                    # blob regardless of this list; named
                                    # here so analysis code has a fixed
                                    # target instead of parsing the blob
-                                   # ad hoc.
+                                   # ad hoc. Use window_mech_* below for
+                                   # primary analysis, not these.
+    - window_discard_s             # PRIMARY EVIDENCE (2026-10-08). The
+    - window_duration_s            # discard-windowed [discard,duration)
+    - window_sample_count          # mech_* fractions, computed from the
+    - window_mech_app_limited      # per-sample trace by
+    - window_mech_unsent_pending   # experiment/scripts/compute_discard_windowed_mechfrac.py,
+    - window_mech_ack_pending      # invoked automatically by
+    - window_mech_app_limited_pct  # collect_run_meta.sh whenever a trace
+    - window_mech_unsent_pending_pct # is supplied and validates (required
+    - window_mech_ack_pending_pct  # -- see validity_gates). Empty (not
+                                   # zero) when unavailable; a legitimate
+                                   # single-state zero count with a
+                                   # positive window_sample_count is a
+                                   # real observed-zero result, not a
+                                   # missing value. This is the field set
+                                   # aggregate_statistics_per_cell's
+                                   # mech_*_fraction entries should be
+                                   # computed from, not instr_mech_*
+                                   # above.
   link_validity:
     - qdisc_packets
     - qdisc_dropped
